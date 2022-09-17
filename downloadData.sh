@@ -14,4 +14,8 @@ then
 fi
 unzip TimeLapse_2D.zip -d TimeLapse_2D
 rm TimeLapse_2D.zip
+
+mv TimeLapse_2D/TimeLapse_2D tmpDir 
+rm -rf TimeLapse_2D
+mv tmpDir TimeLapse_2D
 cd ..

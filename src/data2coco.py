@@ -14,7 +14,7 @@ import pycococreatortools
 
 BASE_PATH = "../data/TimeLapse_2D"
 DATA_SAVE_PATH = "../data/processed_data/"
-ROOT_DIR = '../data/images_and_masks'
+ROOT_DIR = '../data/dataInCOCO/'
 IMAGE_DIR = os.path.join(ROOT_DIR, "images")
 ANNOTATION_DIR = os.path.join(ROOT_DIR, "annotations")
 
@@ -122,7 +122,6 @@ def filter_for_annotations(root, files, image_filename):
     return files
 
 def main():
-
     # prepare images
     iterate_images(store_image)
      
@@ -140,7 +139,6 @@ def main():
     # filter for jpeg images
     for root, _, files in os.walk(IMAGE_DIR):
         image_files = filter_for_png(root, files)
-
         # go through each image
         for image_filename in image_files:
             image = Image.open(image_filename)
@@ -176,6 +174,5 @@ def main():
     with open('{}/cell_acdc_coco_ds.json'.format(ROOT_DIR), 'w') as output_json_file:
         json.dump(coco_output, output_json_file)
 
-
-if __name__ == "__main__":
+if __name__ == "__main":
     main()
