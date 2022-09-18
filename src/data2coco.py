@@ -122,6 +122,7 @@ def filter_for_annotations(root, files, image_filename):
     return files
 
 def main():
+    print("running main ...")
     # prepare images
     iterate_images(store_image)
      
@@ -174,5 +175,7 @@ def main():
     with open('{}/cell_acdc_coco_ds.json'.format(ROOT_DIR), 'w') as output_json_file:
         json.dump(coco_output, output_json_file)
 
-if __name__ == "__main":
+
+
+if __name__ == "__main__":
     main()
