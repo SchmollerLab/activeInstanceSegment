@@ -11,12 +11,16 @@ import re
 import fnmatch
 import pycococreatortools
 
+from typing import Callable
+
 
 BASE_PATH = "../data/TimeLapse_2D"
 DATA_SAVE_PATH = "../data/processed_data/"
 ROOT_DIR = '../data/dataInCOCO/'
-IMAGE_DIR = os.path.join(ROOT_DIR, "images")
-ANNOTATION_DIR = os.path.join(ROOT_DIR, "annotations")
+IMAGE_DIR_NAME = "images"
+ANNOTATION_DIR_NAME = "annotations"
+TEST = "test"
+TRAIN = "train"
 
 INFO = {
     "description": "Cell ACDC data in COCO format",
@@ -63,7 +67,8 @@ def load_video(experiment_name, position, filename):
 
 def iterate_images(function):
     
-    id = 0    
+    id: int = 0
+    split_type: str = TEST
     directory = os.fsencode(BASE_PATH)    
     for obj in os.listdir(directory):
         name = os.fsdecode(obj)
@@ -75,31 +80,31 @@ def iterate_images(function):
                     if filename.find("_phase_contr.tif") != -1:
                         base_filename = filename.replace("phase_contr.tif","")
                 data = load_video(name, pos_name, base_filename)
-                function(data,str(id))
+                function(data,str(id),split_type)
                 id += 1
+                split_type = TRAIN
                     
 
-def store_image(data,id):
+def store_image(data: np.array,id: int, split_type: str="train") -> None:
     
-    images = data[0]
-    masks = data[1]
+    images: np.array = data[0]
+    masks: np.array = data[1]
     
-    num_images = images.shape[0]
+    num_images: int = images.shape[0]
     
     for i in range(num_images):
         full_id = id + "_" + str(i)
         
         # save image as png
-        plt.imsave(ROOT_DIR + "/images/" + full_id + ".png", images[i], cmap='gray')
+        plt.imsave(os.path.join(ROOT_DIR, split_type, "images", full_id + ".png"), images[i], cmap='gray')
         
         # save masks independently
         mask_full = masks[i]
         
         labels = np.unique(mask_full)
         for label in labels[1:]:
-            mask = (mask_full == label).astype(np.uint8)
-          
-            plt.imsave(ROOT_DIR + "/annotations/" + full_id + "_cell_" + str(label) + ".png", mask, cmap='gray')
+            mask: np.uint8 = (mask_full == label).astype(np.uint8)            
+            plt.imsave(os.path.join(ROOT_DIR, split_type, "annotations", full_id + "_cell_" + str(label) + ".png"), mask, cmap='gray')
 
 
 def filter_for_png(root, files):
@@ -121,11 +126,8 @@ def filter_for_annotations(root, files, image_filename):
 
     return files
 
-def main():
-    print("running main ...")
-    # prepare images
-    iterate_images(store_image)
-     
+def convert_data_to_coco(image_id, segmentation_id, path_dir):
+    
     coco_output = {
         "info": INFO,
         "licenses": LICENSES,
@@ -134,21 +136,19 @@ def main():
         "annotations": []
     }
 
-    image_id = 1
-    segmentation_id = 1
+    
     
     # filter for jpeg images
-    for root, _, files in os.walk(IMAGE_DIR):
+    for root, _, files in os.walk(os.path.join(path_dir,IMAGE_DIR_NAME)):
         image_files = filter_for_png(root, files)
         # go through each image
         for image_filename in image_files:
             image = Image.open(image_filename)
-            image_info = pycococreatortools.create_image_info(
-                image_id, os.path.basename(image_filename), image.size)
+            image_info = pycococreatortools.create_image_info(image_id, os.path.basename(image_filename), image.size)
             coco_output["images"].append(image_info)
 
             # filter for associated png annotations
-            for root, _, files in os.walk(ANNOTATION_DIR):
+            for root, _, files in os.walk(os.path.join(path_dir,ANNOTATION_DIR_NAME)):
                 annotation_files = filter_for_annotations(root, files, image_filename)
 
                 # go through each associated annotation
@@ -172,8 +172,20 @@ def main():
 
             image_id = image_id + 1
 
-    with open('{}/cell_acdc_coco_ds.json'.format(ROOT_DIR), 'w') as output_json_file:
+    with open('{}/cell_acdc_coco_ds.json'.format(path_dir), 'w') as output_json_file:
         json.dump(coco_output, output_json_file)
+
+def main():
+    print("running main ...")
+    # prepare images
+    iterate_images(store_image)
+     
+    image_id = 1
+    segmentation_id = 1
+    
+    for split_type in [TEST,TRAIN]:
+        convert_data_to_coco(image_id, segmentation_id, os.path.join(ROOT_DIR,split_type))
+    
 
 
 

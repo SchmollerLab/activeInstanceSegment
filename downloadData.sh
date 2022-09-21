@@ -2,8 +2,12 @@
 
 mkdir data
 mkdir data/dataInCOCO
-mkdir data/dataInCOCO/images
-mkdir data/dataInCOCO/annotations
+mkdir data/dataInCOCO/test
+mkdir data/dataInCOCO/train
+mkdir data/dataInCOCO/test/images
+mkdir data/dataInCOCO/test/annotations
+mkdir data/dataInCOCO/train/images
+mkdir data/dataInCOCO/train/annotations
 
 cd data
 wget https://hmgubox2.helmholtz-muenchen.de/index.php/s/DdXYAam2mRwZn88/download/TimeLapse_2D.zip
