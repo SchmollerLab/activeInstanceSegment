@@ -14,9 +14,9 @@ import pycococreatortools
 from typing import Callable
 
 
-BASE_PATH = "../data/TimeLapse_2D"
-DATA_SAVE_PATH = "../data/processed_data/"
-ROOT_DIR = '../data/dataInCOCO/'
+BASE_PATH = "../../data/TimeLapse_2D"
+DATA_SAVE_PATH = "../../data/processed_data/"
+ROOT_DIR = "../../data/dataInCOCO/"
 IMAGE_DIR_NAME = "images"
 ANNOTATION_DIR_NAME = "annotations"
 TEST = "test"
