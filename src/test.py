@@ -1,29 +1,24 @@
 import torch, detectron2
+import os
+from collections import OrderedDict
 
-
-# import some common libraries
-import numpy as np
-import os, json, cv2, random
-
-
-# import some common detectron2 utilities
-#from detectron2 import model_zoo
-from detectron2.engine import DefaultPredictor
-#from detectron2.config import get_cfg
-#from detectron2.utils.visualizer import Visualizer
-#from detectron2.data import MetadataCatalog, DatasetCatalog
-#from detectron2.data.datasets import register_coco_instances
-#from detectron2.engine import DefaultTrainer
-from detectron2.evaluation import COCOEvaluator, inference_on_dataset
+import detectron2.utils.comm as comm
 from detectron2.data import build_detection_test_loader
+from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 
-def test(cfg, dataset):
-    # Inference should use the config with parameters that are used in training
-    # cfg now already contains everything we've set previously. We changed it a little bit for inference:
-    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")  # path to the model we just trained
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7   # set a custom testing threshold
-    predictor = DefaultPredictor(cfg)
+from detectron2.evaluation import print_csv_format
 
-    evaluator = COCOEvaluator(dataset, output_dir="./output")
-    val_loader = build_detection_test_loader(cfg, dataset)
-    print(inference_on_dataset(predictor.model, val_loader, evaluator))
+
+def do_test(cfg, model, logger):
+    results = OrderedDict()
+    for dataset_name in cfg.DATASETS.TEST:
+        data_loader = build_detection_test_loader(cfg, dataset_name)
+        evaluator = COCOEvaluator(dataset_name, output_dir=cfg.OUTPUT_DIR)
+        results_i = inference_on_dataset(model, data_loader, evaluator)
+        results[dataset_name] = results_i
+        if comm.is_main_process():
+            logger.info("Evaluation results for {} in csv format:".format(dataset_name))
+            print_csv_format(results_i)
+    if len(results) == 1:
+        results = list(results.values())[0]
+    return results
