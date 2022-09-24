@@ -66,8 +66,8 @@ MAX_ITER = 1000
 if __name__ == "__main__":
 
     # register new data
-    register_coco_instances(TRAIN_DATASET, {}, "./segmentationMicroscopy/data/dataInCOCO/train/cell_acdc_coco_ds.json", "./segmentationMicroscopy/data/dataInCOCO/train/images")
-    register_coco_instances(TEST_DATASET, {}, "./segmentationMicroscopy/data/dataInCOCO/test/cell_acdc_coco_ds.json", "./segmentationMicroscopy/data/dataInCOCO/test/images")
+    register_coco_instances(TRAIN_DATASET, {}, "./../data/dataInCOCO/train/cell_acdc_coco_ds.json", "./../data/dataInCOCO/train/images")
+    register_coco_instances(TEST_DATASET, {}, "./../data/dataInCOCO/test/cell_acdc_coco_ds.json", "./../data/dataInCOCO/test/images")
 
 
 
