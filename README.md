@@ -6,12 +6,11 @@ The data can be downloaded using the following command:
 ```console
 $ ./downloadData
 
-https://hmgubox2.helmholtz-muenchen.de/index.php/s/DdXYAam2mRwZn88
 ```
 
 First of all the data needs to be converted from Cell-ACDC format to [COCO format](https://cocodataset.org/#format-data). This can be done by running
 
-```python
+```console
 python ./src/data/data2coco.py
 ```
 
