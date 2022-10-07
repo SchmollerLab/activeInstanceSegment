@@ -14,9 +14,9 @@ import pycococreatortools
 from typing import Callable
 
 
-BASE_PATH = "../../data/TimeLapse_2D"
-DATA_SAVE_PATH = "../../data/processed_data/"
-ROOT_DIR = "../../data/dataInCOCO/"
+BASE_PATH = "./data/TimeLapse_2D"
+DATA_SAVE_PATH = "./data/processed_data/"
+ROOT_DIR = "./data/dataInCOCO/"
 IMAGE_DIR_NAME = "images"
 ANNOTATION_DIR_NAME = "annotations"
 TEST = "test"
@@ -78,6 +78,7 @@ def iterate_images(function):
                 function(data, str(id), split_type)
                 id += 1
                 split_type = TRAIN
+                
 
 
 def store_image(data: np.array, id: int, split_type: str = "train") -> None:
@@ -113,6 +114,7 @@ def store_image(data: np.array, id: int, split_type: str = "train") -> None:
                 mask,
                 cmap="gray",
             )
+        
 
 
 def filter_for_png(root, files):
@@ -187,7 +189,7 @@ def convert_data_to_coco(image_id, segmentation_id, path_dir):
                         category_info,
                         binary_mask,
                         image.size,
-                        tolerance=2,
+                        tolerance=0,
                     )
 
                     if annotation_info is not None:
@@ -196,6 +198,7 @@ def convert_data_to_coco(image_id, segmentation_id, path_dir):
                     segmentation_id = segmentation_id + 1
 
             image_id = image_id + 1
+            
 
     with open("{}/cell_acdc_coco_ds.json".format(path_dir), "w") as output_json_file:
         json.dump(coco_output, output_json_file)

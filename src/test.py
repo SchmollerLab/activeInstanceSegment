@@ -1,6 +1,7 @@
 import torch, detectron2
 import os
 from collections import OrderedDict
+import wandb
 
 import detectron2.utils.comm as comm
 from detectron2.data import build_detection_test_loader
@@ -21,4 +22,6 @@ def do_test(cfg, model, logger):
             print_csv_format(results_i)
     if len(results) == 1:
         results = list(results.values())[0]
+    logger.info(results)
+    wandb.log(results)
     return results

@@ -132,4 +132,11 @@ dmypy.json
 /data
 
 # saved models
-/src/output
+/output
+/src/api_keys.py
+
+# logging
+/log
+
+# weights and biases
+/wandb

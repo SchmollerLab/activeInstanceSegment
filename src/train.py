@@ -1,4 +1,6 @@
 import torch, detectron2
+import wandb
+import yaml
 
 import detectron2.utils.comm as comm
 from detectron2.utils.events import EventStorage
@@ -7,10 +9,17 @@ from detectron2.checkpoint import DetectionCheckpointer, PeriodicCheckpointer
 from detectron2.engine import default_writers
 from detectron2.data import build_detection_train_loader
 
-from test import do_test
+try:
+    from test import do_test
+except:
+    from src.test import do_test
 
 
 def do_train(cfg, model, logger, resume=False):
+    
+
+    wandb.config.update(yaml.load(cfg.dump()))
+    
     model.train()
     optimizer = build_optimizer(cfg, model)
     scheduler = build_lr_scheduler(cfg, optimizer)
@@ -73,6 +82,8 @@ def do_train(cfg, model, logger, resume=False):
             if iteration - start_iter > 5 and (
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1
             ):
+
+                wandb.watch(model)
                 for writer in writers:
                     writer.write()
             periodic_checkpointer.step(iteration)

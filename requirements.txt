@@ -3,3 +3,4 @@ pillow
 scikit-image
 matplotlib
 pycocotools
+wandb

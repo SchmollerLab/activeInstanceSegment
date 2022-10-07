@@ -24,34 +24,6 @@ def close_contour(contour):
         contour = np.vstack((contour, contour[0]))
     return contour
 
-
-#!/usr/bin/env python3
-
-import os
-import re
-import datetime
-import numpy as np
-from itertools import groupby
-from skimage import measure
-from PIL import Image
-from pycocotools import mask
-
-convert = lambda text: int(text) if text.isdigit() else text.lower()
-natrual_key = lambda key: [convert(c) for c in re.split("([0-9]+)", key)]
-
-
-def resize_binary_mask(array, new_size):
-    image = Image.fromarray(array.astype(np.uint8) * 255)
-    image = image.resize(new_size)
-    return np.asarray(image).astype(np.bool_)
-
-
-def close_contour(contour):
-    if not np.array_equal(contour[0], contour[-1]):
-        contour = np.vstack((contour, contour[0]))
-    return contour
-
-
 def binary_mask_to_rle(binary_mask):
     rle = {"counts": [], "size": list(binary_mask.shape)}
     counts = rle.get("counts")
