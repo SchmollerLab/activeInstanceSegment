@@ -130,7 +130,7 @@ def filter_for_annotations(root, files, image_filename):
     file_types = ["*.png"]
     file_types = r"|".join([fnmatch.translate(x) for x in file_types])
     basename_no_extension = os.path.splitext(os.path.basename(image_filename))[0]
-    file_name_prefix = basename_no_extension + ".*"
+    file_name_prefix = basename_no_extension + "_"
     files = [os.path.join(root, f) for f in files]
     files = [f for f in files if re.match(file_types, f)]
     files = [
@@ -167,10 +167,10 @@ def convert_data_to_coco(image_id, segmentation_id, path_dir):
             for root, _, files in os.walk(os.path.join(path_dir, ANNOTATION_DIR_NAME)):
                 annotation_files = filter_for_annotations(root, files, image_filename)
 
+                    
                 # go through each associated annotation
                 for annotation_filename in annotation_files:
 
-                    print(annotation_filename)
                     class_id = [
                         x["id"] for x in CATEGORIES if x["name"] in annotation_filename
                     ][0]
@@ -199,7 +199,6 @@ def convert_data_to_coco(image_id, segmentation_id, path_dir):
 
             image_id = image_id + 1
             
-
     with open("{}/cell_acdc_coco_ds.json".format(path_dir), "w") as output_json_file:
         json.dump(coco_output, output_json_file)
 
