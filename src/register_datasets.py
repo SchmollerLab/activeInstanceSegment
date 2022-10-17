@@ -18,7 +18,7 @@ def register_function_singe_point_dataset():
         train_dict = json.load(file)
         
     rd.seed(1337)
-    images_meta_data = rd.sample(train_dict["images"], 5) 
+    images_meta_data = rd.sample(train_dict["images"], 1) 
     image_id = images_meta_data[0]["id"]
     return get_subset_dataset([image_id], TRAIN_DATASET_FULL)
 

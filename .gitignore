@@ -140,3 +140,7 @@ dmypy.json
 
 # weights and biases
 /wandb
+
+# python logs
+nohup.out
+

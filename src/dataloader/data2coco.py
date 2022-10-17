@@ -77,11 +77,50 @@ def iterate_images(function):
                 data = load_video(name, pos_name, base_filename)
                 function(data, str(id), split_type)
                 id += 1
+
                 split_type = TRAIN
                 
 
+def store_image(full_id, image, mask_full, split_type):
+    # save image as png
+    plt.imsave(
+        os.path.join(ROOT_DIR, split_type, "images", full_id + ".png"),
+        image,
+        cmap="gray",
+    )
 
-def store_image(data: np.array, id: int, split_type: str = "train") -> None:
+    # save masks independently
+    labels = np.unique(mask_full)
+    for label in labels[1:]:
+        mask: np.uint8 = (mask_full == label).astype(np.uint8)
+        plt.imsave(
+            os.path.join(
+                ROOT_DIR,
+                split_type,
+                "annotations",
+                full_id + "_cell_" + str(label) + ".png",
+            ),
+            mask,
+            cmap="gray",
+        )
+
+def flip_image(image, flip_type):
+    
+    for dim in [0,1]:
+        if flip_type[dim]:
+            image = np.flip(image,dim)
+    
+    return image
+  
+def get_flip_str(flip_type):
+    
+    flip_str = "H" + str(flip_type[0])[0] + "V" + str(flip_type[1])[0]
+    return flip_str
+    
+            
+            
+        
+def store_images(data: np.array, id: int, split_type: str = "train") -> None:
 
     images: np.array = data[0]
     masks: np.array = data[1]
@@ -89,31 +128,24 @@ def store_image(data: np.array, id: int, split_type: str = "train") -> None:
     num_images: int = images.shape[0]
 
     for i in range(num_images):
-        full_id = id + "_" + str(i)
+        
+        # flip_combs: [[horizontal,vertical]]
+        if split_type == TRAIN:
+            flip_combs = [[False,False],[True,False],[False,True],[True,True]] # start with only horizontal flip
+        else:
+            # no flip in test data
+            flip_combs = [[False,False]]
+        
+        for flip_comb in flip_combs:
 
-        # save image as png
-        plt.imsave(
-            os.path.join(ROOT_DIR, split_type, "images", full_id + ".png"),
-            images[i],
-            cmap="gray",
-        )
-
-        # save masks independently
-        mask_full = masks[i]
-
-        labels = np.unique(mask_full)
-        for label in labels[1:]:
-            mask: np.uint8 = (mask_full == label).astype(np.uint8)
-            plt.imsave(
-                os.path.join(
-                    ROOT_DIR,
-                    split_type,
-                    "annotations",
-                    full_id + "_cell_" + str(label) + ".png",
-                ),
-                mask,
-                cmap="gray",
-            )
+            full_id = id + "_" + str(i) + get_flip_str(flip_comb)
+            
+            image_flipped = flip_image(images[i], flip_comb) 
+            mask_full = flip_image(masks[i], flip_comb) 
+            # save masks independently
+                        
+            store_image(full_id,image_flipped, mask_full, split_type)
+ 
         
 
 
@@ -206,7 +238,7 @@ def convert_data_to_coco(image_id, segmentation_id, path_dir):
 def main():
     print("running main ...")
     # prepare images
-    iterate_images(store_image)
+    iterate_images(store_images)
 
     image_id = 1
     segmentation_id = 1
