@@ -3,9 +3,12 @@ import matplotlib.pyplot as plt
 from skimage import exposure, io
 
 
-def show_image(ims):
+def show_image(ims, normalize=True):
     if not isinstance(ims, list):
-        im_cont = exposure.equalize_adapthist(ims)
+        if normalize:
+            im_cont = exposure.equalize_adapthist(ims)
+        else:
+            im_cont = ims
         plt.imshow(im_cont)
     
     else:
@@ -16,7 +19,10 @@ def show_image(ims):
         rows = int(math.ceil(num_figures/cols))
 
         for i in range(num_figures):
-            im_cont = exposure.equalize_adapthist(ims[i])
+            if normalize:
+                im_cont = exposure.equalize_adapthist(ims[i])
+            else:
+                im_cont = ims[i]
             fig.add_subplot(rows, cols, i+1)
             plt.imshow(im_cont)
     

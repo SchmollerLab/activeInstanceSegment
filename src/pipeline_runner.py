@@ -10,7 +10,7 @@ import torch, detectron2
 from detectron2.utils.logger import setup_logger
 
 logger = setup_logger(output="./log/main.log")
-
+logger.setLevel(0)
 # import some common libraries
 import numpy as np
 import os, json, cv2, random
@@ -43,7 +43,7 @@ def get_config(filename):
 def run_pipeline(cfg=None):
     
     model = build_model(cfg)
-    logger.info("Model:\n{}".format(model))
+    #logger.info("Model:\n{}".format(model))
     
     # initialize weights and biases
     wandb.init(project="activeCell-ACDC", sync_tensorboard=True)
@@ -53,12 +53,14 @@ def run_pipeline(cfg=None):
     # run training
     do_train(cfg, model, logger)
     #run testing
-    do_test(cfg, model, logger)
+    result = do_test(cfg, model, logger)
 
     model = None
     cfg = None
 
     wandb.run.finish()
+    
+    return result
         
         
 if __name__ == "__main__":
@@ -73,6 +75,8 @@ if __name__ == "__main__":
     
     register_datasets()
     cfg = get_config(filename)
+    
+    cfg.OUTPUT_DIR = "./output/" + filename.replace(".yaml","")
     
     run_pipeline(cfg)
     
