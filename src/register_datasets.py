@@ -29,7 +29,7 @@ def register_function_validation_slim():
         train_dict = json.load(file)
         
     rd.seed(1337)
-    images_meta_data = rd.sample(train_dict["images"], 10) 
+    images_meta_data = rd.sample(train_dict["images"], 60) 
     image_ids = [image["id"] for image in images_meta_data]
     return get_subset_dataset(image_ids, TEST_DATASET_FULL)
 

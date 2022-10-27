@@ -76,7 +76,7 @@ if __name__ == "__main__":
     register_datasets()
     cfg = get_config(filename)
     
-    cfg.OUTPUT_DIR = "./output/" + filename.replace(".yaml","")
+    cfg.OUTPUT_DIR = "./output/" + filename.replace(".yaml","").replace("src/pipeline_configs/","")
     
     run_pipeline(cfg)
     

@@ -75,7 +75,7 @@ def do_train(cfg, model, logger, resume=False):
                 and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
                 and iteration != max_iter - 1
             ):
-                do_test(cfg, model)
+                do_test(cfg, model, logger)
                 # Compared to "train_net.py", the test results are not dumped to EventStorage
                 comm.synchronize()
 

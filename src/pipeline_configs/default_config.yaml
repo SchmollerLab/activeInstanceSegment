@@ -269,7 +269,7 @@ MODEL:
     NORM: GN
     NUM_CLASSES: 54
   WEIGHTS: https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/137849600/model_final_f10217.pkl
-OUTPUT_DIR: ./output
+OUTPUT_DIR: ./output/src/pipeline_configs/more_steps_config
 SEED: -1
 SOLVER:
   AMP:

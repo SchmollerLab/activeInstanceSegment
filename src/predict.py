@@ -3,7 +3,7 @@ import numpy as np
 from detectron2.engine import DefaultPredictor
 
 
-def predict_image_in_acdc(cfg)
+def predict_image_in_acdc(cfg,im):
 
     predictor = DefaultPredictor(cfg)
     outputs = predictor(im)
