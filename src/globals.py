@@ -18,3 +18,7 @@ VALIDATION_DATASET_SLIM = "cell_acdc_validation_slim"
 
 ### class label
 CELL = 'cell'
+
+
+### AL Methods
+RANDOM = "random"
