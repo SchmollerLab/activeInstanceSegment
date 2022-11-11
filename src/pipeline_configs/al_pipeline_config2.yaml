@@ -21,6 +21,7 @@ DATASETS:
   - cell_acdc_validation_slim
   TRAIN:
   - cell_acdc_train
+EARLY_STOPPING_ROUNDS: 2
 GLOBAL:
   HACK: 1.0
 INPUT:
@@ -95,7 +96,7 @@ MODEL:
   - 1.0
   - 1.0
   PROPOSAL_GENERATOR:
-    MIN_SIZE: 01000
+    MIN_SIZE: 0
     NAME: RPN
   RESNETS:
     DEFORM_MODULATED: false
@@ -136,7 +137,7 @@ MODEL:
     IOU_LABELS:
     - 0
     - -1
-    - 11000
+    - 1
     IOU_THRESHOLDS:
     - 0.4
     - 0.5
@@ -276,8 +277,8 @@ MODEL:
     NORM: GN
     NUM_CLASSES: 54
   WEIGHTS: https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/137849600/model_final_f10217.pkl
-NAME: al_pipeline_config
-OUTPUT_DIR: ./output/src/pipeline_configs/al_pipeline_config
+NAME: al_pipeline_config2
+OUTPUT_DIR: ./output/al_pipeline_config2
 SEED: -1
 SOLVER:
   AMP:
@@ -302,7 +303,7 @@ SOLVER:
   RESCALE_INTERVAL: false
   STEPS: []
   WARMUP_FACTOR: 0.001
-  WARMUP_ITERS: 1000
+  WARMUP_ITERS: 1
   WARMUP_METHOD: linear
   WEIGHT_DECAY: 0.0001
   WEIGHT_DECAY_BIAS: null
@@ -323,7 +324,7 @@ TEST:
     - 1100
     - 1200
   DETECTIONS_PER_IMAGE: 100
-  EVAL_PERIOD: 0
+  EVAL_PERIOD: 100
   EXPECTED_RESULTS: []
   KEYPOINT_OKS_SIGMAS: []
   PRECISE_BN:
@@ -331,4 +332,4 @@ TEST:
     NUM_ITER: 200
 VERSION: 2
 VIS_PERIOD: 0
-WARMUP_ITERS: 0
+WARMUP_ITERS: 1

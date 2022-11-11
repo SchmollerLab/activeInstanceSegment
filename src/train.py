@@ -27,6 +27,11 @@ def do_train(cfg, model, logger, resume=False):
     checkpointer = DetectionCheckpointer(
         model, cfg.OUTPUT_DIR, optimizer=optimizer, scheduler=scheduler
     )
+    
+    # define counter for early stopping
+    early_counter = 0
+    min_ap = 100
+    
     start_iter = (
         checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get(
             "iteration", -1
@@ -75,9 +80,23 @@ def do_train(cfg, model, logger, resume=False):
                 and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
                 and iteration != max_iter - 1
             ):
-                do_test(cfg, model, logger)
+                res = do_test(cfg, model, logger)
                 # Compared to "train_net.py", the test results are not dumped to EventStorage
                 comm.synchronize()
+                
+                wandb.log(
+                        {
+                            "early_stopping_ap": (res['segm']['AP'] + res['bbox']['AP'])/2 
+                        })
+                if (res['segm']['AP'] + res['bbox']['AP'])/2 > min_ap:
+                    early_counter += 1
+                    
+                    if early_counter > cfg.EARLY_STOPPING_ROUNDS:
+                        break
+                else:
+                    min_ap = min(min_ap,(res['segm']['AP'] + res['bbox']['AP'])/2)
+                    early_counter = 0
+                
 
             if iteration - start_iter > 5 and (
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1

@@ -5,6 +5,8 @@ except:
 
 import json
 import random as rd
+import os
+
 from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.data.datasets import register_coco_instances
 
@@ -26,10 +28,10 @@ def register_function_singe_point_dataset():
 def register_function_validation_slim():
     
     with open(PATH_TEST_FULL_JSON) as file:
-        train_dict = json.load(file)
+        test_dict = json.load(file)
         
     rd.seed(1337)
-    images_meta_data = rd.sample(train_dict["images"], 60) 
+    images_meta_data = rd.sample(test_dict["images"], 100) 
     image_ids = [image["id"] for image in images_meta_data]
     return get_subset_dataset(image_ids, TEST_DATASET_FULL)
 
@@ -73,12 +75,20 @@ def register_datasets():
         MetadataCatalog.get(VALIDATION_DATASET_SLIM).set(thing_classes = [CELL])
 
     
-def register_by_ids(dataset_name,image_ids):
+def register_by_ids(cfg,dataset_name,image_ids):
     
-    dataset_name = dataset_name + "_len_" + str(len(image_ids))
-    if dataset_name in MetadataCatalog:
-        #raise Exception("Dataset name: '" + dataset_name + "is already taken")
-        return dataset_name
+    try:
+        os.remove(cfg.OUTPUT_DIR + "/" + dataset_name + "_coco_format.json")
+    except Exception as e:
+        print(e)
+        
+    if dataset_name in DatasetCatalog:
+        DatasetCatalog.remove(dataset_name)
+        MetadataCatalog.remove(dataset_name)
+        
+    
+    #if dataset_name in MetadataCatalog:
+    #    raise Exception("Dataset name: '" + dataset_name + "is already taken")
 
     DatasetCatalog.register(dataset_name, build_register_function(image_ids))
     MetadataCatalog.get(dataset_name).set(thing_classes = [CELL])
