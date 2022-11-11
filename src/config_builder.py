@@ -13,8 +13,8 @@ def build_config(config_name):
     cfg.AL.DATASETS = CN()
     cfg.AL.DATASETS.TRAIN_UNLABELED = TRAIN_DATASET_FULL
     cfg.AL.MAX_LOOPS = 20
-    cfg.AL.INIT_SIZE = 20
-    cfg.AL.INCREMENT_SIZE = 20
+    cfg.AL.INIT_SIZE = 300
+    cfg.AL.INCREMENT_SIZE = 50
     cfg.AL.QUERY_STRATEGY = RANDOM
     
     cfg.DATASETS.TRAIN = (TRAIN_DATASET_FULL,)    
@@ -30,7 +30,7 @@ def build_config(config_name):
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128   # The "RoIHead batch size". 128 is faster, and good enough for this toy dataset (default: 512)
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
     cfg.OUTPUT_DIR = "./output/" + cfg.NAME
-    cfg.TEST.EVAL_PERIOD = 100
+    cfg.TEST.EVAL_PERIOD = 250
     
     with open(PATH_PIPELINE_CONFIGS + "/" + cfg.NAME + ".yaml","w") as file:
         file.write(cfg.dump())
