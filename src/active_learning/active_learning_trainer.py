@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 
 import wandb
 import math
@@ -7,22 +9,25 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2 import model_zoo
 from detectron2.modeling import build_model
 
-from ..globals import *
-from ..test import do_test
-from ..train import do_train
-from active_learning_dataset import ActiveLearingDataset
-from query_strategies import *
+from globals import *
+from test import do_test
+from train import do_train
+from active_learning.active_learning_dataset import ActiveLearingDataset
+from active_learning.query_strategies import *
 
 
 
 
 class ActiveLearningTrainer:
     
-    def __init__(self, cfg):
+    def __init__(self, cfg, is_test_mode=False):
         self.cfg = cfg
-        
+
         # initialize weights and biases
-        wandb.init(project="activeCell-ACDC", sync_tensorboard=True)
+        if is_test_mode:
+            wandb.init(project="activeCell-ACDC", sync_tensorboard=True, mode="disabled")
+        else:
+            wandb.init(project="activeCell-ACDC", sync_tensorboard=True)
         
         self.logger = setup_logger(output="./log/main.log")
         self.logger.setLevel(10)
@@ -43,7 +48,7 @@ class ActiveLearningTrainer:
         self.cfg.SOLVER.STEPS = [math.ceil(self.cfg.SOLVER.MAX_ITER/3),math.ceil(2*self.cfg.SOLVER.MAX_ITER/3)]
         
         if not resume:
-            cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
+            self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
             
         do_train(self.cfg, self.model, self.logger,resume=resume)
         result = do_test(self.cfg, self.model, self.logger)

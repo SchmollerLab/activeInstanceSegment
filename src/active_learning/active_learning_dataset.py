@@ -1,9 +1,12 @@
+import sys
+sys.path.append("..")
+
 import random as rd
 
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
-from ..globals import *
-from ..register_datasets import register_datasets, register_by_ids
+from globals import *
+from register_datasets import register_datasets, register_by_ids
 
 class ActiveLearingDataset:
     

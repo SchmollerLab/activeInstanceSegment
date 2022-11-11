@@ -95,6 +95,7 @@ def do_train(cfg, model, logger, resume=False):
                         break
                 else:
                     min_ap = min(min_ap,(res['segm']['AP'] + res['bbox']['AP'])/2)
+                    torch.save(model,cfg.OUTPUT_DIR + "/torch_model.pt")
                     early_counter = 0
                 
 
@@ -106,3 +107,6 @@ def do_train(cfg, model, logger, resume=False):
                 for writer in writers:
                     writer.write()
             periodic_checkpointer.step(iteration)
+
+    model = torch.load(cfg.OUTPUT_DIR + "/torch_model.pt")
+    return model

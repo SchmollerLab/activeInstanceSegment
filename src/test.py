@@ -1,5 +1,4 @@
 import torch, detectron2
-import os
 from collections import OrderedDict
 import wandb
 

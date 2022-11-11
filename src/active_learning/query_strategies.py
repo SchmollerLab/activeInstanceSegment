@@ -1,4 +1,6 @@
 
+import sys
+sys.path.append("..")
 
 import random as rd
 import numpy as np
@@ -7,8 +9,8 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
-from ..globals import *
-from ..register_datasets import register_by_ids
+from globals import *
+from register_datasets import register_by_ids
 
 
 
