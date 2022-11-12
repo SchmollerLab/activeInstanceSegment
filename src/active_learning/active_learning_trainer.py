@@ -44,8 +44,8 @@ class ActiveLearningTrainer:
         
         len_ds_train = len(DatasetCatalog.get(self.cfg.DATASETS.TRAIN[0]))
         print("lenght of train data set: {}".format(len_ds_train))
-        self.cfg.SOLVER.MAX_ITER = min(400 + len_ds_train*5, 1000)
-        self.cfg.SOLVER.STEPS = [math.ceil(self.cfg.SOLVER.MAX_ITER/3),math.ceil(2*self.cfg.SOLVER.MAX_ITER/3)]
+        self.cfg.SOLVER.MAX_ITER = 4000
+        self.cfg.SOLVER.STEPS = [400,1000]
         
         if not resume:
             self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
