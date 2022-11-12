@@ -30,7 +30,7 @@ def do_train(cfg, model, logger, resume=False):
     
     # define counter for early stopping
     early_counter = 0
-    min_ap = 100
+    max_ap = 0
     
     start_iter = (
         checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get(
@@ -88,13 +88,15 @@ def do_train(cfg, model, logger, resume=False):
                         {
                             "early_stopping_ap": (res['segm']['AP'] + res['bbox']['AP'])/2 
                         })
-                if (res['segm']['AP'] + res['bbox']['AP'])/2 > min_ap:
+                if (res['segm']['AP'] + res['bbox']['AP'])/2 < max_ap:
                     early_counter += 1
-                    
+                    print("new ap:", (res['segm']['AP'] + res['bbox']['AP'])/2, "max_ap", max_ap, "add counter") 
                     if early_counter > cfg.EARLY_STOPPING_ROUNDS:
+                        print("stopping training")
                         break
                 else:
-                    min_ap = min(min_ap,(res['segm']['AP'] + res['bbox']['AP'])/2)
+                    print("new ap:", (res['segm']['AP'] + res['bbox']['AP'])/2, "max_ap", max_ap, "adjust max") 
+                    max_ap = max(max_ap,(res['segm']['AP'] + res['bbox']['AP'])/2)
                     torch.save(model,cfg.OUTPUT_DIR + "/torch_model.pt")
                     early_counter = 0
                 

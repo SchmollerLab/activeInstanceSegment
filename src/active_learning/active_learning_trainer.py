@@ -58,7 +58,7 @@ class ActiveLearningTrainer:
                 "active_step_segm_ap": result['segm']['AP']
             })
         
-
+        print("test active learning", (result['segm']['AP'] + result['bbox']['AP'])/2)
         sample_ids = self.query_strategy.sample(self.model, self.al_dataset.unlabeled_ids)
         self.al_dataset.update_labeled_data(sample_ids)
         
