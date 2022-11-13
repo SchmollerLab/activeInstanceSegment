@@ -34,7 +34,7 @@ class ActiveLearningTrainer:
         
         self.al_dataset = ActiveLearingDataset(cfg)   
         self.model = build_model(cfg)
-        self.query_strategy = GTknownSampler(cfg)
+        self.query_strategy = RandomSampler(cfg)
         
         
     def __del__(self):
