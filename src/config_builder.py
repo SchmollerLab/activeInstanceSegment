@@ -12,9 +12,9 @@ def build_config(config_name):
     cfg.AL = CN()
     cfg.AL.DATASETS = CN()
     cfg.AL.DATASETS.TRAIN_UNLABELED = TRAIN_DATASET_FULL
-    cfg.AL.MAX_LOOPS = 20
-    cfg.AL.INIT_SIZE = 300
-    cfg.AL.INCREMENT_SIZE = 50
+    cfg.AL.MAX_LOOPS = 7
+    cfg.AL.INIT_SIZE = 1
+    cfg.AL.INCREMENT_SIZE = 2
     cfg.AL.QUERY_STRATEGY = RANDOM
     
     cfg.DATASETS.TRAIN = (TRAIN_DATASET_FULL,)    
@@ -26,11 +26,11 @@ def build_config(config_name):
     cfg.SOLVER.MAX_ITER = 300    # 300 iterations seems good enough for this toy dataset; you will need to train longer for a practical dataset
     cfg.SOLVER.STEPS = []        # do not decay learning rate
     cfg.SOLVER.WARMUP_ITERS = 1
-    cfg.EARLY_STOPPING_ROUNDS = 2
+    cfg.EARLY_STOPPING_ROUNDS = 4
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128   # The "RoIHead batch size". 128 is faster, and good enough for this toy dataset (default: 512)
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
     cfg.OUTPUT_DIR = "./output/" + cfg.NAME
-    cfg.TEST.EVAL_PERIOD = 250
+    cfg.TEST.EVAL_PERIOD = 20
     
     with open(PATH_PIPELINE_CONFIGS + "/" + cfg.NAME + ".yaml","w") as file:
         file.write(cfg.dump())
@@ -54,5 +54,5 @@ def get_config(config_name):
 
 if __name__ == "__main__":
 
-    build_config("al_pipeline_config")
+    build_config("al_pipeline_config_1_2")
     
