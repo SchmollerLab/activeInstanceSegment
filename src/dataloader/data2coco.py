@@ -286,11 +286,9 @@ class SmallACDC2cocoConverter(Data2cocoConverter):
 
         images: np.array = data[0]
         masks: np.array = data[1]
-
         num_images: int = images.shape[0]
-
         for i in range(num_images):
-            self.augment_store_image(str(id),images[i],masks[i], split_type)
+            self.augment_store_image(str(id) + "_" + str(i),images[i],masks[i], split_type)
 
     def load_video(self, experiment_name, position, filename):
         path = self.raw_images_path + "/" + experiment_name + "/" + position + "/Images/"
