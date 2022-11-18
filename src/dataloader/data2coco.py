@@ -307,7 +307,7 @@ class SmallACDC2cocoConverter(Data2cocoConverter):
  
 if __name__ == "__main__":
 
-    #cpc = Cellpose2cocoConverter(ROOT_PATH)
-    #cpc.convert()
-    small_acdc_conv = SmallACDC2cocoConverter(ROOT_PATH)
-    small_acdc_conv.convert()
+    cpc = Cellpose2cocoConverter(ROOT_PATH)
+    cpc.convert()
+    #small_acdc_conv = SmallACDC2cocoConverter(ROOT_PATH)
+    #small_acdc_conv.convert()

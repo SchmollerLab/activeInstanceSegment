@@ -13,24 +13,24 @@ def build_config(config_name):
     cfg.AL.DATASETS = CN()
     cfg.AL.DATASETS.TRAIN_UNLABELED = TRAIN_DATASET_FULL
     cfg.AL.MAX_LOOPS = 7
-    cfg.AL.INIT_SIZE = 1
-    cfg.AL.INCREMENT_SIZE = 2
+    cfg.AL.INIT_SIZE = 50
+    cfg.AL.INCREMENT_SIZE = 50
     cfg.AL.QUERY_STRATEGY = RANDOM
     
     cfg.DATASETS.TRAIN = (TRAIN_DATASET_FULL,)    
     cfg.DATASETS.TEST = (VALIDATION_DATASET_SLIM,)
-    cfg.DATALOADER.NUM_WORKERS = 2
+    cfg.DATALOADER.NUM_WORKERS = 6
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
-    cfg.SOLVER.IMS_PER_BATCH = 2  # This is the real "batch size" commonly known to deep learning people
+    cfg.SOLVER.IMS_PER_BATCH = 32  # This is the real "batch size" commonly known to deep learning people
     cfg.SOLVER.BASE_LR = 0.0003  # pick a good LR
     cfg.SOLVER.MAX_ITER = 300    # 300 iterations seems good enough for this toy dataset; you will need to train longer for a practical dataset
     cfg.SOLVER.STEPS = []        # do not decay learning rate
     cfg.SOLVER.WARMUP_ITERS = 1
-    cfg.EARLY_STOPPING_ROUNDS = 4
-    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128   # The "RoIHead batch size". 128 is faster, and good enough for this toy dataset (default: 512)
+    cfg.EARLY_STOPPING_ROUNDS = 5
+    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # The "RoIHead batch size". 128 is faster, and good enough for this toy dataset (default: 512)
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
     cfg.OUTPUT_DIR = "./output/" + cfg.NAME
-    cfg.TEST.EVAL_PERIOD = 20
+    cfg.TEST.EVAL_PERIOD = 100
     
     with open(PATH_PIPELINE_CONFIGS + "/" + cfg.NAME + ".yaml","w") as file:
         file.write(cfg.dump())
@@ -46,7 +46,7 @@ def get_config(config_name):
     cfg.AL.INIT_SIZE = 0
     cfg.AL.INCREMENT_SIZE = 0
     cfg.AL.QUERY_STRATEGY = ""
-    cfg.EARLY_STOPPING_ROUNDS = 2
+    cfg.EARLY_STOPPING_ROUNDS = 0
     
     file_path = PATH_PIPELINE_CONFIGS + "/" + config_name + ".yaml"
     cfg.merge_from_file(file_path)
@@ -54,5 +54,5 @@ def get_config(config_name):
 
 if __name__ == "__main__":
 
-    build_config("al_pipeline_config_1_2")
+    build_config("cellpose_al_config_50_50")
     
