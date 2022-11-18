@@ -105,7 +105,6 @@ def do_train(cfg, model, logger, resume=False):
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1
             ):
 
-                wandb.watch(model)
                 for writer in writers:
                     writer.write()
             periodic_checkpointer.step(iteration)

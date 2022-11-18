@@ -345,8 +345,8 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                         #self.store_images(data, str(id), split_type)
                         if segm_filename != "" and base_filename != "":
                             data = self.load_video(name, name_inner, pos_name, base_filename, segm_filename)
-                            if self.store_images(data, str(id), split_type):
-                                split_type = TRAIN
+                            self.store_images(data, str(id), split_type)
+                            split_type = TRAIN
                         else:
                             print("no segmentation or base_filename found in :",name, name_inner, pos_name, base_filename)
                         id += 1
@@ -356,15 +356,12 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
 
         images: np.array = data[0]
         masks: np.array = data[1]
-        
-        if images.shape[0] != masks.shape[0]:
-            print("number of images doesn't match number of masks")
-            return False
 
-        num_images: int = images.shape[0]
+        num_images: int = min(images.shape[0], masks.shape[0])
+
         for i in range(num_images):
-            self.augment_store_image(str(id) + "_" + str(i),images[i],masks[i], split_type)
-        return True
+            if (masks[i] > 0).sum():
+                self.augment_store_image(str(id) + "_" + str(i),images[i],masks[i], split_type)
 
     def load_video(self, folder_name, experiment_name, position, filename, segm_filename):
         path = self.raw_images_path + "/" + folder_name + "/" + experiment_name + "/" + position + "/Images/"
