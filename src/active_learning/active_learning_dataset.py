@@ -72,13 +72,12 @@ class ActiveLearingDataset:
         
     def get_labeled_dataset(self):
         self.remove_data_from_catalog(self.labeled_data_name)
-        register_by_ids(self.cfg, self.labeled_data_name, self.labeled_ids_aug)
+        register_by_ids(self.labeled_data_name, self.labeled_ids_aug, self.cfg.OUTPUT_DIR, self.cfg.AL.DATASETS.TRAIN_UNLABELED)
         self.cfg.DATASETS.TRAIN = (self.labeled_data_name,)
     
     def get_unlabled_dataset(self):
         self.remove_data_from_catalog(self.unlabeled_data_name)
-        register_by_ids(self.cfg, self.unlabeled_data_name,self.unlabeled_ids)
-        self.cfg.AL.DATASETS.TRAIN_UNLABELED = self.unlabeled_data_name
+        register_by_ids(self.unlabeled_data_name, self.unlabeled_ids, self.cfg.OUTPUT_DIR, self.cfg.AL.DATASETS.TRAIN_UNLABELED)
 
     def update_labled_ids_aug(self):
         for id in self.labeled_ids:

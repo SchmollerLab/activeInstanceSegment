@@ -15,6 +15,8 @@ import fnmatch
 import pycococreatortools
  
 from typing import Callable
+
+import imageio
  
 ROOT_PATH = "./data/"
 IMAGE_DIR_NAME = "images"
@@ -103,13 +105,14 @@ class Data2cocoConverter:
                
  
     def store_image(self, id, image, mask, split_type):
-    
+
+        imageio.imwrite(os.path.join(self.save_images_path, split_type, "images", id + ".png"),image.astype(np.uint8))
         # save image as png
-        plt.imsave(
+        """plt.imsave(
             os.path.join(self.save_images_path, split_type, "images", id + ".png"),
             image,
             cmap="gray",
-        )
+        )"""
     
         # save masks independently
         labels = np.unique(mask)
@@ -286,6 +289,7 @@ class SmallACDC2cocoConverter(Data2cocoConverter):
 
         images: np.array = data[0]
         masks: np.array = data[1]
+        
         num_images: int = images.shape[0]
         for i in range(num_images):
             self.augment_store_image(str(id) + "_" + str(i),images[i],masks[i], split_type)
@@ -301,13 +305,91 @@ class SmallACDC2cocoConverter(Data2cocoConverter):
         print("loaded lables with shape:\t", lables.shape)
 
         data = np.array([vid, lables])
-        print(data.shape)
 
         return data
  
+class LargeACDC2cocoConverter(Data2cocoConverter):
+
+
+    def __init__(self, root_dir) -> None:
+
+        dataset_name = "acdc_large"
+        super().__init__(root_dir, dataset_name)
+    
+    def iterate_images(self):
+
+        id: int = 0
+        directory = os.fsencode(self.raw_images_path)
+        for obj in os.listdir(directory):
+            name = os.fsdecode(obj)
+            if name.find(".zip") == -1:
+                split_type: str = TEST
+                directory_inner = os.fsencode(os.path.join(self.raw_images_path,name))
+                for obj_inner in os.listdir(directory_inner):
+                    name_inner = os.fsdecode(obj_inner)
+                    for pos in os.listdir(os.fsencode(self.raw_images_path + "/" + name + "/" + name_inner)):
+                        pos_name = os.fsdecode(pos)
+                        segm_filename = ""
+                        base_filename = ""
+                        for file in os.listdir(
+                            os.fsencode(self.raw_images_path + "/" + name  + "/" + name_inner+ "/" + pos_name + "/Images")
+                        ):
+                            filename = os.fsdecode(file)
+                            if filename.find("_phase_contr.tif") != -1 or filename.find("Ph3.tif") != -1:
+                                base_filename = filename
+                            elif filename.find("segm.npz") != -1:
+                                segm_filename = filename
+
+
+                        #data = self.load_video(name, name_inner, pos_name, base_filename)
+                        #self.store_images(data, str(id), split_type)
+                        if segm_filename != "" and base_filename != "":
+                            data = self.load_video(name, name_inner, pos_name, base_filename, segm_filename)
+                            if self.store_images(data, str(id), split_type):
+                                split_type = TRAIN
+                        else:
+                            print("no segmentation or base_filename found in :",name, name_inner, pos_name, base_filename)
+                        id += 1
+
+
+    def store_images(self, data: np.array, id: int, split_type: str = "train") -> None:
+
+        images: np.array = data[0]
+        masks: np.array = data[1]
+        
+        if images.shape[0] != masks.shape[0]:
+            print("number of images doesn't match number of masks")
+            return False
+
+        num_images: int = images.shape[0]
+        for i in range(num_images):
+            self.augment_store_image(str(id) + "_" + str(i),images[i],masks[i], split_type)
+        return True
+
+    def load_video(self, folder_name, experiment_name, position, filename, segm_filename):
+        path = self.raw_images_path + "/" + folder_name + "/" + experiment_name + "/" + position + "/Images/"
+        print("loading:", path)
+
+        try:
+            vid = np.load(path + filename.replace("phase_contr.tif","phase_contr_aligned.npz"))["arr_0"]
+        except:
+            print("aligned.npz not found")
+            vid = io.imread(path + filename)
+
+        lables = np.load(path + segm_filename)["arr_0"]
+        
+
+        print("loaded video with shape:\t", vid.shape)
+        print("loaded lables with shape:\t", lables.shape)
+
+        data = np.array([vid, lables], dtype="object")
+
+        return data
 if __name__ == "__main__":
 
-    cpc = Cellpose2cocoConverter(ROOT_PATH)
-    cpc.convert()
+    #cpc = Cellpose2cocoConverter(ROOT_PATH)
+    #cpc.convert()
     #small_acdc_conv = SmallACDC2cocoConverter(ROOT_PATH)
     #small_acdc_conv.convert()
+    large_acdc_conv = LargeACDC2cocoConverter(ROOT_PATH)
+    large_acdc_conv.convert()

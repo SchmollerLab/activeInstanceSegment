@@ -312,7 +312,7 @@ TEST:
   AUG:
     ENABLED: false
     FLIP: true
-    MAX_SIZE: 4000
+    MAX_SIZE: 40000
     MIN_SIZES:
     - 400
     - 500

@@ -11,14 +11,14 @@ def build_config(config_name):
     cfg.NAME = config_name
     cfg.AL = CN()
     cfg.AL.DATASETS = CN()
-    cfg.AL.DATASETS.TRAIN_UNLABELED = TRAIN_DATASET_FULL
+    cfg.AL.DATASETS.TRAIN_UNLABELED = ""
     cfg.AL.MAX_LOOPS = 7
     cfg.AL.INIT_SIZE = 50
     cfg.AL.INCREMENT_SIZE = 50
     cfg.AL.QUERY_STRATEGY = RANDOM
     
-    cfg.DATASETS.TRAIN = (TRAIN_DATASET_FULL,)    
-    cfg.DATASETS.TEST = (VALIDATION_DATASET_SLIM,)
+    cfg.DATASETS.TRAIN = ("",)    
+    cfg.DATASETS.TEST = ("",)
     cfg.DATALOADER.NUM_WORKERS = 6
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
     cfg.SOLVER.IMS_PER_BATCH = 32  # This is the real "batch size" commonly known to deep learning people

@@ -38,7 +38,7 @@ class GTknownSampler(QueryStrategy):
         
         id_pool = rd.sample(ids, min(600,len(ids)))
         
-        register_by_ids(self.cfg,"GTknownSampler_DS",id_pool)
+        register_by_ids("GTknownSampler_DS",id_pool, self.cfg.OUTPUT_DIR, self.cfg.AL.DATASETS.TRAIN_UNLABELED)
 
         
         evaluator = COCOEvaluator("GTknownSampler_DS", output_dir=self.cfg.OUTPUT_DIR)

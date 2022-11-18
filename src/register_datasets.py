@@ -14,74 +14,48 @@ from detectron2.data.datasets import register_coco_instances
 def get_subset_dataset(sample_ids, dataset_name):
     return list(filter(lambda image: image["image_id"] in sample_ids, DatasetCatalog.get(dataset_name)))
 
-def register_function_singe_point_dataset():
-    
-    with open(PATH_TRAIN_FULL_JSON) as file:
-        train_dict = json.load(file)
-        
-    rd.seed(1337)
-    images_meta_data = rd.sample(train_dict["images"], 1) 
-    image_id = images_meta_data[0]["id"]
-    return get_subset_dataset([image_id], TRAIN_DATASET_FULL)
-
-
-def register_function_validation_slim():
-    
-    with open(PATH_TEST_FULL_JSON) as file:
-        test_dict = json.load(file)
-        
-    rd.seed(1337)
-    images_meta_data = rd.sample(test_dict["images"], 100) 
-    image_ids = [image["id"] for image in images_meta_data]
-    return get_subset_dataset(image_ids, TEST_DATASET_FULL)
-
-
-def build_register_function(image_ids):
+def build_register_function(image_ids, dataset_full):
     
     def register_function():
-        return get_subset_dataset(image_ids, TRAIN_DATASET_FULL)
+        return get_subset_dataset(image_ids, dataset_full)
     return register_function
+
+def get_dataset_name(dataset,type):
+    if type == TRAIN:
+        return dataset + "_" + TRAIN
+    else:
+        return dataset + "_" + TEST
 
 
 def register_datasets():
-    
-    #train full
-    if not TRAIN_DATASET_FULL in MetadataCatalog:
-        register_coco_instances(
-            TRAIN_DATASET_FULL,
-            {},
-            PATH_TRAIN_FULL_JSON,
-            PATH_TRAIN_FULL_IMAGES,
-        )
-    
-    # test full
-    if not TEST_DATASET_FULL in MetadataCatalog:
-        register_coco_instances(
-            TEST_DATASET_FULL,
-            {},
-            PATH_TEST_FULL_JSON,
-            PATH_TEST_FULL_IMAGES,
-        )
-        
-    # single point dataset
-    if not SINGLE_POINT_DATASET in MetadataCatalog:
-        DatasetCatalog.register(SINGLE_POINT_DATASET, register_function_singe_point_dataset)
-        MetadataCatalog.get(SINGLE_POINT_DATASET).set(thing_classes = [CELL])
 
-        
-    # slim validation dataset
-    if not VALIDATION_DATASET_SLIM in MetadataCatalog:
-        DatasetCatalog.register(VALIDATION_DATASET_SLIM, register_function_validation_slim)
-        MetadataCatalog.get(VALIDATION_DATASET_SLIM).set(thing_classes = [CELL])
+    for dataset in LIST_DATASETS:
+        print("registering {} dataset".format(dataset)) 
 
-    
-def register_by_ids(cfg,dataset_name,image_ids):
-    
-    try:
-        os.remove(cfg.OUTPUT_DIR + "/" + dataset_name + "_coco_format.json")
-    except Exception as e:
-        print(e)
+
+        #train
+        if not get_dataset_name(dataset, TRAIN) in MetadataCatalog:
+            register_coco_instances(
+                get_dataset_name(dataset, TRAIN),
+                {},
+                BASE_DATA_PATH + dataset + "/" + REL_PATH_TRAIN_JSON,
+                BASE_DATA_PATH + dataset + "/" + REL_PATH_TRAIN_IMAGES,
+            )
         
+        # test
+        if not get_dataset_name(dataset, TEST) in MetadataCatalog:
+            register_coco_instances(
+                get_dataset_name(dataset, TEST),
+                {},
+                BASE_DATA_PATH + dataset + "/" + REL_PATH_TEST_JSON,
+                BASE_DATA_PATH + dataset + "/" + REL_PATH_TEST_IMAGES,
+            )
+    
+def register_by_ids(dataset_name,image_ids, output_dir, dataset_full):
+    
+    if os.path.exists(output_dir + "/" + dataset_name + "_coco_format.json"):
+        os.remove(output_dir + "/" + dataset_name + "_coco_format.json")
+
     if dataset_name in DatasetCatalog:
         DatasetCatalog.remove(dataset_name)
         MetadataCatalog.remove(dataset_name)
@@ -90,7 +64,7 @@ def register_by_ids(cfg,dataset_name,image_ids):
     #if dataset_name in MetadataCatalog:
     #    raise Exception("Dataset name: '" + dataset_name + "is already taken")
 
-    DatasetCatalog.register(dataset_name, build_register_function(image_ids))
+    DatasetCatalog.register(dataset_name, build_register_function(image_ids, dataset_full))
     MetadataCatalog.get(dataset_name).set(thing_classes = [CELL])
 
     return dataset_name

@@ -4,12 +4,17 @@
 ########################################################################
 
 ### PATHS
-PATH_DATA_IN_COCO = "./data/cellpose/"
-PATH_TRAIN_FULL_JSON = PATH_DATA_IN_COCO + "train/cell_acdc_coco_ds.json"
-PATH_TRAIN_FULL_IMAGES = PATH_DATA_IN_COCO + "train/images"
-PATH_TEST_FULL_JSON = PATH_DATA_IN_COCO + "test/cell_acdc_coco_ds.json"
-PATH_TEST_FULL_IMAGES = PATH_DATA_IN_COCO + "test/images"
+BASE_DATA_PATH = "./data/"
+REL_PATH_TRAIN_JSON = "train/cell_acdc_coco_ds.json"
+REL_PATH_TRAIN_IMAGES = "train/images"
+REL_PATH_TEST_JSON = "test/cell_acdc_coco_ds.json"
+REL_PATH_TEST_IMAGES = "test/images"
 PATH_PIPELINE_CONFIGS = "./pipeline_configs"
+
+ACDC_SMALL = "acdc_small"
+CELLPOSE = "cellpose"
+
+LIST_DATASETS = [ACDC_SMALL, CELLPOSE]
 
 ### NAMES REGISTERED DATASETS
 TRAIN_DATASET_FULL = "cell_acdc_train"
@@ -20,6 +25,8 @@ VALIDATION_DATASET_SLIM = "cell_acdc_validation_slim"
 ### class label
 CELL = 'cell'
 
-
+TRAIN = "train"
+TEST = "test"
 ### AL Methods
 RANDOM = "random"
+KNOWN_VALIDATION = "known_validation"
