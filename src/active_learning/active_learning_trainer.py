@@ -45,8 +45,12 @@ class ActiveLearningTrainer:
         result = do_test(self.cfg, self.model, self.logger)
         wandb.log(
             {
-                "active_step_bbox_ap": result['bbox']['AP'],
-                "active_step_segm_ap": result['segm']['AP']
+                "al":{
+                    "bbox_ap": result['bbox']['AP'],
+                    "segm_ap": result['segm']['AP'],
+                    "used_data_points": self.al_dataset.get_len_labeled()
+
+                } 
             })
         
         print("test active learning", (result['segm']['AP'] + result['bbox']['AP'])/2)

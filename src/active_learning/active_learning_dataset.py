@@ -40,7 +40,9 @@ class ActiveLearingDataset:
         self.update_labeled_data(sample_ids)
         self.get_labeled_dataset()
         self.get_unlabled_dataset()
-        
+
+    def get_len_labeled(self):
+        return len(self.labeled_ids)
 
     def precompute_augmentation_ids(self, unlabeled_ids): 
 
