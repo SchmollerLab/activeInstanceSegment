@@ -18,7 +18,7 @@ from typing import Callable
 
 import imageio
  
-ROOT_PATH = "./data/"
+ROOT_PATH = "/vol/volume/data" #"./data/"
 IMAGE_DIR_NAME = "images"
 ANNOTATION_DIR_NAME = "annotations"
 TEST = "test"

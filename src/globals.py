@@ -4,7 +4,7 @@
 ########################################################################
 
 ### PATHS
-BASE_DATA_PATH = "./data/"
+BASE_DATA_PATH =  "/vol/volume/data/" #"./data/"
 REL_PATH_TRAIN_JSON = "train/cell_acdc_coco_ds.json"
 REL_PATH_TRAIN_IMAGES = "train/images"
 REL_PATH_TEST_JSON = "test/cell_acdc_coco_ds.json"
