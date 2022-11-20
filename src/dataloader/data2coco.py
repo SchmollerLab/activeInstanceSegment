@@ -177,7 +177,6 @@ class Data2cocoConverter:
             "annotations": [],
         }
     
-        # filter for jpeg images
         for root, _, files in os.walk(os.path.join(path_dir, IMAGE_DIR_NAME)):
             image_files = self.filter_for_png(root, files)
             # go through each image

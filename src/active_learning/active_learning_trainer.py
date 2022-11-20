@@ -83,7 +83,7 @@ class ActiveLearningTrainer:
 
         try:
             for i in range(self.cfg.AL.MAX_LOOPS):
-                self.step(resume=False)    #(i>0))
+                self.step(resume=(i>0))
         except Exception as e:
             wandb.run.finish()
             raise e
