@@ -87,3 +87,4 @@ class ActiveLearningTrainer:
         except Exception as e:
             wandb.run.finish()
             raise e
+        wandb.run.finish()
