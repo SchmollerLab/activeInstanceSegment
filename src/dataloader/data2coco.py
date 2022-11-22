@@ -334,6 +334,7 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                         ):
                             filename = os.fsdecode(file)
                             if filename.find("Ph3_aligned.npz") != -1 or "phase_contr_aligned.npz" != -1:
+                                print(filename)
                                 phase_contr_npz = filename
                             if filename.find("phase_contr.tif")  != -1 or filename.find("Ph3.tif") != -1:
                                 phase_contr_tif = filename
