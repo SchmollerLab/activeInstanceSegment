@@ -1,6 +1,7 @@
 import os
 import math
 import numpy as np
+import pandas as pd
 from PIL import Image
 from skimage import exposure, io
 import matplotlib.pyplot as plt
@@ -45,20 +46,19 @@ CATEGORIES = [
  
 class Data2cocoConverter:
 
-    def __init__(self, root_dir, dataset_name) -> None:
+    def __init__(self, root_dir, dataset_name, data_splits=[TEST,TRAIN]) -> None:
         
         self.dataset_name = dataset_name
-
+        self.data_splits = data_splits
         self.raw_images_path = os.path.join(root_dir,"raw_data",dataset_name)
         self.save_images_path = os.path.join(root_dir, dataset_name)
 
         self.create_dir_to_path(root_dir,dataset_name)
-        self.create_dir_to_path(self.save_images_path,TEST)        
-        self.create_dir_to_path(self.save_images_path,TRAIN)        
-        self.create_dir_to_path(self.save_images_path,TEST + "/annotations")        
-        self.create_dir_to_path(self.save_images_path,TEST + "/images")        
-        self.create_dir_to_path(self.save_images_path,TRAIN + "/annotations")        
-        self.create_dir_to_path(self.save_images_path,TRAIN + "/images")        
+        for data_split in data_splits:
+
+            self.create_dir_to_path(self.save_images_path,data_split)        
+            self.create_dir_to_path(self.save_images_path,data_split + "/annotations")        
+            self.create_dir_to_path(self.save_images_path,data_split + "/images")        
 
 
 
@@ -75,7 +75,7 @@ class Data2cocoConverter:
         image_id = 1
         segmentation_id = 1
     
-        for split_type in [TEST, TRAIN]:
+        for split_type in self.data_splits:
             self.convert_data_to_coco(
                 image_id, segmentation_id, os.path.join(self.save_images_path, split_type)
             )
@@ -87,11 +87,7 @@ class Data2cocoConverter:
     def augment_store_image(self, full_id, image, mask, split_type):
     
         # flip_combs: [[horizontal,vertical]]
-        if split_type == TRAIN:
-            flip_combs = [[False,False],[True,False],[False,True],[True,True]] # start with only horizontal flip
-        else:
-            # no flip in test data
-            flip_combs = [[False,False]]
+        flip_combs = [[False,False],[True,False],[False,True],[True,True]] 
     
         for flip_comb in flip_combs:
     
@@ -106,7 +102,6 @@ class Data2cocoConverter:
  
     def store_image(self, id, image, mask, split_type):
 
-        #imageio.imwrite(os.path.join(self.save_images_path, split_type, "images", id + ".png"),image.astype(np.uint8))
         # save image as png
         plt.imsave(
             os.path.join(self.save_images_path, split_type, "images", id + ".png"),
@@ -316,42 +311,43 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
         super().__init__(root_dir, dataset_name)
     
     def iterate_images(self):
+        paths = []
+        phase_contr_tifs = []
+        phase_contr_npzs = []
+        segms = []
+        base_dict = os.fsencode(self.raw_images_path)
+        for acdc_ds in os.listdir(base_dict):
+            acdc_ds_name = os.fsdecode(acdc_ds)
+            if acdc_ds_name.find(".zip") == -1:
+                experiment_dict = os.fsencode(os.path.join(self.raw_images_path,acdc_ds_name))
+                for experiment in os.listdir(experiment_dict):
+                    experiment_name = os.fsdecode(experiment)
+                    for position in os.listdir(os.fsencode(self.raw_images_path + "/" + acdc_ds_name + "/" + experiment_name)):
+                        position_name = os.fsdecode(position)
+                        
+                        phase_contr_npz = ""
+                        phase_contr_tif = ""
+                        segm = ""
 
-        id: int = 0
-        directory = os.fsencode(self.raw_images_path)
-        for obj in os.listdir(directory):
-            name = os.fsdecode(obj)
-            if name.find(".zip") == -1:
-                split_type: str = TEST
-                directory_inner = os.fsencode(os.path.join(self.raw_images_path,name))
-                for obj_inner in os.listdir(directory_inner):
-                    name_inner = os.fsdecode(obj_inner)
-                    for pos in os.listdir(os.fsencode(self.raw_images_path + "/" + name + "/" + name_inner)):
-                        pos_name = os.fsdecode(pos)
-                        segm_filename = ""
-                        base_filename = ""
                         for file in os.listdir(
-                            os.fsencode(self.raw_images_path + "/" + name  + "/" + name_inner+ "/" + pos_name + "/Images")
+                            os.fsencode(self.raw_images_path + "/" + acdc_ds_name  + "/" + experiment_name + "/" + position_name + "/Images")
                         ):
                             filename = os.fsdecode(file)
-                            if filename.find("_phase_contr.tif") != -1 or filename.find("Ph3.tif") != -1:
-                                base_filename = filename
-                            elif filename.find("segm.npz") != -1:
-                                segm_filename = filename
+                            if filename.find("Ph3_aligned.npz") != -1 or "phase_contr_aligned.npz" != -1:
+                                phase_contr_npz = filename
+                            if filename.find("phase_contr.tif")  != -1 or filename.find("Ph3.tif"):
+                                phase_contr_tif = filename
+                            if filename.find("segm.npz"):
+                                segm = filename
 
+                        paths.append(self.raw_images_path + "/" + acdc_ds_name  + "/" + experiment_name + "/" + position_name + "/Images")
+                        phase_contr_npzs.append(phase_contr_npz)
+                        phase_contr_tifs.append(phase_contr_tif)
+                        segms.append(segm)
 
-                        #data = self.load_video(name, name_inner, pos_name, base_filename)
-                        #self.store_images(data, str(id), split_type)
-                        if segm_filename != "" and base_filename != "":
-                            data = self.load_video(name, name_inner, pos_name, base_filename, segm_filename)
-                            print(name, name_inner, pos_name, base_filename, segm_filename, "id: \t", str(id))
-                            self.store_images(data, str(id), split_type)
-                            print("_______________________________________________________________")
-                            split_type = TRAIN
-                            return
-                        else:
-                            print("no segmentation or base_filename found in :",name, name_inner, pos_name, base_filename)
-                        id += 1
+        df = pd.DataFrame(data={"paths": paths, "phc_npz": phase_contr_npzs, "phc_tif": phase_contr_tifs, "segm": segms})
+        df.to_csv("found_files.csv")
+
 
 
     def store_images(self, data: np.array, id: int, split_type: str = "train") -> None:
