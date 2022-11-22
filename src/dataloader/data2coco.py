@@ -333,10 +333,10 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                             os.fsencode(self.raw_images_path + "/" + acdc_ds_name  + "/" + experiment_name + "/" + position_name + "/Images")
                         ):
                             filename = os.fsdecode(file)
-                            if filename.find("Ph3_aligned.npz") != -1 ^ "phase_contr_aligned.npz" != -1:
+                            if (filename.find("Ph3_aligned.npz") != -1) ^ ("phase_contr_aligned.npz" != -1):
                                 print(filename)
                                 phase_contr_npz = filename
-                            if filename.find("phase_contr.tif")  != -1 ^ filename.find("Ph3.tif") != -1:
+                            if (filename.find("phase_contr.tif")  != -1) ^ (filename.find("Ph3.tif") != -1):
                                 phase_contr_tif = filename
                             if filename.find("segm.npz") != -1:
                                 segm = filename
