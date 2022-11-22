@@ -348,6 +348,7 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                             self.store_images(data, str(id), split_type)
                             print("_______________________________________________________________")
                             split_type = TRAIN
+                            return
                         else:
                             print("no segmentation or base_filename found in :",name, name_inner, pos_name, base_filename)
                         id += 1
