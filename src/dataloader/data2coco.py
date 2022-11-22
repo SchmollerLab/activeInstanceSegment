@@ -106,13 +106,13 @@ class Data2cocoConverter:
  
     def store_image(self, id, image, mask, split_type):
 
-        imageio.imwrite(os.path.join(self.save_images_path, split_type, "images", id + ".png"),image.astype(np.uint8))
+        #imageio.imwrite(os.path.join(self.save_images_path, split_type, "images", id + ".png"),image.astype(np.uint8))
         # save image as png
-        """plt.imsave(
+        plt.imsave(
             os.path.join(self.save_images_path, split_type, "images", id + ".png"),
             image,
             cmap="gray",
-        )"""
+        )
     
         # save masks independently
         labels = np.unique(mask)
