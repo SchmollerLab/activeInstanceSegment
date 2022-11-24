@@ -26,20 +26,13 @@ try:
     from register_datasets import register_datasets
     from train import do_train
     from test import do_test
+    from config_builder import get_config
 except:
     from src.register_datasets import register_datasets
     from src.train import do_train
     from src.test import do_test
 
 
-def get_config(filename):
-    
-    cfg = get_cfg()
-    cfg.merge_from_file(filename)
-    return cfg
- 
-
-    
 def run_pipeline(cfg=None):
     
     model = build_model(cfg)
@@ -74,9 +67,8 @@ if __name__ == "__main__":
     
     
     register_datasets()
-    cfg = get_config(filename)
-    
-    cfg.OUTPUT_DIR = "./output/" + filename.replace(".yaml","").replace("src/pipeline_configs/","")
+    config_name = filename.split("/")[-1].replace(".yaml","")
+    cfg = get_config(config_name)
     
     run_pipeline(cfg)
     

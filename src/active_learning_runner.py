@@ -10,5 +10,5 @@ if __name__ == "__main__":
     print("running on server:", running_on_server)
     cfg = get_config("cellpose_al_config_50_50")
     al_trainer = ActiveLearningTrainer(cfg, is_test_mode=not running_on_server)
-    al_trainer.run(dataset=CELLPOSE, query_strat=KNOWN_VALIDATION)
-    al_trainer.run(dataset=CELLPOSE, query_strat=RANDOM)
+    al_trainer.run(dataset=ACDC_LARGE, query_strat=KNOWN_VALIDATION)
+    al_trainer.run(dataset=ACDC_LARGE, query_strat=RANDOM)
