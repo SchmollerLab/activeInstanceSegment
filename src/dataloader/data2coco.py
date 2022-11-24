@@ -19,7 +19,7 @@ from typing import Callable
 
 import imageio
  
-ROOT_PATH = "/vol/volume/data" #"./data/"
+ROOT_PATH = "/vol/volume/data/" #./data/"
 IMAGE_DIR_NAME = "images"
 ANNOTATION_DIR_NAME = "annotations"
 TEST = "test"
@@ -76,6 +76,7 @@ class Data2cocoConverter:
         segmentation_id = 1
     
         for split_type in self.data_splits:
+            print("converting to coco for split {}:".format(split_type))
             self.convert_data_to_coco(
                 image_id, segmentation_id, os.path.join(self.save_images_path, split_type)
             )
@@ -105,7 +106,7 @@ class Data2cocoConverter:
         # save image as png
         plt.imsave(
             os.path.join(self.save_images_path, split_type, "images", id + ".png"),
-            image,
+            image.astype(float),
             cmap="gray",
         )
     
@@ -175,7 +176,7 @@ class Data2cocoConverter:
         for root, _, files in os.walk(os.path.join(path_dir, IMAGE_DIR_NAME)):
             image_files = self.filter_for_png(root, files)
             # go through each image
-            for image_filename in image_files:
+            for image_filename in tqdm(image_files):
                 image = Image.open(image_filename)
                 image_info = pycococreatortools.create_image_info(
                     image_id, os.path.basename(image_filename), image.size
@@ -308,7 +309,7 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
     def __init__(self, root_dir) -> None:
 
         dataset_name = "acdc_large"
-        super().__init__(root_dir, dataset_name)
+        super().__init__(root_dir, dataset_name, data_splits=["train", "test_1", "test_2"])
     
     def iterate_images(self):
         paths = []
@@ -334,7 +335,6 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                         ):
                             filename = os.fsdecode(file)
                             if (filename.find("Ph3_aligned.npz") != -1) or (filename.find("phase_contr_aligned.npz") != -1):
-                                print(filename, filename.find("Ph3_aligned.npz"))
                                 phase_contr_npz = filename
                             if (filename.find("phase_contr.tif")  != -1) or (filename.find("Ph3.tif") != -1):
                                 phase_contr_tif = filename
@@ -347,14 +347,16 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                         segms.append(segm)
 
         df = pd.DataFrame(data={"paths": paths, "phc_npz": phase_contr_npzs, "phc_tif": phase_contr_tifs, "segm": segms})
-        df_clean = df.dropna(subset=["segm"])
+        df_clean = df[df["segm"] != ""].copy()
 
-        index = np.random.shuffle(df_clean.index.to_numpy())
+        index = df_clean.index.to_numpy() 
+        np.random.seed(1337)
+        np.random.shuffle(index)
         data_dict = {}
 
-        data_dict["train"] = index[:40]
-        data_dict["test_1"] = index[40:45]
-        data_dict["test_2"] = index[45:]
+        data_dict["train"] = index[:33]
+        data_dict["test_1"] = index[33:38]
+        data_dict["test_2"] = index[38:]
 
         for data_split in ["train", "test_1", "test_2"]:
             print("loading data for split {}:".format(data_split))
@@ -364,8 +366,7 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                 data = self.load_video(path=row["paths"], phc_npz=row["phc_npz"], phc_tif=row["phc_tif"], segm=row["segm"])
 
                 image_id = row["paths"].replace(self.raw_images_path + "/","").replace("/Images","").replace("Position","pos").replace("/","_")
-                print(image_id)
-                self.store_images(id=image_id, data=data)
+                self.store_images(id=image_id, data=data, split_type=data_split)
 
 
 
@@ -379,20 +380,15 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
         for i in range(num_images):
             if (masks[i] > 0).sum():
                 self.store_image(str(id) + "_" + str(i),images[i],masks[i], split_type)
-                break
 
     def load_video(self, path, phc_npz, phc_tif, segm):
 
         if phc_npz != "":
-            vid = np.load(os.path.join(path, phc_npz))
+            vid = np.load(os.path.join(path, phc_npz))["arr_0"]
         else:
             vid = io.imread(os.path.join(path, phc_tif))
 
-        masks =  np.load(os.path.join(path, segm))
-
-        print("loaded video with shape:\t", vid.shape)
-        print("loaded lables with shape:\t", masks.shape)
-
+        masks =  np.load(os.path.join(path, segm))["arr_0"]
         data = np.array([vid, masks], dtype="object")
 
         return data
