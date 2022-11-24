@@ -347,11 +347,29 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                         segms.append(segm)
 
         df = pd.DataFrame(data={"paths": paths, "phc_npz": phase_contr_npzs, "phc_tif": phase_contr_tifs, "segm": segms})
-        df.to_csv("found_files.csv")
+        df_clean = df.dropna(subset=["segm"])
+
+        index = np.random.shuffle(df_clean.index.to_numpy())
+        data_dict = {}
+
+        data_dict["train"] = index[:40]
+        data_dict["test_1"] = index[40:45]
+        data_dict["test_2"] = index[45:]
+
+        for data_split in ["train", "test_1", "test_2"]:
+            print("loading data for split {}:".format(data_split))
+            for id in tqdm(data_dict[data_split]):
+                row = df_clean.iloc[id]
+
+                data = self.load_video(path=row["paths"], phc_npz=row["phc_npz"], phc_tif=row["phc_tif"], segm=row["segm"])
+
+                image_id = row["paths"].replace(self.raw_images_path + "/","").replace("/Images","").replace("Position","pos").replace("/","_")
+                print(image_id)
+                self.store_images(id=image_id, data=data)
 
 
 
-    def store_images(self, data: np.array, id: int, split_type: str = "train") -> None:
+    def store_images(self, data, id, split_type = "train") -> None:
 
         images: np.array = data[0]
         masks: np.array = data[1]
@@ -363,23 +381,19 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                 self.store_image(str(id) + "_" + str(i),images[i],masks[i], split_type)
                 break
 
-    def load_video(self, folder_name, experiment_name, position, filename, segm_filename):
-        path = self.raw_images_path + "/" + folder_name + "/" + experiment_name + "/" + position + "/Images/"
-        print("loading:", path)
+    def load_video(self, path, phc_npz, phc_tif, segm):
 
-        try:
-            vid = np.load(path + filename.replace("phase_contr.tif","phase_contr_aligned.npz"))["arr_0"]
-        except:
-            print("aligned.npz not found")
-            vid = io.imread(path + filename)
+        if phc_npz != "":
+            vid = np.load(os.path.join(path, phc_npz))
+        else:
+            vid = io.imread(os.path.join(path, phc_tif))
 
-        lables = np.load(path + segm_filename)["arr_0"]
-        
+        masks =  np.load(os.path.join(path, segm))
 
         print("loaded video with shape:\t", vid.shape)
-        print("loaded lables with shape:\t", lables.shape)
+        print("loaded lables with shape:\t", masks.shape)
 
-        data = np.array([vid, lables], dtype="object")
+        data = np.array([vid, masks], dtype="object")
 
         return data
 if __name__ == "__main__":
