@@ -10,7 +10,7 @@ import torch, detectron2
 from detectron2.utils.logger import setup_logger
 
 logger = setup_logger(output="./log/main.log")
-logger.setLevel(0)
+
 # import some common libraries
 import numpy as np
 import os, json, cv2, random
