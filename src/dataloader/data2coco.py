@@ -347,13 +347,12 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                         segms.append(segm)
 
         df = pd.DataFrame(data={"paths": paths, "phc_npz": phase_contr_npzs, "phc_tif": phase_contr_tifs, "segm": segms})
-        df_clean = df[df["segm"] != ""].copy()
+        df_clean = df[df["segm"] != ""].copy().reset_index()
 
         index = df_clean.index.to_numpy() 
         np.random.seed(1337)
         np.random.shuffle(index)
         data_dict = {}
-
         data_dict["train"] = index[:33]
         data_dict["test_1"] = index[33:38]
         data_dict["test_2"] = index[38:]
