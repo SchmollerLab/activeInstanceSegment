@@ -354,7 +354,7 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
         data_dict["test_1"] = index[33:38]
         data_dict["test_2"] = index[38:]
 
-        for data_split in ["train", "test_1", "test_2"]:
+        for data_split in self.data_splits:
             print("loading data for split {}:".format(data_split))
             for id in tqdm(data_dict[data_split]):
                 row = df_clean.iloc[id]
