@@ -15,15 +15,12 @@ import re
 import fnmatch
 import pycococreatortools
  
-from typing import Callable
+import sys
+sys.path.append("..")
+from globals import *
 
-import imageio
- 
-ROOT_PATH = "/vol/volume/data/" #./data/"
 IMAGE_DIR_NAME = "images"
 ANNOTATION_DIR_NAME = "annotations"
-TEST = "test"
-TRAIN = "train"
  
 INFO = {
     "description": "cellpose data in COCO format",
@@ -393,9 +390,9 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
         return data
 if __name__ == "__main__":
 
-    #cpc = Cellpose2cocoConverter(ROOT_PATH)
+    #cpc = Cellpose2cocoConverter(BASE_DATA_PATH)
     #cpc.convert()
-    #small_acdc_conv = SmallACDC2cocoConverter(ROOT_PATH)
+    #small_acdc_conv = SmallACDC2cocoConverter(BASE_DATA_PATH)
     #small_acdc_conv.convert()
-    large_acdc_conv = LargeACDC2cocoConverter(ROOT_PATH)
+    large_acdc_conv = LargeACDC2cocoConverter(BASE_DATA_PATH)
     large_acdc_conv.convert()
