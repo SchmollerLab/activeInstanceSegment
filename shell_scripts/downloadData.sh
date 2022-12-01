@@ -10,7 +10,7 @@ mkdir data/dataInCOCO/train/images
 mkdir data/dataInCOCO/train/annotations
 
 cd data
-wget https://hmgubox2.helmholtz-muenchen.de/index.php/s/DdXYAam2mRwZn88/download/TimeLapse_2D.zip
+wget https://hmgubox2.helmholtz-muenchen.de/index.php/s/L57ZkKqKz8QcDoE/download/TimeLapse_2D.zip
 
 if ! command -v unzip /dev/null
 then
