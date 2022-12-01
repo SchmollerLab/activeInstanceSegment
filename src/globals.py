@@ -5,10 +5,8 @@
 
 ### PATHS
 import os
-if os.getenv("IS_SERVER") == "true":
-    BASE_DATA_PATH =  "/vol/volume/data/"
-else:
-    BASE_DATA_PATH =  "./data/"
+
+BASE_DATA_PATH =  "./data/"
     
 REL_PATH_TRAIN_JSON = "train/cell_acdc_coco_ds.json"
 REL_PATH_TRAIN_IMAGES = "train/images"

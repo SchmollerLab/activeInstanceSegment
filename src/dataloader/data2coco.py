@@ -14,9 +14,11 @@ import json
 import re
 import fnmatch
 import pycococreatortools
- 
+
 import sys
-sys.path.append("..")
+print(sys.path)
+sys.path.insert(0,sys.path[0] + "/..") 
+print(sys.path)
 from globals import *
 
 IMAGE_DIR_NAME = "images"
