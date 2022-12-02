@@ -333,7 +333,7 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                             os.fsencode(self.raw_images_path + "/" + acdc_ds_name  + "/" + experiment_name + "/" + position_name + "/Images")
                         ):
                             filename = os.fsdecode(file)
-                            if (filename.find("Ph3_aligned.npz") != -1) or (filename.find("phase_contr_aligned.npz") != -1):
+                            if (filename.find("Ph3_aligned.np") != -1) or (filename.find("phase_contr_aligned.np") != -1):
                                 phase_contr_npz = filename
                             if (filename.find("phase_contr.tif")  != -1) or (filename.find("Ph3.tif") != -1):
                                 phase_contr_tif = filename
@@ -382,7 +382,10 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
     def load_video(self, path, phc_npz, phc_tif, segm):
 
         if phc_npz != "":
-            vid = np.load(os.path.join(path, phc_npz))["arr_0"]
+            if phc_npz.find(".npz") != -1:
+                vid = np.load(os.path.join(path, phc_npz))["arr_0"]
+            else:
+                vid = np.load(os.path.join(path, phc_npz))
         else:
             vid = io.imread(os.path.join(path, phc_tif))
 
