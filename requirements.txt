@@ -4,3 +4,5 @@ scikit-image
 matplotlib
 pycocotools
 wandb
+pandas
+tqdm
