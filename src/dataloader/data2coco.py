@@ -16,9 +16,7 @@ import fnmatch
 import pycococreatortools
 
 import sys
-print(sys.path)
 sys.path.insert(0,sys.path[0] + "/..") 
-print(sys.path)
 from globals import *
 
 IMAGE_DIR_NAME = "images"
@@ -75,6 +73,8 @@ class Data2cocoConverter:
         segmentation_id = 1
     
         for split_type in self.data_splits:
+            if split_type != "test_2":
+                continue
             print("converting to coco for split {}:".format(split_type))
             self.convert_data_to_coco(
                 image_id, segmentation_id, os.path.join(self.save_images_path, split_type)
@@ -357,6 +357,8 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
         data_dict["test_2"] = index[38:]
 
         for data_split in self.data_splits:
+            if data_split != "test_2":
+                continue
             print("loading data for split {}:".format(data_split))
             for id in tqdm(data_dict[data_split]):
                 row = df_clean.iloc[id]

@@ -2,8 +2,16 @@ from detectron2 import model_zoo
 from detectron2.config import get_cfg
 from detectron2.config.config import CfgNode as CN
 
-from globals import *
-from register_datasets import get_dataset_name
+try:
+    from globals import *
+except:
+    from src.globals import *
+    
+try:
+    from register_datasets import get_dataset_name
+except:
+    from src.register_datasets import get_dataset_name
+
 
 def build_config(config_name):
     cfg = get_cfg()
