@@ -1,9 +1,5 @@
 import torch, detectron2
-
-#TORCH_VERSION = ".".join(torch.__version__.split(".")[:2])
-#CUDA_VERSION = torch.__version__.split("+")[-1]
-#print("torch: ", TORCH_VERSION, "; cuda: ", CUDA_VERSION)
-#print("detectron2:", detectron2.__version__)
+from datetime import datetime
 
 
 # Setup detectron2 logger
@@ -18,7 +14,6 @@ import wandb
 
 # import some common detectron2 utilities
 from detectron2.modeling import build_model
-from detectron2.config import get_cfg
 
 from argparse import ArgumentParser
 
@@ -39,7 +34,7 @@ def run_pipeline(cfg=None):
     #logger.info("Model:\n{}".format(model))
     
     # initialize weights and biases
-    wandb.init(project="activeCell-ACDC", sync_tensorboard=True)
+    wandb.init(project="activeCell-ACDC", name=cfg.NAME + "-" + datetime.now().strftime("%d-%b-%Y"), sync_tensorboard=True)
     
     # empty gpu cache
     torch.cuda.empty_cache()
@@ -60,7 +55,7 @@ if __name__ == "__main__":
     
     parser = ArgumentParser()
     parser.add_argument("-f", "--file", dest="filename",
-                        help="write report to FILE", metavar="FILE")
+                        help="Path to pipeline configuration", metavar="FILE")
 
     args = parser.parse_args()
     filename = args.filename
