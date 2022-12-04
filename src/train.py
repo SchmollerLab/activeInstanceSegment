@@ -1,6 +1,7 @@
 import torch, detectron2
 import wandb
 import yaml
+import os
 
 import detectron2.utils.comm as comm
 from detectron2.utils.events import EventStorage
@@ -8,6 +9,7 @@ from detectron2.solver import build_lr_scheduler, build_optimizer
 from detectron2.checkpoint import DetectionCheckpointer, PeriodicCheckpointer
 from detectron2.engine import default_writers
 from detectron2.data import build_detection_train_loader
+from detectron2.modeling import build_model
 
 try:
     from test import do_test
@@ -90,14 +92,14 @@ def do_train(cfg, model, logger, resume=False):
                         })
                 if (res['segm']['AP'] + res['bbox']['AP'])/2 < max_ap:
                     early_counter += 1
-                    print("new ap:", (res['segm']['AP'] + res['bbox']['AP'])/2, "max_ap", max_ap, "add counter") 
+                    print("new ap:", (res['segm']['AP'] + res['bbox']['AP'])/2, "max_ap", max_ap, "add counter: ", early_counter) 
                     if early_counter > cfg.EARLY_STOPPING_ROUNDS:
                         print("stopping training")
                         break
                 else:
                     print("new ap:", (res['segm']['AP'] + res['bbox']['AP'])/2, "max_ap", max_ap, "adjust max") 
                     max_ap = max(max_ap,(res['segm']['AP'] + res['bbox']['AP'])/2)
-                    torch.save(model,cfg.OUTPUT_DIR + "/torch_model.pt")
+                    checkpointer.save("best_model")
                     early_counter = 0
                 
 
@@ -109,5 +111,6 @@ def do_train(cfg, model, logger, resume=False):
                     writer.write()
             periodic_checkpointer.step(iteration)
 
-    model = torch.load(cfg.OUTPUT_DIR + "/torch_model.pt")
+    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
+    model = build_model(cfg)
     return model

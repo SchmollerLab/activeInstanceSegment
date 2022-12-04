@@ -2,8 +2,17 @@ from detectron2 import model_zoo
 from detectron2.config import get_cfg
 from detectron2.config.config import CfgNode as CN
 
+import sys
+try:
+    sys.path.append("./src")
+except:
+    pass
+
 from globals import *
 from register_datasets import get_dataset_name
+
+
+from active_learning.nn_modules.dropout import *
 
 def build_config(config_name):
     cfg = get_cfg()
@@ -31,11 +40,16 @@ def build_config(config_name):
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
     cfg.OUTPUT_DIR = "./output/" + cfg.NAME
     cfg.TEST.EVAL_PERIOD = 500
+
+    cfg.MODEL.ROI_HEADS.SOFTMAXES = False
+    cfg.MODEL.ROI_MASK_HEAD.DROPOUT_PROBABILITY = 0.5
+    cfg.MODEL.ROI_BOX_HEAD.DROPOUT_PROBABILITY = 0.5
+
     
     with open(PATH_PIPELINE_CONFIGS + "/" + cfg.NAME + ".yaml","w") as file:
         file.write(cfg.dump())
 
-def get_config(config_name):
+def get_config(config_name, path_configs=PATH_PIPELINE_CONFIGS, complete_path=None):
     
     cfg = get_cfg()
     cfg.NAME = " "
@@ -48,7 +62,14 @@ def get_config(config_name):
     cfg.AL.QUERY_STRATEGY = ""
     cfg.EARLY_STOPPING_ROUNDS = 0
     
-    file_path = PATH_PIPELINE_CONFIGS + "/" + config_name + ".yaml"
+    cfg.MODEL.ROI_HEADS.SOFTMAXES = False
+    cfg.MODEL.ROI_MASK_HEAD.DROPOUT_PROBABILITY = 0.5
+    cfg.MODEL.ROI_BOX_HEAD.DROPOUT_PROBABILITY = 0.5
+
+    if not complete_path:
+        file_path = path_configs + "/" + config_name + ".yaml"
+    else:
+        file_path = complete_path
     cfg.merge_from_file(file_path)
     return cfg
 
