@@ -34,3 +34,4 @@ TEST = "test"
 ### AL Methods
 RANDOM = "random"
 KNOWN_VALIDATION = "known_validation"
+MC_DROPOUT = "mc_dropout"

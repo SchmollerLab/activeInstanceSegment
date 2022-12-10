@@ -12,10 +12,10 @@ def show_image(ims, normalize=True):
         plt.imshow(im_cont)
     
     else:
-        fig = plt.figure(figsize=(16, 10))
+        fig = plt.figure(figsize=(22, 15))
 
         num_figures = len(ims)
-        cols = 5
+        cols = 3
         rows = int(math.ceil(num_figures/cols))
 
         for i in range(num_figures):

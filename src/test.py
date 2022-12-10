@@ -10,6 +10,7 @@ from detectron2.evaluation import print_csv_format
 
 
 def do_test(cfg, model, logger):
+    model.eval()
     results = OrderedDict()
     for dataset_name in cfg.DATASETS.TEST:
         data_loader = build_detection_test_loader(cfg, dataset_name)
@@ -23,4 +24,5 @@ def do_test(cfg, model, logger):
         results = list(results.values())[0]
     logger.info(results)
     wandb.log(results)
+    model.train()
     return results
