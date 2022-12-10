@@ -133,6 +133,7 @@ dmypy.json
 
 # saved models
 /output
+/jupyter_notebooks/output
 /src/api_keys.py
 
 # logging
@@ -140,6 +141,7 @@ dmypy.json
 
 # weights and biases
 /wandb
+/jupyter_notebooks/wandb
 
 # python logs
 nohup.out

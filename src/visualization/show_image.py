@@ -1,9 +1,12 @@
 import math
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import figure
+
 from skimage import exposure, io
 
 
 def show_image(ims, normalize=True):
+    #figure(figsize=(10, 10), dpi=80)
     if not isinstance(ims, list):
         if normalize:
             im_cont = exposure.equalize_adapthist(ims)
@@ -12,6 +15,7 @@ def show_image(ims, normalize=True):
         plt.imshow(im_cont)
     
     else:
+        
         fig = plt.figure(figsize=(22, 15))
 
         num_figures = len(ims)

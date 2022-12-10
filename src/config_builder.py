@@ -3,16 +3,17 @@ from detectron2.config import get_cfg
 from detectron2.config.config import CfgNode as CN
 
 import sys
-try:
-    sys.path.append("./src")
-except:
-    pass
+import os
+PROJECT_ROOT = os.path.abspath(os.path.join(
+                  os.path.dirname(__file__), 
+                  os.pardir)
+            )
 
-from globals import *
-from register_datasets import get_dataset_name
+sys.path.append(PROJECT_ROOT)
 
-
-from active_learning.nn_modules.dropout import *
+from src.globals import *
+from src.register_datasets import get_dataset_name
+from src.active_learning.nn_modules.dropout import *
 
 def build_config(config_name):
     cfg = get_cfg()
