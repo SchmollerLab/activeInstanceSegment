@@ -22,7 +22,7 @@ class ActiveLearingDataset:
 
         # get ids of all images
         self.unlabeled_jsons = DatasetCatalog.get(cfg.AL.DATASETS.TRAIN_UNLABELED)
-        self.unlabeled_ids = [image["image_id"] for image in self.unlabeled_jsons if image["file_name"].find("HFVF") != -1]
+        self.unlabeled_ids = [image["image_id"] for image in self.unlabeled_jsons if image["file_name"]]
         #self.dict_aug_ids_by_id = self.precompute_augmentation_ids(self.unlabeled_ids)
         self.labeled_ids = []
         #self.labeled_ids_aug = []
