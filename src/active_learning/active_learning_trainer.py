@@ -37,8 +37,6 @@ class ActiveLearningTrainer:
         self.logger = setup_logger(output="./log/main.log")
         self.logger.setLevel(10)
         
-        self.model = build_model(cfg)
-        
         
     def __del__(self):
         wandb.run.finish()
@@ -47,12 +45,11 @@ class ActiveLearningTrainer:
         
         if not resume:
             self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
-            self.model = build_model(self.cfg)
         else:
             self.cfg.MODEL.WEIGHTS = os.path.join(self.cfg.OUTPUT_DIR, "best_model.pth") 
             
-        self.model = do_train(self.cfg, self.model, self.logger,resume=resume)
-        result = do_test(self.cfg, self.model, self.logger)
+        self.cfg = do_train(self.cfg, self.logger,resume=resume)
+        result = do_test(self.cfg, logger=self.logger)
         wandb.log(
             {
                 "al":{

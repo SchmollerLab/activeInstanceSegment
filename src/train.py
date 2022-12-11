@@ -10,6 +10,7 @@ from detectron2.checkpoint import DetectionCheckpointer, PeriodicCheckpointer
 from detectron2.engine import default_writers
 from detectron2.data import build_detection_train_loader
 from detectron2.modeling import build_model
+from detectron2.checkpoint import DetectionCheckpointer
 
 try:
     from test import do_test
@@ -17,12 +18,15 @@ except:
     from src.test import do_test
 
 
-def do_train(cfg, model, logger, resume=False):
+def do_train(cfg, logger, resume=False):
     
-
-    wandb.config.update(yaml.load(cfg.dump()))
-    
+    model = build_model(cfg)
     model.train()
+    checkpointer = DetectionCheckpointer(model)
+    checkpointer.load(cfg.MODEL.WEIGHTS)
+
+    #wandb.config.update(yaml.load(cfg.dump()))
+
     optimizer = build_optimizer(cfg, model)
     scheduler = build_lr_scheduler(cfg, optimizer)
 
@@ -82,7 +86,7 @@ def do_train(cfg, model, logger, resume=False):
                 and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
                 and iteration != max_iter - 1
             ):
-                res = do_test(cfg, model, logger)
+                res = do_test(cfg, model=model, logger=logger)
                 # Compared to "train_net.py", the test results are not dumped to EventStorage
                 comm.synchronize()
                 
@@ -102,6 +106,7 @@ def do_train(cfg, model, logger, resume=False):
                     checkpointer.save("best_model")
                     early_counter = 0
                 
+                
 
             if iteration - start_iter > 5 and (
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1
@@ -112,5 +117,4 @@ def do_train(cfg, model, logger, resume=False):
             periodic_checkpointer.step(iteration)
 
     cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
-    model = build_model(cfg)
-    return model
+    return cfg
