@@ -2,7 +2,7 @@ import os
 
 from globals import *
 from config_builder import get_config
-from active_learning.active_learning_trainer import ActiveLearningTrainer
+from active_learning.al_trainer import ActiveLearningTrainer
 
 
 

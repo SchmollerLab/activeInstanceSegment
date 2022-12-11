@@ -20,7 +20,7 @@ from src.globals import *
 from src.register_datasets import get_dataset_name
 from src.test import do_test
 from src.train import do_train
-from src.active_learning.active_learning_dataset import ActiveLearingDataset
+from src.active_learning.al_dataset import ActiveLearingDataset
 from src.active_learning.query_strategies import *
 from src.active_learning.mc_dropout_sampler import MCDropoutSampler
 
