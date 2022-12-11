@@ -1,5 +1,6 @@
 import os
 import sys
+
 sys.path.append("..")
 
 import random as rd
@@ -22,23 +23,29 @@ import operator
 
 
 import torch
-from itertools import chain 
+from itertools import chain
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.modeling import build_model
 
 import detectron2.data.transforms as T
 from baal.bayesian.dropout import patch_module
 
-class MCDropoutSampler(QueryStrategy):
-    
-    def sample(self, cfg, ids):
-        num_samples = self.cfg.AL.INCREMENT_SIZE
-        
-        id_pool = ids #rd.sample(ids, min(600,len(ids)))
-        
-        register_by_ids("MCDropoutSampler_DS",id_pool, self.cfg.OUTPUT_DIR, self.cfg.AL.DATASETS.TRAIN_UNLABELED)
 
-        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth") 
+class MCDropoutSampler(QueryStrategy):
+    def sample(self, cfg, ids):
+        
+        num_samples = self.cfg.AL.INCREMENT_SIZE
+
+        id_pool = ids #rd.sample(ids, min(60,len(ids)))
+
+        register_by_ids(
+            "MCDropoutSampler_DS",
+            id_pool,
+            self.cfg.OUTPUT_DIR,
+            self.cfg.AL.DATASETS.TRAIN_UNLABELED,
+        )
+
+        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
 
         model = build_model(cfg)
         model = patch_module(model)
@@ -49,7 +56,8 @@ class MCDropoutSampler(QueryStrategy):
 
         ds_catalog = DatasetCatalog.get("MCDropoutSampler_DS")
         uncertainty_dict = {}
-        for i in range(len(ds_catalog)):
+        print("running mc dropout sampling...")
+        for i in tqdm(range(len(ds_catalog))):
 
             im_json = ds_catalog[i]
             im = cv2.imread(im_json["file_name"])
@@ -62,17 +70,26 @@ class MCDropoutSampler(QueryStrategy):
 
         worst_ims = np.argsort(list(uncertainty_dict.values()))[:num_samples]
         samples = [list(uncertainty_dict.keys())[id] for id in worst_ims]
+        print("finished with mc dropout sampling.")
+        print(
+            "min uncertainty: ",
+            min(list(uncertainty_dict.values())),
+            "\t mean uncertainty: ",
+            sum(list(uncertainty_dict.values())) / len(list(uncertainty_dict.values())),
+            "\t max uncertainty: ",
+            min(list(uncertainty_dict.values())),
+        )
+        print("worst examples:", samples)
 
         return samples
-
 
     def get_mc_dropout_samples(self, cfg, model, input_image, iterrations):
 
         aug = T.ResizeShortestEdge(
-                [cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST
-            )
+            [cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST
+        )
         with torch.no_grad():
-            
+
             height, width = input_image.shape[:2]
             image = aug.get_transform(input_image).apply_image(input_image)
             image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
@@ -84,14 +101,20 @@ class MCDropoutSampler(QueryStrategy):
             proposals, _ = model.proposal_generator(images, features, None)
             features_ = [features[f] for f in model.roi_heads.box_in_features]
 
-            box_features_pooler = model.roi_heads.box_pooler(features_, [x.proposal_boxes for x in proposals])
+            box_features_pooler = model.roi_heads.box_pooler(
+                features_, [x.proposal_boxes for x in proposals]
+            )
             prediction_list = []
             for _ in range(iterrations):
                 box_features = model.roi_heads.box_head(box_features_pooler)
                 predictions = model.roi_heads.box_predictor(box_features)
-                pred_instances, pred_inds = model.roi_heads.box_predictor.inference(predictions, proposals)
-                pred_instances = model.roi_heads.forward_with_given_boxes(features, pred_instances)
-                
+                pred_instances, pred_inds = model.roi_heads.box_predictor.inference(
+                    predictions, proposals
+                )
+                pred_instances = model.roi_heads.forward_with_given_boxes(
+                    features, pred_instances
+                )
+
                 outputs = model._postprocess(pred_instances, inputs, images.image_sizes)
                 prediction_list.append(outputs)
             return list(chain.from_iterable(prediction_list))
@@ -105,9 +128,9 @@ class MCDropoutSampler(QueryStrategy):
 
         for i in range(len(outputs)):
             sample = outputs[i]
-            detections = len(sample['instances'])
-            dets = sample['instances'].get_fields()
-            
+            detections = len(sample["instances"])
+            dets = sample["instances"].get_fields()
+
             for det in range(detections):
                 if not observations:
                     detection = {}
@@ -117,13 +140,16 @@ class MCDropoutSampler(QueryStrategy):
 
                 else:
                     addThis = None
-                    for group, ds, in observations.items():
+                    for (
+                        group,
+                        ds,
+                    ) in observations.items():
                         for d in ds:
-                            thisMask = dets['pred_masks'][det]
-                            otherMask = d['pred_masks']
+                            thisMask = dets["pred_masks"][det]
+                            otherMask = d["pred_masks"]
                             overlap = torch.logical_and(thisMask, otherMask)
                             union = torch.logical_or(thisMask, otherMask)
-                            IOU = overlap.sum()/float(union.sum())
+                            IOU = overlap.sum() / float(union.sum())
                             if IOU <= iou_thres:
                                 break
                             else:
@@ -145,22 +171,31 @@ class MCDropoutSampler(QueryStrategy):
 
         return observations
 
-
     def get_uncertainty(self, predictions, iterrations, height, width, mode="min"):
         uncertainty_list = []
 
         device = "cuda"
-        
+
         for key, val in predictions.items():
 
-            mean_bbox = torch.mean(torch.stack([v['pred_boxes'].tensor for v in val]), axis=0)
-            mean_mask = torch.mean(torch.stack([v['pred_masks'].flatten().type(torch.cuda.FloatTensor) for v in val]), axis=0)
-            
+            mean_bbox = torch.mean(
+                torch.stack([v["pred_boxes"].tensor for v in val]), axis=0
+            )
+            mean_mask = torch.mean(
+                torch.stack(
+                    [
+                        v["pred_masks"].flatten().type(torch.cuda.FloatTensor)
+                        for v in val
+                    ]
+                ),
+                axis=0,
+            )
+
             mean_mask[mean_mask < 0.25] = 0.0
             mean_mask = mean_mask.reshape(-1, height, width)
             mask_IOUs = []
             for v in val:
-                current_mask = v['pred_masks']
+                current_mask = v["pred_masks"]
                 overlap = torch.logical_and(mean_mask, current_mask)
                 union = torch.logical_or(mean_mask, current_mask)
                 if union.sum() > 0:
@@ -170,36 +205,43 @@ class MCDropoutSampler(QueryStrategy):
             if len(mask_IOUs) > 0:
                 mask_IOUs = torch.cat(mask_IOUs)
             else:
-                mask_IOUs = torch.tensor([float('NaN')]).to(device)
+                mask_IOUs = torch.tensor([float("NaN")]).to(device)
 
             bbox_IOUs = []
             mean_bbox = mean_bbox.squeeze(0)
-            boxAArea = torch.multiply((mean_bbox[2] - mean_bbox[0] + 1), (mean_bbox[3] - mean_bbox[1] + 1))
+            boxAArea = torch.multiply(
+                (mean_bbox[2] - mean_bbox[0] + 1), (mean_bbox[3] - mean_bbox[1] + 1)
+            )
 
             for v in val:
-                current_bbox = v['pred_boxes'].tensor.squeeze(0)
+                current_bbox = v["pred_boxes"].tensor.squeeze(0)
                 xA = torch.max(mean_bbox[0], current_bbox[0])
                 yA = torch.max(mean_bbox[1], current_bbox[1])
                 xB = torch.min(mean_bbox[2], current_bbox[2])
                 yB = torch.min(mean_bbox[3], current_bbox[3])
-                interArea = torch.multiply(torch.max(torch.tensor(0).to(device), xB - xA + 1), torch.max(torch.tensor(0).to(device), yB - yA + 1))
-                boxBArea = torch.multiply((current_bbox[2] - current_bbox[0] + 1), (current_bbox[3] - current_bbox[1] + 1))
+                interArea = torch.multiply(
+                    torch.max(torch.tensor(0).to(device), xB - xA + 1),
+                    torch.max(torch.tensor(0).to(device), yB - yA + 1),
+                )
+                boxBArea = torch.multiply(
+                    (current_bbox[2] - current_bbox[0] + 1),
+                    (current_bbox[3] - current_bbox[1] + 1),
+                )
                 bbox_IOU = torch.divide(interArea, (boxAArea + boxBArea - interArea))
                 bbox_IOUs.append(bbox_IOU.unsqueeze(0))
 
             if len(bbox_IOUs) > 0:
                 bbox_IOUs = torch.cat(bbox_IOUs)
             else:
-                bbox_IOUs = torch.tensor([float('NaN')]).to(device)
+                bbox_IOUs = torch.tensor([float("NaN")]).to(device)
 
             val_len = torch.tensor(len(val)).to(device)
             outputs_len = torch.tensor(iterrations).to(device)
 
-                
             u_spl_m = torch.clamp(torch.divide(mask_IOUs.sum(), val_len), min=0, max=1)
             u_spl_b = torch.clamp(torch.divide(bbox_IOUs.sum(), val_len), min=0, max=1)
             u_spl = torch.multiply(u_spl_m, u_spl_b)
-            
+
             try:
                 u_n = torch.clamp(torch.divide(val_len, outputs_len), min=0, max=1)
             except:
@@ -211,16 +253,16 @@ class MCDropoutSampler(QueryStrategy):
         if uncertainty_list:
             uncertainty_list = torch.cat(uncertainty_list)
 
-            if mode == 'min':
+            if mode == "min":
                 uncertainty = torch.min(uncertainty_list)
-            elif mode == 'mean':
+            elif mode == "mean":
                 uncertainty = torch.mean(uncertainty_list)
-            elif mode == 'max':
+            elif mode == "max":
                 uncertainty = torch.max(uncertainty_list)
             else:
                 uncertainty = torch.mean(uncertainty_list)
-                
+
         else:
-            uncertainty = torch.tensor([float('NaN')]).to(device)
+            uncertainty = torch.tensor([float("NaN")]).to(device)
 
         return uncertainty.detach().cpu().numpy().squeeze(0)

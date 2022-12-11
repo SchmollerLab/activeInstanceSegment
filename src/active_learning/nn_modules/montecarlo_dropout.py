@@ -3,7 +3,7 @@
 # @Last Modified by:   Pieter Blok
 # @Last Modified time: 2021-07-12 13:33:36
 
-from itertools import chain 
+from itertools import chain
 
 ## based on: detectron2.engine.defaults
 import torch
@@ -86,12 +86,15 @@ class MonteCarloDropout:
             for _ in range(self.iterations):
                 inputs.append({"image": image, "height": height, "width": width})
 
-            batch_inputs = [inputs[i:i + self.batch_size] for i in range(0, self.iterations, self.batch_size)]  
+            batch_inputs = [
+                inputs[i : i + self.batch_size]
+                for i in range(0, self.iterations, self.batch_size)
+            ]
 
             prediction_list = []
             for b in range(len(batch_inputs)):
                 prediction_list.append(self.model(batch_inputs[b]))
-            predictions = list(chain.from_iterable(prediction_list)) 
+            predictions = list(chain.from_iterable(prediction_list))
 
             return predictions
 
@@ -167,16 +170,25 @@ class MonteCarloDropoutHead:
             proposals, _ = self.model.proposal_generator(images, features, None)
 
             features_ = [features[f] for f in self.model.roi_heads.box_in_features]
-            box_features_pooler = self.model.roi_heads.box_pooler(features_, [x.proposal_boxes for x in proposals])
-            
+            box_features_pooler = self.model.roi_heads.box_pooler(
+                features_, [x.proposal_boxes for x in proposals]
+            )
+
             prediction_list = []
             for _ in range(self.iterations):
                 box_features = self.model.roi_heads.box_head(box_features_pooler)
                 predictions = self.model.roi_heads.box_predictor(box_features)
-                pred_instances, pred_inds = self.model.roi_heads.box_predictor.inference(predictions, proposals)
-                pred_instances = self.model.roi_heads.forward_with_given_boxes(features, pred_instances)
-                outputs = self.model._postprocess(pred_instances, inputs, images.image_sizes)
+                (
+                    pred_instances,
+                    pred_inds,
+                ) = self.model.roi_heads.box_predictor.inference(predictions, proposals)
+                pred_instances = self.model.roi_heads.forward_with_given_boxes(
+                    features, pred_instances
+                )
+                outputs = self.model._postprocess(
+                    pred_instances, inputs, images.image_sizes
+                )
                 prediction_list.append(outputs)
-            predictions = list(chain.from_iterable(prediction_list)) 
+            predictions = list(chain.from_iterable(prediction_list))
 
             return predictions

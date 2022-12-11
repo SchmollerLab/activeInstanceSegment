@@ -17,7 +17,7 @@ def do_test(cfg, model=None, logger=None):
         model = build_model(cfg)
         model.eval()
         checkpointer = DetectionCheckpointer(model)
-        checkpointer.load(cfg.MODEL.WEIGHTS)                            
+        checkpointer.load(cfg.MODEL.WEIGHTS)
 
     results = OrderedDict()
     for dataset_name in cfg.DATASETS.TEST:

@@ -9,6 +9,7 @@
 import numpy as np
 import torch
 
+
 def observations(outputs, iou_thres=0.5):
     """
     To cluster the segmentations for the different Monte-Carlo runs
@@ -18,9 +19,9 @@ def observations(outputs, iou_thres=0.5):
 
     for i in range(len(outputs)):
         sample = outputs[i]
-        detections = len(sample['instances'])
-        dets = sample['instances'].get_fields()
-        
+        detections = len(sample["instances"])
+        dets = sample["instances"].get_fields()
+
         for det in range(detections):
             if not observations:
                 detection = {}
@@ -30,13 +31,16 @@ def observations(outputs, iou_thres=0.5):
 
             else:
                 addThis = None
-                for group, ds, in observations.items():
+                for (
+                    group,
+                    ds,
+                ) in observations.items():
                     for d in ds:
-                        thisMask = dets['pred_masks'][det]
-                        otherMask = d['pred_masks']
+                        thisMask = dets["pred_masks"][det]
+                        otherMask = d["pred_masks"]
                         overlap = torch.logical_and(thisMask, otherMask)
                         union = torch.logical_or(thisMask, otherMask)
-                        IOU = overlap.sum()/float(union.sum())
+                        IOU = overlap.sum() / float(union.sum())
                         if IOU <= iou_thres:
                             break
                         else:

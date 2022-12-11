@@ -11,17 +11,36 @@ import fvcore.nn.weight_init as weight_init
 from torch import nn
 from torch.nn import functional as F
 from detectron2.config import configurable, get_cfg
-from detectron2.layers import Conv2d, ConvTranspose2d, ShapeSpec, batched_nms, cat, cross_entropy, nonzero_tuple, get_norm
+from detectron2.layers import (
+    Conv2d,
+    ConvTranspose2d,
+    ShapeSpec,
+    batched_nms,
+    cat,
+    cross_entropy,
+    nonzero_tuple,
+    get_norm,
+)
 from detectron2.modeling.box_regression import Box2BoxTransform
 from detectron2.structures import Boxes, Instances
 from detectron2.utils.events import get_event_storage
 from detectron2.utils.registry import Registry
 
 ## these specific libraries are needed to alter the network architecture
-from detectron2.modeling.roi_heads import ROI_HEADS_REGISTRY, StandardROIHeads, Res5ROIHeads
+from detectron2.modeling.roi_heads import (
+    ROI_HEADS_REGISTRY,
+    StandardROIHeads,
+    Res5ROIHeads,
+)
 from detectron2.modeling.roi_heads.box_head import ROI_BOX_HEAD_REGISTRY
-from detectron2.modeling.roi_heads.fast_rcnn import fast_rcnn_inference, _log_classification_stats
-from detectron2.modeling.roi_heads.mask_head import ROI_MASK_HEAD_REGISTRY, BaseMaskRCNNHead
+from detectron2.modeling.roi_heads.fast_rcnn import (
+    fast_rcnn_inference,
+    _log_classification_stats,
+)
+from detectron2.modeling.roi_heads.mask_head import (
+    ROI_MASK_HEAD_REGISTRY,
+    BaseMaskRCNNHead,
+)
 
 
 @ROI_BOX_HEAD_REGISTRY.register()
@@ -33,7 +52,12 @@ class FastRCNNConvFCHeadDropout(nn.Sequential):
 
     @configurable
     def __init__(
-        self, input_shape: ShapeSpec, *, conv_dims: List[int], fc_dims: List[int], conv_norm="",
+        self,
+        input_shape: ShapeSpec,
+        *,
+        conv_dims: List[int],
+        fc_dims: List[int],
+        conv_norm="",
         dropout_probability: float = 0.5,
     ):
         """
@@ -49,7 +73,11 @@ class FastRCNNConvFCHeadDropout(nn.Sequential):
         super().__init__()
         assert len(conv_dims) + len(fc_dims) > 0
 
-        self._output_size = (input_shape.channels, input_shape.height, input_shape.width)
+        self._output_size = (
+            input_shape.channels,
+            input_shape.height,
+            input_shape.width,
+        )
 
         self.conv_norm_relus = []
         for k, conv_dim in enumerate(conv_dims):
@@ -116,7 +144,6 @@ class FastRCNNConvFCHeadDropout(nn.Sequential):
             return ShapeSpec(channels=o[0], height=o[1], width=o[2])
 
 
-
 class FastRCNNOutputLayersDropout(nn.Module):
     """
     Two linear layers for predicting Fast R-CNN outputs:
@@ -165,7 +192,9 @@ class FastRCNNOutputLayersDropout(nn.Module):
         if isinstance(input_shape, int):  # some backward compatibility
             input_shape = ShapeSpec(channels=input_shape)
         self.num_classes = num_classes
-        input_size = input_shape.channels * (input_shape.width or 1) * (input_shape.height or 1)
+        input_size = (
+            input_shape.channels * (input_shape.width or 1) * (input_shape.height or 1)
+        )
         # prediction layer for num_classes foreground classes and one background class (hence + 1)
         self.dropout1 = nn.Dropout(p=dropout_probability)
         self.cls_score = nn.Linear(input_size, num_classes + 1)
@@ -190,12 +219,13 @@ class FastRCNNOutputLayersDropout(nn.Module):
         self.loss_weight = loss_weight
         self.softmaxes = softmaxes
 
-
     @classmethod
     def from_config(cls, cfg, input_shape):
         return {
             "input_shape": input_shape,
-            "box2box_transform": Box2BoxTransform(weights=cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_WEIGHTS),
+            "box2box_transform": Box2BoxTransform(
+                weights=cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_WEIGHTS
+            ),
             # fmt: off
             "num_classes"           : cfg.MODEL.ROI_HEADS.NUM_CLASSES,
             "cls_agnostic_bbox_reg" : cfg.MODEL.ROI_BOX_HEAD.CLS_AGNOSTIC_BBOX_REG,
@@ -246,24 +276,35 @@ class FastRCNNOutputLayersDropout(nn.Module):
 
         # parse classification outputs
         gt_classes = (
-            cat([p.gt_classes for p in proposals], dim=0) if len(proposals) else torch.empty(0)
+            cat([p.gt_classes for p in proposals], dim=0)
+            if len(proposals)
+            else torch.empty(0)
         )
         _log_classification_stats(scores, gt_classes)
 
         # parse box regression outputs
         if len(proposals):
-            proposal_boxes = cat([p.proposal_boxes.tensor for p in proposals], dim=0)  # Nx4
-            assert not proposal_boxes.requires_grad, "Proposals should not require gradients!"
+            proposal_boxes = cat(
+                [p.proposal_boxes.tensor for p in proposals], dim=0
+            )  # Nx4
+            assert (
+                not proposal_boxes.requires_grad
+            ), "Proposals should not require gradients!"
             # If "gt_boxes" does not exist, the proposals must be all negative and
             # should not be included in regression loss computation.
             # Here we just use proposal_boxes as an arbitrary placeholder because its
             # value won't be used in self.box_reg_loss().
             gt_boxes = cat(
-                [(p.gt_boxes if p.has("gt_boxes") else p.proposal_boxes).tensor for p in proposals],
+                [
+                    (p.gt_boxes if p.has("gt_boxes") else p.proposal_boxes).tensor
+                    for p in proposals
+                ],
                 dim=0,
             )
         else:
-            proposal_boxes = gt_boxes = torch.empty((0, 4), device=proposal_deltas.device)
+            proposal_boxes = gt_boxes = torch.empty(
+                (0, 4), device=proposal_deltas.device
+            )
 
         losses = {
             "loss_cls": cross_entropy(scores, gt_classes, reduction="mean"),
@@ -318,7 +359,9 @@ class FastRCNNOutputLayersDropout(nn.Module):
         # in minibatch (2) are given equal influence.
         return loss_box_reg / max(gt_classes.numel(), 1.0)  # return 0 if empty
 
-    def inference(self, predictions: Tuple[torch.Tensor, torch.Tensor], proposals: List[Instances]):
+    def inference(
+        self, predictions: Tuple[torch.Tensor, torch.Tensor], proposals: List[Instances]
+    ):
         """
         Args:
             predictions: return values of :meth:`forward()`.
@@ -339,7 +382,7 @@ class FastRCNNOutputLayersDropout(nn.Module):
             image_shapes,
             self.test_score_thresh,
             self.test_nms_thresh,
-            self.test_topk_per_image
+            self.test_topk_per_image,
         )
 
     def predict_boxes_for_gt_classes(self, predictions, proposals):
@@ -372,7 +415,8 @@ class FastRCNNOutputLayersDropout(nn.Module):
             gt_classes = gt_classes.clamp_(0, K - 1)
 
             predict_boxes = predict_boxes.view(N, K, B)[
-                torch.arange(N, dtype=torch.long, device=predict_boxes.device), gt_classes
+                torch.arange(N, dtype=torch.long, device=predict_boxes.device),
+                gt_classes,
             ]
         num_prop_per_image = [len(p) for p in proposals]
         return predict_boxes.split(num_prop_per_image)
@@ -423,19 +467,20 @@ class FastRCNNOutputLayersDropout(nn.Module):
         return probs.split(num_inst_per_image, dim=0)
 
 
-
 @ROI_HEADS_REGISTRY.register()
 class Res5ROIHeadsDropout(Res5ROIHeads):
     def __init__(self, cfg, input_shape):
-        super().__init__(cfg, input_shape, box_predictor=FastRCNNOutputLayersDropout(cfg, 2048))
-    
+        super().__init__(
+            cfg, input_shape, box_predictor=FastRCNNOutputLayersDropout(cfg, 2048)
+        )
 
 
 @ROI_HEADS_REGISTRY.register()
 class StandardROIHeadsDropout(StandardROIHeads):
     def __init__(self, cfg, input_shape):
-        super().__init__(cfg, input_shape, box_predictor=FastRCNNOutputLayersDropout(cfg, 1024))
-
+        super().__init__(
+            cfg, input_shape, box_predictor=FastRCNNOutputLayersDropout(cfg, 1024)
+        )
 
 
 @ROI_MASK_HEAD_REGISTRY.register()
@@ -446,8 +491,16 @@ class MaskRCNNConvUpsampleHeadDropout(BaseMaskRCNNHead, nn.Sequential):
     """
 
     @configurable
-    def __init__(self, input_shape: ShapeSpec, *, num_classes, conv_dims, conv_norm="", 
-            dropout_probability: float = 0.5, **kwargs):
+    def __init__(
+        self,
+        input_shape: ShapeSpec,
+        *,
+        num_classes,
+        conv_dims,
+        conv_norm="",
+        dropout_probability: float = 0.5,
+        **kwargs,
+    ):
         """
         NOTE: this interface is experimental.
 
@@ -491,7 +544,9 @@ class MaskRCNNConvUpsampleHeadDropout(BaseMaskRCNNHead, nn.Sequential):
 
         self.dropout2 = nn.Dropout(p=dropout_probability)
 
-        self.predictor = Conv2d(cur_channels, num_classes, kernel_size=1, stride=1, padding=0)
+        self.predictor = Conv2d(
+            cur_channels, num_classes, kernel_size=1, stride=1, padding=0
+        )
 
         for layer in self.conv_norm_relus + [self.deconv]:
             weight_init.c2_msra_fill(layer)
