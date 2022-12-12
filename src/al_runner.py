@@ -11,3 +11,4 @@ if __name__ == "__main__":
     cfg = get_config("acdc_large_al")
     al_trainer = ActiveLearningTrainer(cfg, is_test_mode=not running_on_server)
     al_trainer.run(dataset=ACDC_LARGE, query_strat=MC_DROPOUT)
+    al_trainer.run(dataset=ACDC_LARGE, query_strat=RANDOM)

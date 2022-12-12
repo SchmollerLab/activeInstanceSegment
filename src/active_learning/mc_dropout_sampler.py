@@ -77,7 +77,7 @@ class MCDropoutSampler(QueryStrategy):
             "\t mean uncertainty: ",
             sum(list(uncertainty_dict.values())) / len(list(uncertainty_dict.values())),
             "\t max uncertainty: ",
-            min(list(uncertainty_dict.values())),
+            max(list(uncertainty_dict.values())),
         )
         print("worst examples:", samples)
 
@@ -248,7 +248,8 @@ class MCDropoutSampler(QueryStrategy):
                 u_n = 0.0
 
             u_h = torch.multiply(u_spl, u_n)
-            uncertainty_list.append(u_h.unsqueeze(0))
+            if not torch.isnan(u_h.unsqueeze(0)):
+                uncertainty_list.append(u_h.unsqueeze(0))
 
         if uncertainty_list:
             uncertainty_list = torch.cat(uncertainty_list)
