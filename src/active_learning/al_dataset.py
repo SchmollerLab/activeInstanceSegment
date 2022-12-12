@@ -1,13 +1,14 @@
 import sys
-
-sys.path.append("..")
+import os
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+sys.path.append(PROJECT_ROOT)
 
 import random as rd
 
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
-from globals import *
-from register_datasets import register_datasets, register_by_ids
+from src.globals import *
+from src.register_datasets import register_datasets, register_by_ids
 
 
 class ActiveLearingDataset:

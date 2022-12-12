@@ -84,8 +84,10 @@ class Data2cocoConverter:
     def augment_store_image(self, full_id, image, mask, split_type):
 
         # flip_combs: [[horizontal,vertical]]
-        flip_combs = [[False, False], [True, False], [False, True], [True, True]]
-
+        if split_type == "train" and False:
+            flip_combs = [[False, False], [True, False], [False, True], [True, True]]
+        else:
+            flip_combs = [[False, False]]
         for flip_comb in flip_combs:
 
             full_id_with_flip = full_id + self.get_flip_str(flip_comb)
@@ -323,6 +325,6 @@ if __name__ == "__main__":
 
     # cpc = Cellpose2cocoConverter(BASE_DATA_PATH)
     # cpc.convert()
-    # small_acdc_conv = SmallACDC2cocoConverter(BASE_DATA_PATH)
-    # small_acdc_conv.convert()
+    small_acdc_conv = SmallACDC2cocoConverter(BASE_DATA_PATH)
+    small_acdc_conv.convert()
     pass
