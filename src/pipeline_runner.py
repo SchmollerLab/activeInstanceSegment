@@ -5,8 +5,6 @@ from datetime import datetime
 # Setup detectron2 logger
 from detectron2.utils.logger import setup_logger
 
-logger = setup_logger(output="./log/main.log")
-
 # import some common libraries
 import numpy as np
 import os, json, cv2, random
@@ -26,7 +24,7 @@ from config_builder import get_config
 
 def run_pipeline(config_name, cfg=None):
 
-    model = build_model(cfg)
+    logger = setup_logger(output="./log/main.log")
     # logger.info("Model:\n{}".format(model))
 
     running_on_server = os.getenv("IS_SERVER") == "true"
@@ -46,11 +44,10 @@ def run_pipeline(config_name, cfg=None):
     # empty gpu cache
     torch.cuda.empty_cache()
     # run training
-    do_train(cfg, model, logger)
+    do_train(cfg, logger=logger)
     # run testing
-    result = do_test(cfg, model, logger)
+    result = do_test(cfg, logger=logger)
 
-    model = None
     cfg = None
 
     wandb.run.finish()

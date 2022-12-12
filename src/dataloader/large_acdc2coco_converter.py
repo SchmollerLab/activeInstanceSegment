@@ -25,7 +25,7 @@ from data2coco import Data2cocoConverter
 
 
 class LargeACDC2cocoConverter(Data2cocoConverter):
-    def __init__(self, root_dir, filename) -> None:
+    def __init__(self, root_dir, filename=None) -> None:
 
         dataset_name = "acdc_large"
         self.filename = filename
@@ -107,6 +107,8 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
         phase_contr_tifs = []
         phase_contr_npzs = []
         segms = []
+        max_ids = []
+
         base_dict = os.fsencode(self.raw_images_path)
         for acdc_ds in os.listdir(base_dict):
             acdc_ds_name = os.fsdecode(acdc_ds)
@@ -130,6 +132,7 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                         phase_contr_npz = ""
                         phase_contr_tif = ""
                         segm = ""
+                        max_id = -1
 
                         for file in os.listdir(
                             os.fsencode(
@@ -155,6 +158,18 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                             if filename.find("segm.npz") != -1:
                                 segm = filename
 
+                            if filename.find("output.csv") != -1:
+                                output_df = pd.read_csv(self.raw_images_path
+                                        + "/"
+                                        + acdc_ds_name
+                                        + "/"
+                                        + experiment_name
+                                        + "/"
+                                        + position_name
+                                        + "/Images/" + filename)
+                                max_id = max(output_df["frame_i"].values)
+
+
                         paths.append(
                             self.raw_images_path
                             + "/"
@@ -168,6 +183,7 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                         phase_contr_npzs.append(phase_contr_npz)
                         phase_contr_tifs.append(phase_contr_tif)
                         segms.append(segm)
+                        max_ids.append(max_id)
 
         df = pd.DataFrame(
             data={
@@ -175,11 +191,11 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                 "phc_npz": phase_contr_npzs,
                 "phc_tif": phase_contr_tifs,
                 "segm": segms,
+                "max_image": max_ids
             }
         )
         df_clean = df[df["segm"] != ""].copy().reset_index()
         df_clean["min_image"] = 0
-        df_clean["max_image"] = -1
         df_clean.to_csv(
             os.path.join(
                 self.raw_images_path, "data_map-" + str(int(time.time())) + ".csv"
@@ -192,5 +208,5 @@ if __name__ == "__main__":
     large_acdc_conv = LargeACDC2cocoConverter(
         BASE_DATA_PATH, filename="data_map-1670164283.csv"
     )
-    # large_acdc_conv.build_data_map()
-    large_acdc_conv.convert()
+    large_acdc_conv.build_data_map()
+    #large_acdc_conv.convert()
