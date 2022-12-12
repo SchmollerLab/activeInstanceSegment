@@ -88,7 +88,7 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
 
     def load_video(self, path, phc_npz, phc_tif, segm):
 
-        if phc_npz != "":
+        if phc_npz != "" and isinstance(phc_npz, str):
             if phc_npz.find(".npz") != -1:
                 vid = np.load(os.path.join(path, phc_npz))["arr_0"]
             else:

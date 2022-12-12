@@ -11,6 +11,7 @@ from src.globals import *
 from src.register_datasets import register_datasets, register_by_ids
 
 
+
 class ActiveLearingDataset:
     def __init__(self, cfg):
         """ """
