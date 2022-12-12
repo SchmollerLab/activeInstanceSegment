@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("..")
 
 import wandb
@@ -17,56 +18,63 @@ from active_learning.active_learning_dataset import ActiveLearingDataset
 from active_learning.query_strategies import *
 
 
-
-
 class ActiveLearningTrainer:
-    
     def __init__(self, cfg, is_test_mode=False):
         self.cfg = cfg
 
         self.is_test_mode = is_test_mode
-        
+
         self.logger = setup_logger(output="./log/main.log")
         self.logger.setLevel(10)
-        
+
         self.model = build_model(cfg)
-        
-        
+
     def __del__(self):
         wandb.run.finish()
-    
+
     def step(self, resume):
-        
+
         if not resume:
-            self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
+            self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
+                "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
+            )
             self.model = build_model(self.cfg)
-            
-        self.model = do_train(self.cfg, self.model, self.logger,resume=resume)
+
+        self.model = do_train(self.cfg, self.model, self.logger, resume=resume)
         result = do_test(self.cfg, self.model, self.logger)
         wandb.log(
             {
-                "al":{
-                    "bbox_ap": result['bbox']['AP'],
-                    "segm_ap": result['segm']['AP'],
-                    "used_data_points": self.al_dataset.get_len_labeled()
+                "al": {
+                    "bbox_ap": result["bbox"]["AP"],
+                    "segm_ap": result["segm"]["AP"],
+                    "used_data_points": self.al_dataset.get_len_labeled(),
+                }
+            }
+        )
 
-                } 
-            })
-        
-        print("test active learning", (result['segm']['AP'] + result['bbox']['AP'])/2)
-        sample_ids = self.query_strategy.sample(self.model, self.al_dataset.unlabeled_ids)
+        print("test active learning", (result["segm"]["AP"] + result["bbox"]["AP"]) / 2)
+        sample_ids = self.query_strategy.sample(
+            self.model, self.al_dataset.unlabeled_ids
+        )
         self.al_dataset.update_labeled_data(sample_ids)
-        
-    
+
     def run(self, dataset, query_strat):
 
         # initialize weights and biases
         if self.is_test_mode:
-            wandb.init(project="activeCell-ACDC", name=dataset + "_" + query_strat, sync_tensorboard=True, mode="disabled")
+            wandb.init(
+                project="activeCell-ACDC",
+                name=dataset + "_" + query_strat,
+                sync_tensorboard=True,
+                mode="disabled",
+            )
         else:
-            wandb.init(project="activeCell-ACDC", name=dataset + "_" + query_strat, sync_tensorboard=True)
+            wandb.init(
+                project="activeCell-ACDC",
+                name=dataset + "_" + query_strat,
+                sync_tensorboard=True,
+            )
 
-        
         # define strategy
         if query_strat == RANDOM:
             self.query_strategy = RandomSampler(self.cfg)
@@ -76,14 +84,14 @@ class ActiveLearningTrainer:
             raise Exception("Query strategy {} not defined".format(query_strat))
 
         # define al dataset and specify what dataset to use
-        self.cfg.AL.DATASETS.TRAIN_UNLABELED = get_dataset_name(dataset,TRAIN)
-        self.cfg.DATASETS.TRAIN = (get_dataset_name(dataset,TRAIN),)
-        self.cfg.DATASETS.TEST = (get_dataset_name(dataset,TEST),)
-        self.al_dataset = ActiveLearingDataset(self.cfg)  
+        self.cfg.AL.DATASETS.TRAIN_UNLABELED = get_dataset_name(dataset, TRAIN)
+        self.cfg.DATASETS.TRAIN = (get_dataset_name(dataset, TRAIN),)
+        self.cfg.DATASETS.TEST = (get_dataset_name(dataset, TEST),)
+        self.al_dataset = ActiveLearingDataset(self.cfg)
 
         try:
             for i in range(self.cfg.AL.MAX_LOOPS):
-                self.step(resume=(i>0))
+                self.step(resume=(i > 0))
         except Exception as e:
             wandb.run.finish()
             raise e

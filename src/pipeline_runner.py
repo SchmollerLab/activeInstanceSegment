@@ -29,41 +29,48 @@ except:
 
 
 def run_pipeline(cfg=None):
-    
+
     model = build_model(cfg)
-    #logger.info("Model:\n{}".format(model))
-    
+    # logger.info("Model:\n{}".format(model))
+
     # initialize weights and biases
-    wandb.init(project="activeCell-ACDC", name=cfg.NAME + "-" + datetime.now().strftime("%d-%b-%Y"), sync_tensorboard=True)
-    
+    wandb.init(
+        project="activeCell-ACDC",
+        name=cfg.NAME + "-" + datetime.now().strftime("%d-%b-%Y"),
+        sync_tensorboard=True,
+    )
+
     # empty gpu cache
     torch.cuda.empty_cache()
     # run training
     do_train(cfg, model, logger)
-    #run testing
+    # run testing
     result = do_test(cfg, model, logger)
 
     model = None
     cfg = None
 
     wandb.run.finish()
-    
+
     return result
-        
-        
+
+
 if __name__ == "__main__":
-    
+
     parser = ArgumentParser()
-    parser.add_argument("-f", "--file", dest="filename",
-                        help="Path to pipeline configuration", metavar="FILE")
+    parser.add_argument(
+        "-f",
+        "--file",
+        dest="filename",
+        help="Path to pipeline configuration",
+        metavar="FILE",
+    )
 
     args = parser.parse_args()
     filename = args.filename
-    
-    
+
     register_datasets()
-    config_name = filename.split("/")[-1].replace(".yaml","")
+    config_name = filename.split("/")[-1].replace(".yaml", "")
     cfg = get_config(config_name)
-    
+
     run_pipeline(cfg)
-    

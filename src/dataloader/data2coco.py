@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import random as rd
 from tqdm import tqdm
- 
+
 import datetime
 import json
 import re
@@ -16,12 +16,13 @@ import fnmatch
 import pycococreatortools
 
 import sys
-sys.path.insert(0,sys.path[0] + "/..") 
+
+sys.path.insert(0, sys.path[0] + "/..")
 from globals import *
 
 IMAGE_DIR_NAME = "images"
 ANNOTATION_DIR_NAME = "annotations"
- 
+
 INFO = {
     "description": "cellpose data in COCO format",
     "url": "",
@@ -30,9 +31,9 @@ INFO = {
     "contributor": "Florian Bridges",
     "date_created": datetime.datetime.utcnow().isoformat(" "),
 }
- 
+
 LICENSES = [{"id": 1, "name": "", "url": ""}]
- 
+
 CATEGORIES = [
     {
         "id": 0,
@@ -40,64 +41,61 @@ CATEGORIES = [
         "supercategory": "cell",
     }
 ]
- 
-class Data2cocoConverter:
 
-    def __init__(self, root_dir, dataset_name, data_splits=[TEST,TRAIN]) -> None:
-        
+
+class Data2cocoConverter:
+    def __init__(self, root_dir, dataset_name, data_splits=[TEST, TRAIN]) -> None:
+
         self.dataset_name = dataset_name
         self.data_splits = data_splits
-        self.raw_images_path = os.path.join(root_dir,"raw_data",dataset_name)
+        self.raw_images_path = os.path.join(root_dir, "raw_data", dataset_name)
         self.save_images_path = os.path.join(root_dir, dataset_name)
 
-        self.create_dir_to_path(root_dir,dataset_name)
+        self.create_dir_to_path(root_dir, dataset_name)
         for data_split in data_splits:
 
-            self.create_dir_to_path(self.save_images_path,data_split)        
-            self.create_dir_to_path(self.save_images_path,data_split + "/annotations")        
-            self.create_dir_to_path(self.save_images_path,data_split + "/images")        
-
-
+            self.create_dir_to_path(self.save_images_path, data_split)
+            self.create_dir_to_path(self.save_images_path, data_split + "/annotations")
+            self.create_dir_to_path(self.save_images_path, data_split + "/images")
 
     def create_dir_to_path(self, path, dir_name):
         if not os.path.exists(os.path.join(path, dir_name)):
             os.mkdir(os.path.join(path, dir_name))
 
-
     def convert(self):
         print("converting {} images ...".format(self.dataset_name))
-        
+
         # prepare images
         self.iterate_images()
         image_id = 1
         segmentation_id = 1
-    
+
         for split_type in self.data_splits:
             print("converting to coco for split {}:".format(split_type))
             self.convert_data_to_coco(
-                image_id, segmentation_id, os.path.join(self.save_images_path, split_type)
+                image_id,
+                segmentation_id,
+                os.path.join(self.save_images_path, split_type),
             )
-
 
     def iterate_images(self):
         pass
- 
+
     def augment_store_image(self, full_id, image, mask, split_type):
-    
+
         # flip_combs: [[horizontal,vertical]]
-        flip_combs = [[False,False],[True,False],[False,True],[True,True]] 
-    
+        flip_combs = [[False, False], [True, False], [False, True], [True, True]]
+
         for flip_comb in flip_combs:
-    
+
             full_id_with_flip = full_id + self.get_flip_str(flip_comb)
-        
+
             image_flipped = self.flip_image(image, flip_comb)
             mask_full = self.flip_image(mask, flip_comb)
-    
+
             # save masks independently
             self.store_image(full_id_with_flip, image_flipped, mask_full, split_type)
-               
- 
+
     def store_image(self, id, image, mask, split_type):
 
         # save image as png
@@ -106,7 +104,7 @@ class Data2cocoConverter:
             image.astype(float),
             cmap="gray",
         )
-    
+
         # save masks independently
         labels = np.unique(mask)
         for label in labels[1:]:
@@ -120,31 +118,29 @@ class Data2cocoConverter:
                 ),
                 mask_single_cell,
                 cmap="gray",
-            ) 
-    
+            )
+
     def flip_image(self, image, flip_type):
-    
-        for dim in [0,1]:
+
+        for dim in [0, 1]:
             if flip_type[dim]:
-                image = np.flip(image,dim)
-    
+                image = np.flip(image, dim)
+
         return image
-    
+
     def get_flip_str(self, flip_type):
-    
+
         flip_str = "H" + str(flip_type[0])[0] + "V" + str(flip_type[1])[0]
         return flip_str
-    
-            
-    
+
     def filter_for_png(self, root, files):
         file_types = ["*.png"]
         file_types = r"|".join([fnmatch.translate(x) for x in file_types])
         files = [os.path.join(root, f) for f in files]
         files = [f for f in files if re.match(file_types, f)]
-    
+
         return files
-    
+
     def filter_for_annotations(self, root, files, image_filename):
         file_types = ["*.png"]
         file_types = r"|".join([fnmatch.translate(x) for x in file_types])
@@ -157,11 +153,11 @@ class Data2cocoConverter:
             for f in files
             if re.match(file_name_prefix, os.path.splitext(os.path.basename(f))[0])
         ]
-    
+
         return files
-    
+
     def convert_data_to_coco(self, image_id, segmentation_id, path_dir):
-    
+
         coco_output = {
             "info": INFO,
             "licenses": LICENSES,
@@ -169,7 +165,7 @@ class Data2cocoConverter:
             "images": [],
             "annotations": [],
         }
-    
+
         for root, _, files in os.walk(os.path.join(path_dir, IMAGE_DIR_NAME)):
             image_files = self.filter_for_png(root, files)
             # go through each image
@@ -179,19 +175,24 @@ class Data2cocoConverter:
                     image_id, os.path.basename(image_filename), image.size
                 )
                 coco_output["images"].append(image_info)
-    
+
                 # filter for associated png annotations
-                for root, _, files in os.walk(os.path.join(path_dir, ANNOTATION_DIR_NAME)):
-                    annotation_files = self.filter_for_annotations(root, files, image_filename)
-    
-                    
+                for root, _, files in os.walk(
+                    os.path.join(path_dir, ANNOTATION_DIR_NAME)
+                ):
+                    annotation_files = self.filter_for_annotations(
+                        root, files, image_filename
+                    )
+
                     # go through each associated annotation
                     for annotation_filename in annotation_files:
-    
+
                         class_id = [
-                            x["id"] for x in CATEGORIES if x["name"] in annotation_filename
+                            x["id"]
+                            for x in CATEGORIES
+                            if x["name"] in annotation_filename
                         ][0]
-    
+
                         category_info = {
                             "id": class_id,
                             "is_crowd": "crowd" in image_filename,
@@ -199,7 +200,7 @@ class Data2cocoConverter:
                         binary_mask = np.asarray(
                             Image.open(annotation_filename).convert("1")
                         ).astype(np.uint8)
-    
+
                         annotation_info = pycococreatortools.create_annotation_info(
                             segmentation_id,
                             image_id,
@@ -208,28 +209,29 @@ class Data2cocoConverter:
                             image.size,
                             tolerance=0,
                         )
-    
+
                         if annotation_info is not None:
                             coco_output["annotations"].append(annotation_info)
-    
+
                         segmentation_id = segmentation_id + 1
-    
+
                 image_id = image_id + 1
-            
-        with open("{}/cell_acdc_coco_ds.json".format(path_dir), "w") as output_json_file:
+
+        with open(
+            "{}/cell_acdc_coco_ds.json".format(path_dir), "w"
+        ) as output_json_file:
             json.dump(coco_output, output_json_file)
 
-class Cellpose2cocoConverter(Data2cocoConverter):
 
+class Cellpose2cocoConverter(Data2cocoConverter):
     def __init__(self, root_dir) -> None:
 
         dataset_name = "cellpose"
         super().__init__(root_dir, dataset_name)
-        self.raw_images_path = os.path.join(self.raw_images_path,"data")
+        self.raw_images_path = os.path.join(self.raw_images_path, "data")
 
-    
     def iterate_images(self):
-        
+
         num_images = 540
         num_train = math.ceil(num_images * 0.8)
 
@@ -238,23 +240,26 @@ class Cellpose2cocoConverter(Data2cocoConverter):
         ids_dict = {}
         ids_dict[TRAIN] = ids[:num_train]
         ids_dict[TEST] = ids[num_train:]
-    
-        for split_type in [TRAIN,TEST]:
+
+        for split_type in [TRAIN, TEST]:
             for id in tqdm(ids_dict[split_type]):
                 id_str = ("000" + str(id))[-3:]
-                image = mpimg.imread(os.path.join(self.raw_images_path, id_str + "_img.png"))
-                mask = mpimg.imread(os.path.join(self.raw_images_path, id_str + "_masks.png"))
-                self.augment_store_image(str(id),image,mask, split_type)
+                image = mpimg.imread(
+                    os.path.join(self.raw_images_path, id_str + "_img.png")
+                )
+                mask = mpimg.imread(
+                    os.path.join(self.raw_images_path, id_str + "_masks.png")
+                )
+                self.augment_store_image(str(id), image, mask, split_type)
+
 
 class SmallACDC2cocoConverter(Data2cocoConverter):
-
-
     def __init__(self, root_dir) -> None:
 
         dataset_name = "acdc_small"
         super().__init__(root_dir, dataset_name)
-        self.raw_images_path = os.path.join(self.raw_images_path,"TimeLapse_2D")
-    
+        self.raw_images_path = os.path.join(self.raw_images_path, "TimeLapse_2D")
+
     def iterate_images(self):
 
         id: int = 0
@@ -266,7 +271,14 @@ class SmallACDC2cocoConverter(Data2cocoConverter):
                 for pos in os.listdir(os.fsencode(self.raw_images_path + "/" + name)):
                     pos_name = os.fsdecode(pos)
                     for file in os.listdir(
-                        os.fsencode(self.raw_images_path + "/" + name + "/" + pos_name + "/Images")
+                        os.fsencode(
+                            self.raw_images_path
+                            + "/"
+                            + name
+                            + "/"
+                            + pos_name
+                            + "/Images"
+                        )
                     ):
                         filename = os.fsdecode(file)
                         if filename.find("_phase_contr.tif") != -1:
@@ -281,13 +293,17 @@ class SmallACDC2cocoConverter(Data2cocoConverter):
 
         images: np.array = data[0]
         masks: np.array = data[1]
-        
+
         num_images: int = images.shape[0]
         for i in range(num_images):
-            self.augment_store_image(str(id) + "_" + str(i),images[i],masks[i], split_type)
+            self.augment_store_image(
+                str(id) + "_" + str(i), images[i], masks[i], split_type
+            )
 
     def load_video(self, experiment_name, position, filename):
-        path = self.raw_images_path + "/" + experiment_name + "/" + position + "/Images/"
+        path = (
+            self.raw_images_path + "/" + experiment_name + "/" + position + "/Images/"
+        )
         print("loading:", path)
 
         vid = io.imread(path + filename + "phase_contr.tif")
@@ -299,14 +315,14 @@ class SmallACDC2cocoConverter(Data2cocoConverter):
         data = np.array([vid, lables])
 
         return data
- 
-
 
         return data
+
+
 if __name__ == "__main__":
 
-    #cpc = Cellpose2cocoConverter(BASE_DATA_PATH)
-    #cpc.convert()
-    #small_acdc_conv = SmallACDC2cocoConverter(BASE_DATA_PATH)
-    #small_acdc_conv.convert()
+    # cpc = Cellpose2cocoConverter(BASE_DATA_PATH)
+    # cpc.convert()
+    # small_acdc_conv = SmallACDC2cocoConverter(BASE_DATA_PATH)
+    # small_acdc_conv.convert()
     pass

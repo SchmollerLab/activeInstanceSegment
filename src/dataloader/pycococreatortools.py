@@ -24,6 +24,7 @@ def close_contour(contour):
         contour = np.vstack((contour, contour[0]))
     return contour
 
+
 def binary_mask_to_rle(binary_mask):
     rle = {"counts": [], "size": list(binary_mask.shape)}
     counts = rle.get("counts")

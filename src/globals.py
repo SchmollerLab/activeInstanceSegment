@@ -1,4 +1,3 @@
-
 ########################################################################
 #                                DATA                                  #
 ########################################################################
@@ -6,8 +5,8 @@
 ### PATHS
 import os
 
-BASE_DATA_PATH =  "./data/"
-    
+BASE_DATA_PATH = "./data/"
+
 REL_PATH_TRAIN_JSON = "train/cell_acdc_coco_ds.json"
 REL_PATH_TRAIN_IMAGES = "train/images"
 REL_PATH_TEST_JSON = "test/cell_acdc_coco_ds.json"
@@ -28,7 +27,7 @@ SINGLE_POINT_DATASET = "cell_acdc_train_single_sample"
 VALIDATION_DATASET_SLIM = "cell_acdc_validation_slim"
 
 ### class label
-CELL = 'cell'
+CELL = "cell"
 
 TRAIN = "train"
 TEST = "test"

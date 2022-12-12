@@ -18,10 +18,9 @@ except:
 
 
 def do_train(cfg, model, logger, resume=False):
-    
 
     wandb.config.update(yaml.load(cfg.dump()))
-    
+
     model.train()
     optimizer = build_optimizer(cfg, model)
     scheduler = build_lr_scheduler(cfg, optimizer)
@@ -29,11 +28,11 @@ def do_train(cfg, model, logger, resume=False):
     checkpointer = DetectionCheckpointer(
         model, cfg.OUTPUT_DIR, optimizer=optimizer, scheduler=scheduler
     )
-    
+
     # define counter for early stopping
     early_counter = 0
     max_ap = 0
-    
+
     start_iter = (
         checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get(
             "iteration", -1
@@ -85,23 +84,34 @@ def do_train(cfg, model, logger, resume=False):
                 res = do_test(cfg, model, logger)
                 # Compared to "train_net.py", the test results are not dumped to EventStorage
                 comm.synchronize()
-                
+
                 wandb.log(
-                        {
-                            "early_stopping_ap": (res['segm']['AP'] + res['bbox']['AP'])/2 
-                        })
-                if (res['segm']['AP'] + res['bbox']['AP'])/2 < max_ap:
+                    {"early_stopping_ap": (res["segm"]["AP"] + res["bbox"]["AP"]) / 2}
+                )
+                if (res["segm"]["AP"] + res["bbox"]["AP"]) / 2 < max_ap:
                     early_counter += 1
-                    print("new ap:", (res['segm']['AP'] + res['bbox']['AP'])/2, "max_ap", max_ap, "add counter: ", early_counter) 
+                    print(
+                        "new ap:",
+                        (res["segm"]["AP"] + res["bbox"]["AP"]) / 2,
+                        "max_ap",
+                        max_ap,
+                        "add counter: ",
+                        early_counter,
+                    )
                     if early_counter > cfg.EARLY_STOPPING_ROUNDS:
                         print("stopping training")
                         break
                 else:
-                    print("new ap:", (res['segm']['AP'] + res['bbox']['AP'])/2, "max_ap", max_ap, "adjust max") 
-                    max_ap = max(max_ap,(res['segm']['AP'] + res['bbox']['AP'])/2)
+                    print(
+                        "new ap:",
+                        (res["segm"]["AP"] + res["bbox"]["AP"]) / 2,
+                        "max_ap",
+                        max_ap,
+                        "adjust max",
+                    )
+                    max_ap = max(max_ap, (res["segm"]["AP"] + res["bbox"]["AP"]) / 2)
                     checkpointer.save("best_model")
                     early_counter = 0
-                
 
             if iteration - start_iter > 5 and (
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1
