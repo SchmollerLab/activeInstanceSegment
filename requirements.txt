@@ -8,3 +8,4 @@ pandas
 opencv-python
 tqdm
 shapely
+baal

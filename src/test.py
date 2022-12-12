@@ -5,11 +5,20 @@ import wandb
 import detectron2.utils.comm as comm
 from detectron2.data import build_detection_test_loader
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
+from detectron2.modeling import build_model
+from detectron2.checkpoint import DetectionCheckpointer
 
 from detectron2.evaluation import print_csv_format
 
 
-def do_test(cfg, model, logger):
+def do_test(cfg, model=None, logger=None):
+
+    if model is None:
+        model = build_model(cfg)
+        model.eval()
+        checkpointer = DetectionCheckpointer(model)
+        checkpointer.load(cfg.MODEL.WEIGHTS)
+
     results = OrderedDict()
     for dataset_name in cfg.DATASETS.TEST:
         data_loader = build_detection_test_loader(cfg, dataset_name)
@@ -23,4 +32,5 @@ def do_test(cfg, model, logger):
         results = list(results.values())[0]
     logger.info(results)
     wandb.log(results)
+    model.train()
     return results

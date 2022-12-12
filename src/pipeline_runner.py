@@ -17,28 +17,31 @@ from detectron2.modeling import build_model
 
 from argparse import ArgumentParser
 
-try:
-    from register_datasets import register_datasets
-    from train import do_train
-    from test import do_test
-    from config_builder import get_config
-except:
-    from src.register_datasets import register_datasets
-    from src.train import do_train
-    from src.test import do_test
+
+from register_datasets import register_datasets
+from train import do_train
+from test import do_test
+from config_builder import get_config
 
 
-def run_pipeline(cfg=None):
+def run_pipeline(config_name, cfg=None):
 
     model = build_model(cfg)
     # logger.info("Model:\n{}".format(model))
 
+    running_on_server = os.getenv("IS_SERVER") == "true"
+    print("running on server:", running_on_server)
+
     # initialize weights and biases
-    wandb.init(
-        project="activeCell-ACDC",
-        name=cfg.NAME + "-" + datetime.now().strftime("%d-%b-%Y"),
-        sync_tensorboard=True,
-    )
+    if not running_on_server:
+        wandb.init(
+            project="activeCell-ACDC",
+            name=config_name,
+            sync_tensorboard=True,
+            mode="disabled",
+        )
+    else:
+        wandb.init(project="activeCell-ACDC", name=config_name, sync_tensorboard=True)
 
     # empty gpu cache
     torch.cuda.empty_cache()
@@ -71,6 +74,6 @@ if __name__ == "__main__":
 
     register_datasets()
     config_name = filename.split("/")[-1].replace(".yaml", "")
-    cfg = get_config(config_name)
+    cfg = get_config(config_name, complete_path=filename)
 
-    run_pipeline(cfg)
+    run_pipeline(config_name, cfg)

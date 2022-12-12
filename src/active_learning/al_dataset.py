@@ -1,13 +1,15 @@
 import sys
-
-sys.path.append("..")
+import os
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+sys.path.append(PROJECT_ROOT)
 
 import random as rd
 
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
-from globals import *
-from register_datasets import register_datasets, register_by_ids
+from src.globals import *
+from src.register_datasets import register_datasets, register_by_ids
+
 
 
 class ActiveLearingDataset:
@@ -21,13 +23,11 @@ class ActiveLearingDataset:
         # get ids of all images
         self.unlabeled_jsons = DatasetCatalog.get(cfg.AL.DATASETS.TRAIN_UNLABELED)
         self.unlabeled_ids = [
-            image["image_id"]
-            for image in self.unlabeled_jsons
-            if image["file_name"].find("HFVF") != -1
+            image["image_id"] for image in self.unlabeled_jsons if image["file_name"]
         ]
-        self.dict_aug_ids_by_id = self.precompute_augmentation_ids(self.unlabeled_ids)
+        # self.dict_aug_ids_by_id = self.precompute_augmentation_ids(self.unlabeled_ids)
         self.labeled_ids = []
-        self.labeled_ids_aug = []
+        # self.labeled_ids_aug = []
 
         self.unlabeled_data_name = "temp_unlabeled_data_al"
         self.labeled_data_name = "temp_labeled_data_al"
@@ -77,7 +77,7 @@ class ActiveLearingDataset:
         self.remove_data_from_catalog(self.labeled_data_name)
         register_by_ids(
             self.labeled_data_name,
-            self.labeled_ids_aug,
+            self.labeled_ids,
             self.cfg.OUTPUT_DIR,
             self.cfg.AL.DATASETS.TRAIN_UNLABELED,
         )
@@ -110,7 +110,7 @@ class ActiveLearingDataset:
         self.labeled_ids += sample_ids
         self.unlabeled_ids = list(set(self.unlabeled_ids) - set(sample_ids))
 
-        self.update_labled_ids_aug()
+        # self.update_labled_ids_aug()
         self.get_labeled_dataset()
         self.get_unlabled_dataset()
 

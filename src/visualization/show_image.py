@@ -15,7 +15,8 @@ def show_image(ims, normalize=True):
         plt.imshow(im_cont)
 
     else:
-        fig = plt.figure(figsize=(20, 10))
+
+        fig = plt.figure(figsize=(22, 15))
 
         num_figures = len(ims)
         cols = 3

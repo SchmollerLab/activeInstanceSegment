@@ -18,12 +18,12 @@ class QueryStrategy(object):
 
         self.cfg = cfg
 
-    def sample(self, model, ids):
+    def sample(self, cfg, ids):
         pass
 
 
 class RandomSampler(QueryStrategy):
-    def sample(self, model, ids):
+    def sample(self, cfg, ids):
         num_samples = self.cfg.AL.INCREMENT_SIZE
         samples = rd.sample(ids, num_samples)
         return samples
