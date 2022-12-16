@@ -11,6 +11,8 @@ from detectron2.engine import default_writers
 from detectron2.data import build_detection_train_loader
 from detectron2.modeling import build_model
 from detectron2.checkpoint import DetectionCheckpointer
+from detectron2.data import transforms as T
+from detectron2.data import DatasetMapper
 
 try:
     from test import do_test
@@ -56,7 +58,15 @@ def do_train(cfg, logger, resume=False):
 
     # compared to "train_net.py", we do not support accurate timing and
     # precise BN here, because they are not trivial to implement in a small training loop
-    data_loader = build_detection_train_loader(cfg)
+    
+    # define augmentations
+    augs = [
+        T.RandomBrightness(0.9, 1.1),
+        T.RandomFlip(prob=0.5,horizontal=True,vertical=False),
+        T.RandomFlip(prob=0.5,horizontal=False,vertical=True)
+    ]
+    data_loader = build_detection_train_loader(cfg,
+        mapper=DatasetMapper(cfg, is_train=True, augmentations=augs))
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
         for data, iteration in zip(data_loader, range(start_iter, max_iter)):
