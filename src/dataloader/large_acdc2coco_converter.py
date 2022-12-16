@@ -206,7 +206,7 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
 if __name__ == "__main__":
 
     large_acdc_conv = LargeACDC2cocoConverter(
-        BASE_DATA_PATH, filename="data_map-1670164283.csv"
+        BASE_DATA_PATH, filename="data_map-1670848157.csv"
     )
-    large_acdc_conv.build_data_map()
-    #large_acdc_conv.convert()
+    #large_acdc_conv.build_data_map()
+    large_acdc_conv.convert()

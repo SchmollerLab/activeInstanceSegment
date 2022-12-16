@@ -27,35 +27,29 @@ def build_register_function(image_ids, dataset_full):
     return register_function
 
 
-def get_dataset_name(dataset, type):
-    if type == TRAIN:
-        return dataset + "_" + TRAIN
+def get_dataset_name(dataset, dsplit):
+    
+    if dsplit in DATASETS_DSPLITS[dataset]:
+        return dataset + "_" + dsplit
     else:
-        return dataset + "_" + TEST
+        raise Exception("Dsplit `{}` not found in dataset `{}`".format(dsplit,dataset))
 
 
 def register_datasets():
 
-    for dataset in LIST_DATASETS:
+    for dataset in DATASETS_DSPLITS.keys():
         print("registering {} dataset".format(dataset))
 
-        # train
-        if not get_dataset_name(dataset, TRAIN) in MetadataCatalog:
-            register_coco_instances(
-                get_dataset_name(dataset, TRAIN),
-                {},
-                BASE_DATA_PATH + dataset + "/" + REL_PATH_TRAIN_JSON,
-                BASE_DATA_PATH + dataset + "/" + REL_PATH_TRAIN_IMAGES,
-            )
-
-        # test
-        if not get_dataset_name(dataset, TEST) in MetadataCatalog:
-            register_coco_instances(
-                get_dataset_name(dataset, TEST),
-                {},
-                BASE_DATA_PATH + dataset + "/" + REL_PATH_TEST_JSON,
-                BASE_DATA_PATH + dataset + "/" + REL_PATH_TEST_IMAGES,
-            )
+        dsplits = DATASETS_DSPLITS[dataset]
+        
+        for dsplit in dsplits:
+            if not get_dataset_name(dataset, dsplit) in MetadataCatalog:
+                register_coco_instances(
+                    get_dataset_name(dataset, dsplit),
+                    {},
+                    BASE_DATA_PATH + dataset + "/" + dsplit + "/" + REL_PATH_JSON,
+                    BASE_DATA_PATH + dataset + "/" + dsplit + "/" + REL_PATH_IMAGES,
+                )
 
 
 def register_by_ids(dataset_name, image_ids, output_dir, dataset_full):
@@ -76,3 +70,7 @@ def register_by_ids(dataset_name, image_ids, output_dir, dataset_full):
     MetadataCatalog.get(dataset_name).set(thing_classes=[CELL])
 
     return dataset_name
+
+if __name__ == "__main__":
+    register_datasets()
+    get_dataset_name(ACDC_LARGE,"test_1")
