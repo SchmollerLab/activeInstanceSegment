@@ -20,27 +20,21 @@ def do_test(cfg, model=None, logger=None):
         checkpointer.load(cfg.MODEL.WEIGHTS)
 
     results = OrderedDict()
+    num_ds = len(cfg.DATASETS.TEST)
     for dataset_name in cfg.DATASETS.TEST:
         data_loader = build_detection_test_loader(cfg, dataset_name)
         evaluator = COCOEvaluator(dataset_name, output_dir=cfg.OUTPUT_DIR)
         results_i = inference_on_dataset(model, data_loader, evaluator)
-        results[dataset_name] = results_i
+        for metric in results_i.keys():
+            if metric in results.keys():
+                results[metric] += results_i[metric]/num_ds
+            else:
+                results[metric] = results_i[metric]/num_ds
+        
         if comm.is_main_process():
             logger.info("Evaluation results for {} in csv format:".format(dataset_name))
             print_csv_format(results_i)
-    if len(results) == 1:
-        results = list(results.values())[0]
-    else:
-        results_sum = {}
-        num_ds = len(list(results.keys()))
-        for dataset_name in results.keys():
-            for metric in results[dataset_name].keys():
-                if metric in results_sum.keys():
-                    results_sum[metric] += results[dataset_name][metric]/num_ds
-                else:
-                    results_sum[metric] = results[dataset_name][metric]/num_ds
-
-        results = results_sum
+    
     logger.info(results)
     wandb.log(results)
     model.train()
