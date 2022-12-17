@@ -20,16 +20,19 @@ def do_test(cfg, model=None, logger=None):
         checkpointer.load(cfg.MODEL.WEIGHTS)
 
     results = OrderedDict()
+    results["segm"] = OrderedDict()
+    results["bbox"] = OrderedDict()
     num_ds = len(cfg.DATASETS.TEST)
     for dataset_name in cfg.DATASETS.TEST:
         data_loader = build_detection_test_loader(cfg, dataset_name)
         evaluator = COCOEvaluator(dataset_name, output_dir=cfg.OUTPUT_DIR)
         results_i = inference_on_dataset(model, data_loader, evaluator)
-        for metric in results_i.keys():
-            if metric in results.keys():
-                results[metric] += results_i[metric]/num_ds
-            else:
-                results[metric] = results_i[metric]/num_ds
+        for ap_type in ["segm", "bbox"]:
+            for metric in results_i[ap_type].keys():
+                if metric in results[ap_type].keys():
+                    results[ap_type][metric] += results_i[ap_type][metric]/num_ds
+                else:
+                    results[ap_type][metric] = results_i[ap_type][metric]/num_ds
         
         if comm.is_main_process():
             logger.info("Evaluation results for {} in csv format:".format(dataset_name))
