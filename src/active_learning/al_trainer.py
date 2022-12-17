@@ -90,9 +90,9 @@ class ActiveLearningTrainer:
             raise Exception("Query strategy {} not defined".format(query_strat))
 
         # define al dataset and specify what dataset to use
-        self.cfg.AL.DATASETS.TRAIN_UNLABELED = get_dataset_name(dataset, TRAIN)
-        self.cfg.DATASETS.TRAIN = (get_dataset_name(dataset, TRAIN),)
-        self.cfg.DATASETS.TEST = (get_dataset_name(dataset, TEST),)
+        self.cfg.AL.DATASETS.TRAIN_UNLABELED = get_dataset_name(dataset, DATASETS_DSPLITS[dataset][0])
+        #self.cfg.DATASETS.TRAIN = (get_dataset_name(dataset, DATASETS_DSPLITS[dataset][0],))
+        #self.cfg.DATASETS.TEST = (get_dataset_name(dataset, TEST),)
         self.al_dataset = ActiveLearingDataset(self.cfg)
 
         try:
