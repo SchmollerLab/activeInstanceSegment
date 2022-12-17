@@ -61,7 +61,6 @@ def do_train(cfg, logger, resume=False):
     
     # define augmentations
     augs = [
-        T.RandomBrightness(0.9, 1.1),
         T.RandomFlip(prob=0.5,horizontal=True,vertical=False),
         T.RandomFlip(prob=0.5,horizontal=False,vertical=True)
     ]
