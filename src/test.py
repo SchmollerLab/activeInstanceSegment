@@ -30,6 +30,17 @@ def do_test(cfg, model=None, logger=None):
             print_csv_format(results_i)
     if len(results) == 1:
         results = list(results.values())[0]
+    else:
+        results_sum = {}
+        num_ds = len(list(results.keys()))
+        for dataset_name in results.keys():
+            for metric in results[dataset_name].keys():
+                if metric in results_sum.keys():
+                    results_sum[metric] += results[dataset_name][metric]/num_ds
+                else:
+                    results_sum[metric] = results[dataset_name][metric]/num_ds
+
+        results = results_sum
     logger.info(results)
     wandb.log(results)
     model.train()
