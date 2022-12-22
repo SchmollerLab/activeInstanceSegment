@@ -10,6 +10,7 @@ sys.path.append(PROJECT_ROOT)
 
 import wandb
 import math
+import yaml
 
 from detectron2.utils.logger import setup_logger
 from detectron2.data import MetadataCatalog, DatasetCatalog
@@ -94,7 +95,7 @@ class ActiveLearningTrainer:
         #self.cfg.DATASETS.TRAIN = (get_dataset_name(dataset, DATASETS_DSPLITS[dataset][0],))
         #self.cfg.DATASETS.TEST = (get_dataset_name(dataset, TEST),)
         self.al_dataset = ActiveLearingDataset(self.cfg)
-
+        wandb.config.update(yaml.load(cfg.dump()))
         try:
             for i in range(self.cfg.AL.MAX_LOOPS):
                 self.step(resume=(i > 0))

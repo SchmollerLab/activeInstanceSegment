@@ -27,8 +27,6 @@ def do_train(cfg, logger, resume=False):
     checkpointer = DetectionCheckpointer(model)
     checkpointer.load(cfg.MODEL.WEIGHTS)
 
-    # wandb.config.update(yaml.load(cfg.dump()))
-
     optimizer = build_optimizer(cfg, model)
     scheduler = build_lr_scheduler(cfg, optimizer)
 
@@ -61,11 +59,13 @@ def do_train(cfg, logger, resume=False):
     
     # define augmentations
     augs = [
-        T.RandomFlip(prob=0.5,horizontal=True,vertical=False),
-        T.RandomFlip(prob=0.5,horizontal=False,vertical=True)
+        #T.RandomFlip(prob=0.5,horizontal=True,vertical=False),
+        #T.RandomFlip(prob=0.5,horizontal=False,vertical=True)
     ]
+    #data_loader = build_detection_train_loader(cfg,
+    #    mapper=DatasetMapper(cfg, is_train=True, augmentations=augs))
     data_loader = build_detection_train_loader(cfg,
-        mapper=DatasetMapper(cfg, is_train=True, augmentations=augs))
+        mapper=DatasetMapper(cfg, is_train=True))
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
         for data, iteration in zip(data_loader, range(start_iter, max_iter)):

@@ -9,6 +9,7 @@ from detectron2.utils.logger import setup_logger
 import numpy as np
 import os, json, cv2, random
 import wandb
+import yaml
 
 # import some common detectron2 utilities
 from detectron2.modeling import build_model
@@ -44,6 +45,7 @@ def run_pipeline(config_name, cfg=None):
     # empty gpu cache
     torch.cuda.empty_cache()
     # run training
+    wandb.config.update(yaml.load(cfg.dump()))
     do_train(cfg, logger=logger)
     # run testing
     result = do_test(cfg, logger=logger)
