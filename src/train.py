@@ -2,6 +2,7 @@ import torch, detectron2
 import wandb
 import yaml
 import os
+import glob
 
 import detectron2.utils.comm as comm
 from detectron2.utils.events import EventStorage
@@ -19,13 +20,19 @@ try:
 except:
     from src.test import do_test
 
+def clean_output_dir(output_dir):
+
+    files = glob.glob(output_dir)
+    for f in files:
+        os.remove(f)
 
 def do_train(cfg, logger, resume=False):
 
+    if not resume:
+        clean_output_dir(cfg.OUTPUT_DIR)
+
     model = build_model(cfg)
     model.train()
-    checkpointer = DetectionCheckpointer(model)
-    checkpointer.load(cfg.MODEL.WEIGHTS)
 
     optimizer = build_optimizer(cfg, model)
     scheduler = build_lr_scheduler(cfg, optimizer)
@@ -44,27 +51,23 @@ def do_train(cfg, logger, resume=False):
         )
         + 1
     )
+
     max_iter = cfg.SOLVER.MAX_ITER
 
-    periodic_checkpointer = PeriodicCheckpointer(
-        checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD, max_iter=max_iter
-    )
 
     writers = (
         default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
     )
 
-    # compared to "train_net.py", we do not support accurate timing and
-    # precise BN here, because they are not trivial to implement in a small training loop
-    
     # define augmentations
     augs = [
-            T.ResizeShortestEdge(short_edge_length=cfg.INPUT.MIN_SIZE_TRAIN, max_size=cfg.INPUT.MAX_SIZE_TRAIN, sample_style=cfg.INPUT.MIN_SIZE_TRAIN_SAMPLING),
+        T.ResizeShortestEdge(short_edge_length=cfg.INPUT.MIN_SIZE_TRAIN, max_size=cfg.INPUT.MAX_SIZE_TRAIN, sample_style=cfg.INPUT.MIN_SIZE_TRAIN_SAMPLING),
         T.RandomFlip(prob=0.5,horizontal=True,vertical=False),
         T.RandomFlip(prob=0.5,horizontal=False,vertical=True)
     ]
     data_loader = build_detection_train_loader(cfg,
         mapper=DatasetMapper(cfg, is_train=True, augmentations=augs))
+
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
         for data, iteration in zip(data_loader, range(start_iter, max_iter)):
@@ -95,7 +98,6 @@ def do_train(cfg, logger, resume=False):
                 and iteration != max_iter - 1
             ):
                 res = do_test(cfg, model=model, logger=logger)
-                # Compared to "train_net.py", the test results are not dumped to EventStorage
                 comm.synchronize()
 
                 wandb.log(
@@ -132,8 +134,4 @@ def do_train(cfg, logger, resume=False):
 
                 for writer in writers:
                     writer.write()
-            periodic_checkpointer.step(iteration)
 
-
-    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
-    return cfg

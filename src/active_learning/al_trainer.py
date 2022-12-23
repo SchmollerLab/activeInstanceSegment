@@ -40,14 +40,7 @@ class ActiveLearningTrainer:
 
     def step(self, resume):
 
-        if not resume:
-            self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
-                "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
-            )
-        else:
-            self.cfg.MODEL.WEIGHTS = os.path.join(self.cfg.OUTPUT_DIR, "best_model.pth")
-
-        self.cfg = do_train(self.cfg, self.logger, resume=resume)
+        do_train(self.cfg, self.logger, resume=resume)
         result = do_test(self.cfg, logger=self.logger)
         wandb.log(
             {

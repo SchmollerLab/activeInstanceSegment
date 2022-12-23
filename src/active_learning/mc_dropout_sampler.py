@@ -52,7 +52,7 @@ class MCDropoutSampler(QueryStrategy):
         model.eval()
 
         checkpointer = DetectionCheckpointer(model)
-        checkpointer.load(cfg.MODEL.WEIGHTS)
+        checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=True)
 
         ds_catalog = DatasetCatalog.get("MCDropoutSampler_DS")
         uncertainty_dict = {}

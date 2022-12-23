@@ -17,7 +17,7 @@ def do_test(cfg, model=None, logger=None):
         model = build_model(cfg)
         model.eval()
         checkpointer = DetectionCheckpointer(model)
-        checkpointer.load(cfg.MODEL.WEIGHTS)
+        checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=True)
 
     results = OrderedDict()
     results["segm"] = OrderedDict()
