@@ -44,6 +44,8 @@ def do_train(cfg, logger, resume=False):
     # define counter for early stopping
     early_counter = 0
     max_ap = 0
+    max_result = {}
+    max_early_counter = 0
 
     start_iter = (
         checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get(
@@ -105,6 +107,8 @@ def do_train(cfg, logger, resume=False):
                 )
                 if (res["segm"]["AP"] + res["bbox"]["AP"]) / 2 < max_ap:
                     early_counter += 1
+                    max_early_counter = max(max_early_counter, early_counter)
+
                     print(
                         "new ap:",
                         (res["segm"]["AP"] + res["bbox"]["AP"]) / 2,
@@ -124,9 +128,12 @@ def do_train(cfg, logger, resume=False):
                         max_ap,
                         "adjust max",
                     )
+                    max_result = res
                     max_ap = max(max_ap, (res["segm"]["AP"] + res["bbox"]["AP"]) / 2)
                     checkpointer.save("best_model")
                     early_counter = 0
+                
+                wandb.log({"max_early_counter": max_early_counter})
 
             if iteration - start_iter > 5 and (
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1
@@ -134,4 +141,7 @@ def do_train(cfg, logger, resume=False):
 
                 for writer in writers:
                     writer.write()
+
+    return max_result
+        
 

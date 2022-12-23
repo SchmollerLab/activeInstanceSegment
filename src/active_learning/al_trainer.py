@@ -39,9 +39,8 @@ class ActiveLearningTrainer:
         wandb.run.finish()
 
     def step(self, resume):
-
-        do_train(self.cfg, self.logger, resume=resume)
-        result = do_test(self.cfg, logger=self.logger)
+        
+        result = do_train(self.cfg, self.logger, resume=resume)
         wandb.log(
             {
                 "al": {
