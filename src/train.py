@@ -59,13 +59,12 @@ def do_train(cfg, logger, resume=False):
     
     # define augmentations
     augs = [
-        #T.RandomFlip(prob=0.5,horizontal=True,vertical=False),
-        #T.RandomFlip(prob=0.5,horizontal=False,vertical=True)
+            T.ResizeShortestEdge(short_edge_length=cfg.INPUT.MIN_SIZE_TRAIN, max_size=cfg.INPUT.MAX_SIZE_TRAIN, sample_style=cfg.INPUT.MIN_SIZE_TRAIN_SAMPLING),
+        T.RandomFlip(prob=0.5,horizontal=True,vertical=False),
+        T.RandomFlip(prob=0.5,horizontal=False,vertical=True)
     ]
-    #data_loader = build_detection_train_loader(cfg,
-    #    mapper=DatasetMapper(cfg, is_train=True, augmentations=augs))
     data_loader = build_detection_train_loader(cfg,
-        mapper=DatasetMapper(cfg, is_train=True))
+        mapper=DatasetMapper(cfg, is_train=True, augmentations=augs))
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
         for data, iteration in zip(data_loader, range(start_iter, max_iter)):
@@ -134,6 +133,7 @@ def do_train(cfg, logger, resume=False):
                 for writer in writers:
                     writer.write()
             periodic_checkpointer.step(iteration)
+
 
     cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
     return cfg

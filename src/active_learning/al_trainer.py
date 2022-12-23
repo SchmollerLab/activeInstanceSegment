@@ -95,7 +95,7 @@ class ActiveLearningTrainer:
         #self.cfg.DATASETS.TRAIN = (get_dataset_name(dataset, DATASETS_DSPLITS[dataset][0],))
         #self.cfg.DATASETS.TEST = (get_dataset_name(dataset, TEST),)
         self.al_dataset = ActiveLearingDataset(self.cfg)
-        wandb.config.update(yaml.load(cfg.dump()))
+        wandb.config.update(yaml.load(self.cfg.dump()))
         try:
             for i in range(self.cfg.AL.MAX_LOOPS):
                 self.step(resume=(i > 0))
