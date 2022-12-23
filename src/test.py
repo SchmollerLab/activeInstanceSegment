@@ -1,6 +1,7 @@
 import torch, detectron2
 from collections import OrderedDict
 import wandb
+import os
 
 import detectron2.utils.comm as comm
 from detectron2.data import build_detection_test_loader
@@ -17,7 +18,7 @@ def do_test(cfg, model=None, logger=None):
         model = build_model(cfg)
         model.eval()
         checkpointer = DetectionCheckpointer(model)
-        checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=True)
+        checkpointer.load(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
 
     results = OrderedDict()
     results["segm"] = OrderedDict()

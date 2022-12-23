@@ -2,7 +2,7 @@ import torch, detectron2
 import wandb
 import yaml
 import os
-import glob
+import shutil
 
 import detectron2.utils.comm as comm
 from detectron2.utils.events import EventStorage
@@ -22,9 +22,9 @@ except:
 
 def clean_output_dir(output_dir):
 
-    files = glob.glob(output_dir)
-    for f in files:
-        os.remove(f)
+    shutil.rmtree(output_dir)
+    os.mkdir(output_dir)
+
 
 def do_train(cfg, logger, resume=False):
 

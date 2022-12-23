@@ -45,14 +45,13 @@ class MCDropoutSampler(QueryStrategy):
             self.cfg.AL.DATASETS.TRAIN_UNLABELED,
         )
 
-        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
 
         model = build_model(cfg)
         model = patch_module(model)
         model.eval()
 
         checkpointer = DetectionCheckpointer(model)
-        checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=True)
+        checkpointer.load(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
 
         ds_catalog = DatasetCatalog.get("MCDropoutSampler_DS")
         uncertainty_dict = {}
