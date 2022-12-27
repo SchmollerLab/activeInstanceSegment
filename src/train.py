@@ -63,9 +63,9 @@ def do_train(cfg, logger, resume=False):
 
     # define augmentations
     augs = [
-        T.ResizeShortestEdge(short_edge_length=cfg.INPUT.MIN_SIZE_TRAIN, max_size=cfg.INPUT.MAX_SIZE_TRAIN, sample_style=cfg.INPUT.MIN_SIZE_TRAIN_SAMPLING),
         T.RandomFlip(prob=0.5,horizontal=True,vertical=False),
-        T.RandomFlip(prob=0.5,horizontal=False,vertical=True)
+        T.RandomFlip(prob=0.5,horizontal=False,vertical=True),
+        T.ResizeShortestEdge(short_edge_length=cfg.INPUT.MIN_SIZE_TRAIN, max_size=cfg.INPUT.MAX_SIZE_TRAIN, sample_style=cfg.INPUT.MIN_SIZE_TRAIN_SAMPLING)
     ]
     data_loader = build_detection_train_loader(cfg,
         mapper=DatasetMapper(cfg, is_train=True, augmentations=augs))
