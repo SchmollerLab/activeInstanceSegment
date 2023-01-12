@@ -1,7 +1,7 @@
 #! /bin/bash
 
 sudo apt-get update -y
-sudo apt-get upgrade -y
+#sudo apt-get upgrade -y
 
 
 echo install python and pip
@@ -23,6 +23,35 @@ pip3 install torch torchvision torchaudio
 
 echo installing detectron2
 python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
-#pip3 install -r ./requirements.txt
+pip3 install -r ./activeCell-ACDC/requirements.txt
 
 
+sudo apt install p7zip-full -y
+
+
+echo "set enviromental variables"
+
+project_root="$(pwd)"/activeCell-ACDC
+data_path="$(pwd)"/activeCell-ACDC/data
+mkdir data_path
+
+if [[ -z $IS_SERVER ]]; then
+    echo "enviromental IS_SERVER is not set. appending to .bashrc"
+    echo "export IS_SERVER=true" >> ~/.bashrc
+else
+    echo "enviromental IS_SERVER is already set."
+fi
+
+if [[ -z $PROJECT_ROOT ]]; then
+    echo "enviromental PROJECT_ROOT is not set. appending to .bashrc"
+    echo "export PROJECT_ROOT=true" >> ~/.bashrc
+else
+    echo "enviromental PROJECT_ROOT is already set."
+fi
+
+if [[ -z $DATA_PATH ]]; then
+    echo "enviromental DATA_PATH is not set. appending to .bashrc"
+    echo "export DATA_PATH=true" >> ~/.bashrc
+else
+    echo "enviromental DATA_PATH is already set."
+fi
