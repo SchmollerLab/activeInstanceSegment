@@ -31,14 +31,14 @@ def do_test(cfg, model=None, logger=None):
         for ap_type in ["segm", "bbox"]:
             for metric in results_i[ap_type].keys():
                 if metric in results[ap_type].keys():
-                    results[ap_type][metric] += results_i[ap_type][metric]/num_ds
+                    results[ap_type][metric] += results_i[ap_type][metric] / num_ds
                 else:
-                    results[ap_type][metric] = results_i[ap_type][metric]/num_ds
-        
+                    results[ap_type][metric] = results_i[ap_type][metric] / num_ds
+
         if comm.is_main_process():
             logger.info("Evaluation results for {} in csv format:".format(dataset_name))
             print_csv_format(results_i)
-    
+
     logger.info(results)
     wandb.log(results)
     model.train()

@@ -20,6 +20,7 @@ try:
 except:
     from src.test import do_test
 
+
 def clean_output_dir(output_dir):
 
     shutil.rmtree(output_dir)
@@ -56,19 +57,23 @@ def do_train(cfg, logger, resume=False):
 
     max_iter = cfg.SOLVER.MAX_ITER
 
-
     writers = (
         default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
     )
 
     # define augmentations
     augs = [
-        T.RandomFlip(prob=0.5,horizontal=True,vertical=False),
-        T.RandomFlip(prob=0.5,horizontal=False,vertical=True),
-        T.ResizeShortestEdge(short_edge_length=cfg.INPUT.MIN_SIZE_TRAIN, max_size=cfg.INPUT.MAX_SIZE_TRAIN, sample_style=cfg.INPUT.MIN_SIZE_TRAIN_SAMPLING)
+        T.RandomFlip(prob=0.5, horizontal=True, vertical=False),
+        T.RandomFlip(prob=0.5, horizontal=False, vertical=True),
+        T.ResizeShortestEdge(
+            short_edge_length=cfg.INPUT.MIN_SIZE_TRAIN,
+            max_size=cfg.INPUT.MAX_SIZE_TRAIN,
+            sample_style=cfg.INPUT.MIN_SIZE_TRAIN_SAMPLING,
+        ),
     ]
-    data_loader = build_detection_train_loader(cfg,
-        mapper=DatasetMapper(cfg, is_train=True, augmentations=augs))
+    data_loader = build_detection_train_loader(
+        cfg, mapper=DatasetMapper(cfg, is_train=True, augmentations=augs)
+    )
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
@@ -132,7 +137,7 @@ def do_train(cfg, logger, resume=False):
                     max_ap = max(max_ap, (res["segm"]["AP"] + res["bbox"]["AP"]) / 2)
                     checkpointer.save("best_model")
                     early_counter = 0
-                
+
                 wandb.log({"max_early_counter": max_early_counter})
 
             if iteration - start_iter > 5 and (
@@ -143,5 +148,3 @@ def do_train(cfg, logger, resume=False):
                     writer.write()
 
     return max_result
-        
-

@@ -15,13 +15,13 @@ PATH_PIPELINE_CONFIGS = "./pipeline_configs"
 ACDC_SMALL = "acdc_small"
 ACDC_LARGE = "acdc_large"
 
-#CELLPOSE = "cellpose"
-#ACDC_LAST_IMAGES = "acdc_last_images"
+# CELLPOSE = "cellpose"
+# ACDC_LAST_IMAGES = "acdc_last_images"
 
-#LIST_DATASETS = [ACDC_LARGE, ACDC_SMALL] # [ACDC_LARGE, ACDC_SMALL, CELLPOSE, ACDC_LAST_IMAGES]
+# LIST_DATASETS = [ACDC_LARGE, ACDC_SMALL] # [ACDC_LARGE, ACDC_SMALL, CELLPOSE, ACDC_LAST_IMAGES]
 DATASETS_DSPLITS = {
-    ACDC_SMALL:["train", "test"],
-    ACDC_LARGE:["train", "test_1", "test_2"]
+    ACDC_SMALL: ["train", "test"],
+    ACDC_LARGE: ["train", "test_1", "test_2"],
 }
 
 ### NAMES REGISTERED DATASETS
@@ -33,8 +33,8 @@ VALIDATION_DATASET_SLIM = "cell_acdc_validation_slim"
 ### class label
 CELL = "cell"
 
-#TRAIN = "train"
-#TEST = "test"
+# TRAIN = "train"
+# TEST = "test"
 ### AL Methods
 RANDOM = "random"
 KNOWN_VALIDATION = "known_validation"

@@ -1,5 +1,6 @@
 import sys
 import os
+
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 sys.path.append(PROJECT_ROOT)
 
@@ -9,7 +10,6 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 
 from src.globals import *
 from src.register_datasets import register_datasets, register_by_ids
-
 
 
 class ActiveLearingDataset:

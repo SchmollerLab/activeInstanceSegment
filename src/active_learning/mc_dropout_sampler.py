@@ -33,10 +33,10 @@ from baal.bayesian.dropout import patch_module
 
 class MCDropoutSampler(QueryStrategy):
     def sample(self, cfg, ids):
-        
+
         num_samples = self.cfg.AL.INCREMENT_SIZE
 
-        id_pool = ids #rd.sample(ids, min(60,len(ids)))
+        id_pool = ids  # rd.sample(ids, min(60,len(ids)))
 
         register_by_ids(
             "MCDropoutSampler_DS",
@@ -44,7 +44,6 @@ class MCDropoutSampler(QueryStrategy):
             self.cfg.OUTPUT_DIR,
             self.cfg.AL.DATASETS.TRAIN_UNLABELED,
         )
-
 
         model = build_model(cfg)
         model = patch_module(model)

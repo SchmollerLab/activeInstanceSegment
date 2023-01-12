@@ -159,16 +159,18 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                                 segm = filename
 
                             if filename.find("output.csv") != -1:
-                                output_df = pd.read_csv(self.raw_images_path
-                                        + "/"
-                                        + acdc_ds_name
-                                        + "/"
-                                        + experiment_name
-                                        + "/"
-                                        + position_name
-                                        + "/Images/" + filename)
+                                output_df = pd.read_csv(
+                                    self.raw_images_path
+                                    + "/"
+                                    + acdc_ds_name
+                                    + "/"
+                                    + experiment_name
+                                    + "/"
+                                    + position_name
+                                    + "/Images/"
+                                    + filename
+                                )
                                 max_id = max(output_df["frame_i"].values)
-
 
                         paths.append(
                             self.raw_images_path
@@ -191,7 +193,7 @@ class LargeACDC2cocoConverter(Data2cocoConverter):
                 "phc_npz": phase_contr_npzs,
                 "phc_tif": phase_contr_tifs,
                 "segm": segms,
-                "max_image": max_ids
+                "max_image": max_ids,
             }
         )
         df_clean = df[df["segm"] != ""].copy().reset_index()
@@ -208,5 +210,5 @@ if __name__ == "__main__":
     large_acdc_conv = LargeACDC2cocoConverter(
         BASE_DATA_PATH, filename="data_map-1670848157.csv"
     )
-    #large_acdc_conv.build_data_map()
+    # large_acdc_conv.build_data_map()
     large_acdc_conv.convert()

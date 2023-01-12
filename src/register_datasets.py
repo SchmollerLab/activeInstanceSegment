@@ -28,11 +28,11 @@ def build_register_function(image_ids, dataset_full):
 
 
 def get_dataset_name(dataset, dsplit):
-    
+
     if dsplit in DATASETS_DSPLITS[dataset]:
         return dataset + "_" + dsplit
     else:
-        raise Exception("Dsplit `{}` not found in dataset `{}`".format(dsplit,dataset))
+        raise Exception("Dsplit `{}` not found in dataset `{}`".format(dsplit, dataset))
 
 
 def register_datasets():
@@ -41,7 +41,7 @@ def register_datasets():
         print("registering {} dataset".format(dataset))
 
         dsplits = DATASETS_DSPLITS[dataset]
-        
+
         for dsplit in dsplits:
             if not get_dataset_name(dataset, dsplit) in MetadataCatalog:
                 register_coco_instances(
@@ -71,6 +71,7 @@ def register_by_ids(dataset_name, image_ids, output_dir, dataset_full):
 
     return dataset_name
 
+
 if __name__ == "__main__":
     register_datasets()
-    get_dataset_name(ACDC_LARGE,"test_1")
+    get_dataset_name(ACDC_LARGE, "test_1")
