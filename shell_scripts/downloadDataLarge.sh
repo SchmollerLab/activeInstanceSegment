@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir $DATA_PATH/acdc_large
+mkdir $DATA_PATH/raw_data/acdc_large
 
 cd $DATA_PATH/acdc_large
 wget https://hmgubox2.helmholtz-muenchen.de/index.php/s/L57ZkKqKz8QcDoE/download/TimeLapse_2D.zip

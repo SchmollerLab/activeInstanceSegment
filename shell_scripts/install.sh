@@ -33,7 +33,8 @@ echo "set enviromental variables"
 
 project_root="$(pwd)"/activeCell-ACDC
 data_path="$(pwd)"/activeCell-ACDC/data
-mkdir data_path
+mkdir $data_path
+mkdir $data_path/raw_data
 
 if [[ -z $IS_SERVER ]]; then
     echo "enviromental IS_SERVER is not set. appending to .bashrc"
@@ -44,14 +45,16 @@ fi
 
 if [[ -z $PROJECT_ROOT ]]; then
     echo "enviromental PROJECT_ROOT is not set. appending to .bashrc"
-    echo "export PROJECT_ROOT=true" >> ~/.bashrc
+    echo "export PROJECT_ROOT=$project_root" >> ~/.bashrc
 else
     echo "enviromental PROJECT_ROOT is already set."
 fi
 
 if [[ -z $DATA_PATH ]]; then
     echo "enviromental DATA_PATH is not set. appending to .bashrc"
-    echo "export DATA_PATH=true" >> ~/.bashrc
+    echo "export DATA_PATH=$data_path" >> ~/.bashrc
 else
     echo "enviromental DATA_PATH is already set."
 fi
+
+$project_root/shell_scripts/downloadDataLarge.sh
