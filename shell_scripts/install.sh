@@ -1,5 +1,7 @@
 #! /bin/bash
 
+cd /mnt
+
 sudo apt-get update -y
 #sudo apt-get upgrade -y
 
@@ -18,12 +20,14 @@ sudo cp /var/cuda-repo-ubuntu2204-11-7-local/cuda-*-keyring.gpg /usr/share/keyri
 sudo apt-get update -y
 sudo apt-get -y install cuda
 
+cd activeCell-ACDC
+
 echo installing pytorch
 pip3 install torch torchvision torchaudio
 
 echo installing detectron2
 python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
-pip3 install -r ./activeCell-ACDC/requirements.txt
+pip3 install -r ./requirements.txt
 
 
 sudo apt install p7zip-full -y
@@ -34,9 +38,9 @@ echo "set enviromental variables"
 
 project_root="$(pwd)"/activeCell-ACDC
 data_path="$(pwd)"/activeCell-ACDC/data
-mkdir $data_path
-mkdir $data_path/raw_data
-mkdir $project_root/output
+mkdir ./data
+mkdir ./data/raw_data
+mkdir ./output
 
 if [[ -z $IS_SERVER ]]; then
     echo "enviromental IS_SERVER is not set. appending to .bashrc"
@@ -59,6 +63,6 @@ else
     echo "enviromental DATA_PATH is already set."
 fi
 
-echo setting up datapip
-$project_root/shell_scripts/downloadDataLarge.sh
+echo setting up data
+./shell_scripts/downloadDataLarge.sh
 python src/dataloader/data2coco.py
