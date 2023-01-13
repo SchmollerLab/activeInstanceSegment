@@ -20,6 +20,7 @@ import torch
 import cv2
 from tqdm import tqdm
 import operator
+import wandb
 
 
 import torch
@@ -78,6 +79,16 @@ class MCDropoutSampler(QueryStrategy):
             max(list(uncertainty_dict.values())),
         )
         print("worst examples:", samples)
+        wandb.log(
+            {
+                "al":{
+                    "min_uncertainty":min(list(uncertainty_dict.values())),
+                    "mean_uncertainty":sum(list(uncertainty_dict.values())) / len(list(uncertainty_dict.values())),
+                    "max_uncertainty":max(list(uncertainty_dict.values())),
+                    "worst5": samples[:5]
+                }
+            }
+        )
 
         return samples
 

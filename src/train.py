@@ -22,8 +22,10 @@ except:
 
 
 def clean_output_dir(output_dir):
-
-    shutil.rmtree(output_dir)
+    try:
+        shutil.rmtree(output_dir)
+    except:
+        pass
     os.mkdir(output_dir)
 
 

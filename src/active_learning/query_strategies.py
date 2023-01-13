@@ -25,6 +25,7 @@ class QueryStrategy(object):
 class RandomSampler(QueryStrategy):
     def sample(self, cfg, ids):
         num_samples = self.cfg.AL.INCREMENT_SIZE
+        rd.seed(cfg.SEED)
         samples = rd.sample(ids, num_samples)
         return samples
 

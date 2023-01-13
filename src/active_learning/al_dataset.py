@@ -36,7 +36,8 @@ class ActiveLearingDataset:
         self.increment_size = cfg.AL.INCREMENT_SIZE
 
         # set seed
-        rd.seed(1337)
+        rd.seed(cfg.SEED)
+        
         sample_ids = rd.sample(self.unlabeled_ids, self.init_size)
         self.update_labeled_data(sample_ids)
         self.get_labeled_dataset()

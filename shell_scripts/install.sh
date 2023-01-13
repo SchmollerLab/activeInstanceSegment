@@ -57,4 +57,6 @@ else
     echo "enviromental DATA_PATH is already set."
 fi
 
+echo setting up data
 $project_root/shell_scripts/downloadDataLarge.sh
+python src/dataloader/data2coco.py
