@@ -106,7 +106,9 @@ def do_train(cfg, logger, resume=False):
                 and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
                 and iteration != max_iter - 1
             ):
+                
                 res = do_test(cfg, model=model, logger=logger)
+                
                 comm.synchronize()
 
                 wandb.log(
@@ -141,6 +143,7 @@ def do_train(cfg, logger, resume=False):
                     early_counter = 0
 
                 wandb.log({"max_early_counter": max_early_counter})
+                
 
             if iteration - start_iter > 5 and (
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1

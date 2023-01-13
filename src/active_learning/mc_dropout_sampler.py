@@ -21,6 +21,8 @@ import cv2
 from tqdm import tqdm
 import operator
 import wandb
+import json
+import time
 
 
 import torch
@@ -67,6 +69,8 @@ class MCDropoutSampler(QueryStrategy):
 
             uncertainty_dict[im_json["image_id"]] = float(uncertainty)
 
+        with open(os.path.join(cfg.OUTPUT_DIR, f"uncertainties{str(int(time.time()))}.json"),"w") as file:
+            json.dump(uncertainty_dict, file)
         worst_ims = np.argsort(list(uncertainty_dict.values()))[:num_samples]
         samples = [list(uncertainty_dict.keys())[id] for id in worst_ims]
         print("finished with mc dropout sampling.")

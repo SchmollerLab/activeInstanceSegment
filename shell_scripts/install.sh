@@ -27,6 +27,7 @@ pip3 install -r ./activeCell-ACDC/requirements.txt
 
 
 sudo apt install p7zip-full -y
+sudo apt install libgl1-mesa-glx -y
 
 
 echo "set enviromental variables"
@@ -38,21 +39,21 @@ mkdir $data_path/raw_data
 
 if [[ -z $IS_SERVER ]]; then
     echo "enviromental IS_SERVER is not set. appending to .bashrc"
-    echo "export IS_SERVER=true" >> ~/.bashrc
+    echo IS_SERVER=true | sudo tee -a /etc/environment
 else
     echo "enviromental IS_SERVER is already set."
 fi
 
 if [[ -z $PROJECT_ROOT ]]; then
     echo "enviromental PROJECT_ROOT is not set. appending to .bashrc"
-    echo "export PROJECT_ROOT=$project_root" >> ~/.bashrc
+    echo PROJECT_ROOT=\"$project_root\" | sudo tee -a /etc/environment
 else
     echo "enviromental PROJECT_ROOT is already set."
 fi
 
 if [[ -z $DATA_PATH ]]; then
     echo "enviromental DATA_PATH is not set. appending to .bashrc"
-    echo "export DATA_PATH=$data_path" >> ~/.bashrc
+    echo DATA_PATH=\"$data_path\" | sudo tee -a /etc/environment
 else
     echo "enviromental DATA_PATH is already set."
 fi

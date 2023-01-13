@@ -1,8 +1,8 @@
 AL:
   DATASETS:
     TRAIN_UNLABELED: acdc_large_train
-  INCREMENT_SIZE: 100
-  INIT_SIZE: 100
+  INCREMENT_SIZE: 1
+  INIT_SIZE: 1
   MAX_LOOPS: 30
   QUERY_STRATEGY: random
 CUDNN_BENCHMARK: false
@@ -18,8 +18,7 @@ DATASETS:
   PROPOSAL_FILES_TEST: []
   PROPOSAL_FILES_TRAIN: []
   TEST:
-  - acdc_large_test_1
-  - acdc_large_test_2
+  - acdc_large_test
   TRAIN:
   - acdc_large_train
 EARLY_STOPPING_ROUNDS: 7
@@ -327,7 +326,7 @@ TEST:
     - 1100
     - 1200
   DETECTIONS_PER_IMAGE: 100
-  EVAL_PERIOD: 2000
+  EVAL_PERIOD: 1000
   EXPECTED_RESULTS: []
   KEYPOINT_OKS_SIGMAS: []
   PRECISE_BN:

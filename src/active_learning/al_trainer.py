@@ -29,7 +29,6 @@ from src.active_learning.mc_dropout_sampler import MCDropoutSampler
 class ActiveLearningTrainer:
     def __init__(self, cfg, is_test_mode=False):
         self.cfg = cfg
-
         self.is_test_mode = is_test_mode
 
         self.logger = setup_logger(output="./log/main.log")
@@ -50,7 +49,6 @@ class ActiveLearningTrainer:
                 }
             }
         )
-
         print("test active learning", (result["segm"]["AP"] + result["bbox"]["AP"]) / 2)
         sample_ids = self.query_strategy.sample(self.cfg, self.al_dataset.unlabeled_ids)
         self.al_dataset.update_labeled_data(sample_ids)
@@ -61,7 +59,7 @@ class ActiveLearningTrainer:
         if self.is_test_mode:
             wandb.init(
                 project="activeCell-ACDC",
-                name=dataset + "_" + query_strat,
+                name=str(os.uname()[1]) + "_" dataset + "_" + query_strat,
                 sync_tensorboard=True,
                 mode="disabled",
             )
