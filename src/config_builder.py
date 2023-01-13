@@ -75,14 +75,17 @@ def get_config(config_name, path_configs=PATH_PIPELINE_CONFIGS, complete_path=No
     cfg.MODEL.ROI_MASK_HEAD.DROPOUT_PROBABILITY = 0.5
     cfg.MODEL.ROI_BOX_HEAD.DROPOUT_PROBABILITY = 0.5
 
-    if os.getenv("SEED"):
-        cfg.SEED = os.getenv("SEED")
+    
 
     if not complete_path:
         file_path = path_configs + "/" + config_name + ".yaml"
     else:
         file_path = complete_path
     cfg.merge_from_file(file_path)
+
+    if os.getenv("SEED"):
+        cfg.SEED = os.getenv("SEED")
+        
     return cfg
 
 
