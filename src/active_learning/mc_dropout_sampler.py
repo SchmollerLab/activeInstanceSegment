@@ -99,7 +99,6 @@ class MCDropoutSampler(QueryStrategy):
                     "min_uncertainty":min(list(uncertainty_dict.values())),
                     "mean_uncertainty":sum(list(uncertainty_dict.values())) / len(list(uncertainty_dict.values())),
                     "max_uncertainty":max(list(uncertainty_dict.values())),
-                    "worst5": samples[:5]
                 }
             }
         )
