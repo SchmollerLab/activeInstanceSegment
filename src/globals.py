@@ -39,6 +39,3 @@ CELL = "cell"
 RANDOM = "random"
 KNOWN_VALIDATION = "known_validation"
 MC_DROPOUT = "mc_dropout"
-
-
-TRAIN_DIR = "model_train"

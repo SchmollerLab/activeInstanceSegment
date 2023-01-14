@@ -28,15 +28,12 @@ from src.globals import *
 
 def clean_output_dir(output_dir):
     try:
-        shutil.rmtree(os.path.join(output_dir,TRAIN_DIR))
+        shutil.rmtree(output_dir)
     except:
         pass
-    try: 
-        os.mkdir(output_dir)
-    except:
-        pass
-
-    os.mkdir(os.path.join(output_dir,TRAIN_DIR))
+    
+    os.mkdir(output_dir)
+    
     
 
 
@@ -52,7 +49,7 @@ def do_train(cfg, logger, resume=False, model_name="best_model.pth"):
     scheduler = build_lr_scheduler(cfg, optimizer)
 
     checkpointer = DetectionCheckpointer(
-        model, os.path.join(cfg.OUTPUT_DIR,TRAIN_DIR), optimizer=optimizer, scheduler=scheduler
+        model, cfg.OUTPUT_DIR, optimizer=optimizer, scheduler=scheduler
     )
 
     # define counter for early stopping
@@ -71,7 +68,7 @@ def do_train(cfg, logger, resume=False, model_name="best_model.pth"):
     max_iter = cfg.SOLVER.MAX_ITER
 
     writers = (
-        default_writers(os.path.join(cfg.OUTPUT_DIR,TRAIN_DIR), max_iter) if comm.is_main_process() else []
+        default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
     )
 
     # define augmentations
@@ -151,8 +148,8 @@ def do_train(cfg, logger, resume=False, model_name="best_model.pth"):
                     max_result = res
                     max_ap = max(max_ap, (res["segm"]["AP"] + res["bbox"]["AP"]) / 2)
                     checkpointer.save("best_model")
-                    model_path = os.path.join(cfg.OUTPUT_DIR, TRAIN_DIR , "best_model.pth")
-                    os.system(f"cp {model_path} {os.path.join(cfg.OUTPUT_DIR, model_name)}")
+                    model_path = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
+                    os.system(f"cp {model_path} {os.path.join(cfg.AL.OUTPUT_DIR, model_name)}")
                     early_counter = 0
 
                 wandb.log({"max_early_counter": max_early_counter})

@@ -32,6 +32,7 @@ class ActiveLearningTrainer:
         self.logger = setup_logger(output="./log/main.log")
         self.logger.setLevel(10)
 
+
     def __del__(self):
         wandb.run.finish()
 

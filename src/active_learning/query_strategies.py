@@ -5,6 +5,8 @@ sys.path.append("..")
 import random as rd
 import numpy as np
 
+import shutil
+
 from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
@@ -19,6 +21,24 @@ class QueryStrategy(object):
         self.cfg = cfg
         self.counter = 1
 
+    def clean_output_dir(self):
+        try:
+            shutil.rmtree(os.path.join(self.cfg.AL.OUTPUT_DIR, self.strategy))
+        except:
+            pass
+        
+        try:
+            os.mkdir("./al_output")
+        except:
+            pass
+
+        try:
+            os.mkdir(self.cfg.AL.OUTPUT_DIR)
+        except:
+            pass
+
+        os.mkdir(os.path.join(self.cfg.AL.OUTPUT_DIR, self.strategy))
+
     def sample(self, cfg, ids):
         pass
 
@@ -28,13 +48,14 @@ class RandomSampler(QueryStrategy):
     def __init__(self, cfg):
         super().__init__(cfg)
         self.strategy = "random"
+        self.clean_output_dir()
 
     def sample(self, cfg, ids):
         num_samples = self.cfg.AL.INCREMENT_SIZE
         rd.seed(cfg.SEED)
         samples = rd.sample(ids, num_samples)
         
-        with open(os.path.join(cfg.OUTPUT_DIR, f"{self.strategy}_samples{str(self.counter)}.txt"),"w") as file:
+        with open(os.path.join(self.cfg.AL.OUTPUT_DIR, self.strategy, f"{self.strategy}_samples{str(self.counter)}.txt"),"w") as file:
             file.write("\n".join(samples))
         self.counter += 1
         return samples

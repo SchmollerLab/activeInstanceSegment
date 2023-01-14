@@ -39,16 +39,17 @@ class MCDropoutSampler(QueryStrategy):
     def __init__(self, cfg):
         super().__init__(cfg)
         self.strategy = "mc_dropout"
+        self.clean_output_dir()
 
     def sample(self, cfg, ids):
 
-        #num_samples = self.cfg.AL.INCREMENT_SIZE
-        num_samples = 2**self.counter
+        num_samples = self.cfg.AL.INCREMENT_SIZE
+        #num_samples = 2**self.counter
 
         #id_pool = ids  # rd.sample(ids, min(60,len(ids)))
 
-        rand_int = rd.randint(0,10)
-        id_pool = list(filter(lambda x: (int(x.split("_")[-1]) + rand_int) % 10 == 0, ids))
+        rand_int = rd.randint(0,30)
+        id_pool = list(filter(lambda x: (int(x.split("_")[-1]) + rand_int) % 30 == 0, ids))
 
         register_by_ids(
             "MCDropoutSampler_DS",
@@ -62,7 +63,7 @@ class MCDropoutSampler(QueryStrategy):
         model.eval()
 
         checkpointer = DetectionCheckpointer(model)
-        checkpointer.load(os.path.join(cfg.OUTPUT_DIR, TRAIN_DIR, "best_model.pth"))
+        checkpointer.load(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
 
         ds_catalog = DatasetCatalog.get("MCDropoutSampler_DS")
         uncertainty_dict = {}
@@ -71,14 +72,14 @@ class MCDropoutSampler(QueryStrategy):
 
             im_json = ds_catalog[i]
             im = cv2.imread(im_json["file_name"])
-            outputs = self.get_mc_dropout_samples(cfg, model, im, 5)
+            outputs = self.get_mc_dropout_samples(cfg, model, im, 10)
             predictions = self.get_observations(outputs)
             height, width = im.shape[:2]
-            uncertainty = self.get_uncertainty(predictions, 5, height, width)
+            uncertainty = self.get_uncertainty(predictions, 10, height, width)
 
             uncertainty_dict[im_json["image_id"]] = float(uncertainty)
 
-        with open(os.path.join(cfg.OUTPUT_DIR, f"uncertainties{str(self.counter)}.json"),"w") as file:
+        with open(os.path.join(self.cfg.AL.OUTPUT_DIR, self.strategy, f"uncertainties{str(self.counter)}.json"),"w") as file:
             json.dump(uncertainty_dict, file)
         worst_ims = np.argsort(list(uncertainty_dict.values()))[:num_samples]
         samples = [list(uncertainty_dict.keys())[id] for id in worst_ims]
@@ -104,7 +105,7 @@ class MCDropoutSampler(QueryStrategy):
         )
 
         
-        with open(os.path.join(cfg.OUTPUT_DIR, f"{self.strategy}_samples{str(self.counter)}.txt"),"w") as file:
+        with open(os.path.join(self.cfg.AL.OUTPUT_DIR, self.strategy, f"{self.strategy}_samples{str(self.counter)}.txt"),"w") as file:
             file.write("\n".join(samples))
         self.counter += 1
         return samples
@@ -274,14 +275,14 @@ class MCDropoutSampler(QueryStrategy):
                 u_n = 0.0
 
             u_h = torch.multiply(u_spl, u_n)
-            if not torch.isnan(u_h.unsqueeze(0)):
+            if not torch.isnan(u_h.unsqueeze(0)) and u_spl != 1:
                 uncertainty_list.append(u_h.unsqueeze(0))
 
         if uncertainty_list:
             uncertainty_list = torch.cat(uncertainty_list)
 
             if mode == "min":
-                uncertainty = torch.min(uncertainty_list)
+                uncertainty = torch.min(uncertainty_list) + torch.mean(uncertainty_list)/100
             elif mode == "mean":
                 uncertainty = torch.mean(uncertainty_list)
             elif mode == "max":
