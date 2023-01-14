@@ -45,7 +45,7 @@ def run_pipeline(config_name, cfg=None):
     # empty gpu cache
     torch.cuda.empty_cache()
     # run training
-    wandb.config.update(yaml.load(cfg.dump()))
+    wandb.config.update(yaml.load(cfg.dump(),Loader=yaml.Loader))
     do_train(cfg, logger=logger)
     # run testing
     result = do_test(cfg, logger=logger)

@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd /mnt
+set -e
 
 sudo apt-get update -y
 #sudo apt-get upgrade -y
@@ -9,6 +9,7 @@ sudo apt-get update -y
 echo install python and pip
 sudo apt install python3-pip -y
 sudo apt-get install python-is-python3 -y
+sudo apt install python3-venv
 
 
 echo installing cuda
@@ -20,7 +21,21 @@ sudo cp /var/cuda-repo-ubuntu2204-11-7-local/cuda-*-keyring.gpg /usr/share/keyri
 sudo apt-get update -y
 sudo apt-get -y install cuda
 
-cd activeCell-ACDC
+echo "create virtual enviroment"
+cd /mnt/activeCell-ACDC
+python -m venv ac_acdc_env
+
+project_root="$(pwd)"
+data_path="$(pwd)"/data
+
+echo "set enviromental variables"
+echo export IS_SERVER=true | sudo tee -a ac_acdc_env/bin/activate
+echo export PROJECT_ROOT=\"$project_root\" | sudo tee -a ac_acdc_env/bin/activate
+echo export DATA_PATH=\"$data_path\" | sudo tee -a ac_acdc_env/bin/activate
+
+source ac_acdc_env/bin/activate
+
+
 
 echo installing pytorch
 pip3 install torch torchvision torchaudio
@@ -34,7 +49,7 @@ sudo apt install p7zip-full -y
 sudo apt install libgl1-mesa-glx -y
 
 
-echo "set enviromental variables"
+
 
 project_root="$(pwd)"/activeCell-ACDC
 data_path="$(pwd)"/activeCell-ACDC/data
@@ -42,26 +57,8 @@ mkdir ./data
 mkdir ./data/raw_data
 mkdir ./output
 
-if [[ -z $IS_SERVER ]]; then
-    echo "enviromental IS_SERVER is not set. appending to .bashrc"
-    echo IS_SERVER=true | sudo tee -a /etc/environment
-else
-    echo "enviromental IS_SERVER is already set."
-fi
 
-if [[ -z $PROJECT_ROOT ]]; then
-    echo "enviromental PROJECT_ROOT is not set. appending to .bashrc"
-    echo PROJECT_ROOT=\"$project_root\" | sudo tee -a /etc/environment
-else
-    echo "enviromental PROJECT_ROOT is already set."
-fi
 
-if [[ -z $DATA_PATH ]]; then
-    echo "enviromental DATA_PATH is not set. appending to .bashrc"
-    echo DATA_PATH=\"$data_path\" | sudo tee -a /etc/environment
-else
-    echo "enviromental DATA_PATH is already set."
-fi
 
 echo setting up data
 ./shell_scripts/downloadDataLarge.sh
