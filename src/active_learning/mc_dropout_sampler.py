@@ -42,12 +42,13 @@ class MCDropoutSampler(QueryStrategy):
 
     def sample(self, cfg, ids):
 
-        num_samples = self.cfg.AL.INCREMENT_SIZE
+        #num_samples = self.cfg.AL.INCREMENT_SIZE
+        num_samples = 2**self.counter
 
         #id_pool = ids  # rd.sample(ids, min(60,len(ids)))
 
-        rand_int = rd.randint(0,30)
-        id_pool = list(filter(lambda x: (int(x.split("_")[-1]) + rand_int) % 30 == 0, ids))
+        rand_int = rd.randint(0,10)
+        id_pool = list(filter(lambda x: (int(x.split("_")[-1]) + rand_int) % 10 == 0, ids))
 
         register_by_ids(
             "MCDropoutSampler_DS",
