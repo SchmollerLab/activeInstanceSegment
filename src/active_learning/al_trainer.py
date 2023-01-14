@@ -4,8 +4,6 @@ import os
 PROJECT_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
 )
-
-print(PROJECT_ROOT)
 sys.path.append(PROJECT_ROOT)
 
 import wandb
@@ -39,7 +37,7 @@ class ActiveLearningTrainer:
 
     def step(self, resume):
 
-        result = do_train(self.cfg, self.logger, resume=resume)
+        result = do_train(self.cfg, self.logger, resume=resume, model_name=f"best_model{self.al_dataset.get_len_labeled()}.pth")
         wandb.log(
             {
                 "al": {

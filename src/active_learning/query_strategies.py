@@ -17,16 +17,26 @@ class QueryStrategy(object):
     def __init__(self, cfg):
 
         self.cfg = cfg
+        self.counter = 1
 
     def sample(self, cfg, ids):
         pass
 
 
 class RandomSampler(QueryStrategy):
+
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        self.strategy = "random"
+
     def sample(self, cfg, ids):
         num_samples = self.cfg.AL.INCREMENT_SIZE
         rd.seed(cfg.SEED)
         samples = rd.sample(ids, num_samples)
+        
+        with open(os.path.join(cfg.OUTPUT_DIR, f"{self.strategy}_samples{str(self.counter)}.txt"),"w") as file:
+            file.write("\n".join(samples))
+        self.counter += 1
         return samples
 
 

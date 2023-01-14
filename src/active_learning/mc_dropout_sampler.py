@@ -35,6 +35,11 @@ from baal.bayesian.dropout import patch_module
 
 
 class MCDropoutSampler(QueryStrategy):
+
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        self.strategy = "mc_dropout"
+
     def sample(self, cfg, ids):
 
         num_samples = self.cfg.AL.INCREMENT_SIZE
@@ -56,7 +61,7 @@ class MCDropoutSampler(QueryStrategy):
         model.eval()
 
         checkpointer = DetectionCheckpointer(model)
-        checkpointer.load(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
+        checkpointer.load(os.path.join(cfg.OUTPUT_DIR, TRAIN_DIR, "best_model.pth"))
 
         ds_catalog = DatasetCatalog.get("MCDropoutSampler_DS")
         uncertainty_dict = {}
@@ -72,7 +77,7 @@ class MCDropoutSampler(QueryStrategy):
 
             uncertainty_dict[im_json["image_id"]] = float(uncertainty)
 
-        with open(os.path.join(cfg.OUTPUT_DIR, f"uncertainties{str(int(time.time()))}.json"),"w") as file:
+        with open(os.path.join(cfg.OUTPUT_DIR, f"uncertainties{str(self.counter)}.json"),"w") as file:
             json.dump(uncertainty_dict, file)
         worst_ims = np.argsort(list(uncertainty_dict.values()))[:num_samples]
         samples = [list(uncertainty_dict.keys())[id] for id in worst_ims]
@@ -97,6 +102,10 @@ class MCDropoutSampler(QueryStrategy):
             }
         )
 
+        
+        with open(os.path.join(cfg.OUTPUT_DIR, f"{self.strategy}_samples{str(self.counter)}.txt"),"w") as file:
+            file.write("\n".join(samples))
+        self.counter += 1
         return samples
 
     def get_mc_dropout_samples(self, cfg, model, input_image, iterrations):
