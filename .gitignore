@@ -153,4 +153,5 @@ demo.ipynb
 # ignore defined files
 ignore*
 
+/ac_acdc_env
 
