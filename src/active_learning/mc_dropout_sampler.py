@@ -46,10 +46,10 @@ class MCDropoutSampler(QueryStrategy):
         num_samples = self.cfg.AL.INCREMENT_SIZE
         #num_samples = 2**self.counter
 
-        #id_pool = ids  # rd.sample(ids, min(60,len(ids)))
+        id_pool = ids  # rd.sample(ids, min(60,len(ids)))
 
-        rand_int = rd.randint(0,30)
-        id_pool = list(filter(lambda x: (int(x.split("_")[-1]) + rand_int) % 30 == 0, ids))
+        #rand_int = rd.randint(0,30)
+        #id_pool = list(filter(lambda x: (int(x.split("_")[-1]) + rand_int) % 30 == 0, ids))
 
         register_by_ids(
             "MCDropoutSampler_DS",
@@ -197,7 +197,7 @@ class MCDropoutSampler(QueryStrategy):
 
         return observations
 
-    def get_uncertainty(self, predictions, iterrations, height, width, mode="min"):
+    def get_uncertainty(self, predictions, iterrations, height, width, mode="mean"):
         uncertainty_list = []
 
         device = "cuda"
@@ -273,6 +273,7 @@ class MCDropoutSampler(QueryStrategy):
             except:
                 u_n = 0.0
 
+            u_n = torch.multiply(u_n, u_n)
             u_h = torch.multiply(u_spl, u_n)
             if not torch.isnan(u_h.unsqueeze(0)) and u_spl != 1:
                 uncertainty_list.append(u_h.unsqueeze(0))
@@ -281,7 +282,7 @@ class MCDropoutSampler(QueryStrategy):
             uncertainty_list = torch.cat(uncertainty_list)
 
             if mode == "min":
-                uncertainty = torch.min(uncertainty_list) + torch.mean(uncertainty_list)/100
+                uncertainty = torch.min(uncertainty_list)
             elif mode == "mean":
                 uncertainty = torch.mean(uncertainty_list)
             elif mode == "max":
