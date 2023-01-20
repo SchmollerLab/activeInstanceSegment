@@ -31,17 +31,17 @@ CATEGORIES = [
     {
         "id": 0,
         "name": "G1",
-        "supercategory": "G1",
+        "supercategory": "Cell",
     },
     {
         "id": 1,
-        "name": "S",
-        "supercategory": "mother",
+        "name": "mother",
+        "supercategory": "Cell",
     },
     {
         "id": 2,
-        "name": "S",
-        "supercategory": "bud",
+        "name": "bud",
+        "supercategory": "Cell",
     },
 
 ]
@@ -162,7 +162,7 @@ class Data2cocoConverter:
         df_clean = df[df["segm"] != ""].copy().reset_index()
         df_clean["min_image"] = 0
 
-        return df_clean
+        return df_clean.sort_values(by=["paths"])
 
     def process_acdc_position(
         self, data, base_image_id, max_image, segmentation_id, images_coco_data_path, output_csv
