@@ -7,7 +7,7 @@ from detectron2.utils.logger import setup_logger
 
 # import some common libraries
 import numpy as np
-import os, json, cv2, random
+import os, sys, json, cv2, random
 import wandb
 import yaml
 
@@ -16,11 +16,13 @@ from detectron2.modeling import build_model
 
 from argparse import ArgumentParser
 
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+sys.path.append(PROJECT_ROOT)
 
-from register_datasets import register_datasets
-from train import do_train
-from test import do_test
-from config_builder import get_config
+from src.register_datasets import register_datasets
+from src.train import do_train
+from src.test import do_test
+from src.config_builder import get_config
 
 
 def run_pipeline(config_name, cfg=None):

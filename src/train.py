@@ -37,7 +37,7 @@ def clean_output_dir(output_dir):
     
 
 
-def do_train(cfg, logger, resume=False, model_name="best_model.pth"):
+def do_train(cfg, logger, resume=False):
 
     if not resume:
         clean_output_dir(cfg.OUTPUT_DIR)
@@ -148,8 +148,6 @@ def do_train(cfg, logger, resume=False, model_name="best_model.pth"):
                     max_result = res
                     max_ap = max(max_ap, (res["segm"]["AP"] + res["bbox"]["AP"]) / 2)
                     checkpointer.save("best_model")
-                    model_path = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
-                    os.system(f"cp {model_path} {os.path.join(cfg.AL.OUTPUT_DIR, model_name)}")
                     early_counter = 0
 
                 wandb.log({"max_early_counter": max_early_counter})

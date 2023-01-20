@@ -30,9 +30,20 @@ LICENSES = [{"id": 1, "name": "", "url": ""}]
 CATEGORIES = [
     {
         "id": 0,
-        "name": "cell",
-        "supercategory": "cell",
-    }
+        "name": "G1",
+        "supercategory": "G1",
+    },
+    {
+        "id": 1,
+        "name": "S",
+        "supercategory": "mother",
+    },
+    {
+        "id": 2,
+        "name": "S",
+        "supercategory": "bud",
+    },
+
 ]
 
 
@@ -94,86 +105,49 @@ class Data2cocoConverter:
                 json.dump(coco_output, output_json_file)
 
     def build_data_map(self, raw_images_path):
-
+        print(raw_images_path)
         paths = []
         phase_contr_tifs = []
         phase_contr_npzs = []
         segms = []
         max_ids = []
+        output_csvs = []
 
-        base_dict = os.fsencode(raw_images_path)
-        for acdc_ds in os.listdir(base_dict):
-            acdc_ds_name = os.fsdecode(acdc_ds)
-            if acdc_ds_name.find(".zip") == -1 and acdc_ds_name.find(".csv") == -1:
-                experiment_dict = os.fsencode(
-                    os.path.join(raw_images_path, acdc_ds_name)
-                )
-                for experiment in os.listdir(experiment_dict):
-                    experiment_name = os.fsdecode(experiment)
-                    for position in os.listdir(
-                        os.fsencode(
-                            raw_images_path + "/" + acdc_ds_name + "/" + experiment_name
-                        )
+        for root, dirs, files in os.walk(raw_images_path):          
+
+            phase_contr_npz = ""
+            phase_contr_tif = ""
+            segm = ""
+            max_id = -1
+            output_csv = ""
+
+            if root.find("Images"):
+                for filename in files:
+
+
+                    if (filename.find("Ph3_aligned.np") != -1) or (
+                        filename.find("phase_contr_aligned.np") != -1
                     ):
-                        position_name = os.fsdecode(position)
+                        phase_contr_npz = filename
+                    if (filename.find("phase_contr.tif") != -1) or (
+                        filename.find("Ph3.tif") != -1
+                    ):
+                        phase_contr_tif = filename
+                    if filename.find("segm.npz") != -1:
+                        segm = filename
 
-                        phase_contr_npz = ""
-                        phase_contr_tif = ""
-                        segm = ""
-                        max_id = -1
-
-                        for file in os.listdir(
-                            os.fsencode(
-                                raw_images_path
-                                + "/"
-                                + acdc_ds_name
-                                + "/"
-                                + experiment_name
-                                + "/"
-                                + position_name
-                                + "/Images"
-                            )
-                        ):
-                            filename = os.fsdecode(file)
-                            if (filename.find("Ph3_aligned.np") != -1) or (
-                                filename.find("phase_contr_aligned.np") != -1
-                            ):
-                                phase_contr_npz = filename
-                            if (filename.find("phase_contr.tif") != -1) or (
-                                filename.find("Ph3.tif") != -1
-                            ):
-                                phase_contr_tif = filename
-                            if filename.find("segm.npz") != -1:
-                                segm = filename
-
-                            if filename.find("output.csv") != -1:
-                                output_df = pd.read_csv(
-                                    raw_images_path
-                                    + "/"
-                                    + acdc_ds_name
-                                    + "/"
-                                    + experiment_name
-                                    + "/"
-                                    + position_name
-                                    + "/Images/"
-                                    + filename
-                                )
-                                max_id = max(output_df["frame_i"].values)
-
-                        paths.append(
-                            raw_images_path
-                            + "/"
-                            + acdc_ds_name
-                            + "/"
-                            + experiment_name
-                            + "/"
-                            + position_name
-                            + "/Images"
+                    if filename.find("output.csv") != -1:
+                        output_csv = os.path.join(root,filename)
+                        output_df = pd.read_csv(os.path.join(root,filename)
                         )
-                        phase_contr_npzs.append(phase_contr_npz)
-                        phase_contr_tifs.append(phase_contr_tif)
-                        segms.append(segm)
-                        max_ids.append(max_id)
+                        max_id = max(output_df["frame_i"].values)
+
+            paths.append(root)
+            phase_contr_npzs.append(phase_contr_npz)
+            phase_contr_tifs.append(phase_contr_tif)
+            segms.append(segm)
+            max_ids.append(max_id)
+            output_csvs.append(output_csv)
 
         df = pd.DataFrame(
             data={
@@ -182,6 +156,7 @@ class Data2cocoConverter:
                 "phc_tif": phase_contr_tifs,
                 "segm": segms,
                 "max_image": max_ids,
+                "output_csv": output_csvs,
             }
         )
         df_clean = df[df["segm"] != ""].copy().reset_index()
@@ -190,11 +165,15 @@ class Data2cocoConverter:
         return df_clean
 
     def process_acdc_position(
-        self, data, base_image_id, max_image, segmentation_id, images_coco_data_path
+        self, data, base_image_id, max_image, segmentation_id, images_coco_data_path, output_csv
     ):
 
         images: np.array = data[0]
         masks: np.array = data[1]
+
+        output_df = pd.read_csv(output_csv)
+        
+        
 
         images_json = []
         annotations_json = []
@@ -205,6 +184,10 @@ class Data2cocoConverter:
 
         for i in range(num_images):
             if (masks[i] > 0).sum():
+
+                df_out = output_df[output_df["frame_i"] == i][["Cell_ID", "cell_cycle_stage", "relationship"]]
+                df_out = df_out.set_index("Cell_ID")
+                annotation_dict = df_out.to_dict('index')
 
                 image_id = str(base_image_id) + "_" + str(i)
 
@@ -228,12 +211,21 @@ class Data2cocoConverter:
                     image=image,
                     image_id=image_id,
                     segmentation_id=segmentation_id,
+                    annotation_dict = annotation_dict,
                 )
                 annotations_json += new_annotations_json
 
         return images_json, annotations_json, segmentation_id
 
-    def extract_annotations(self, mask, image, image_id, segmentation_id):
+    def map_class_id(self, anno_rec):
+        if anno_rec["cell_cycle_stage"] == "G1":
+            return 0
+        elif anno_rec["relationship"] == "mother":
+            return 1
+        else:
+            return 2
+
+    def extract_annotations(self, mask, image, image_id, segmentation_id, annotation_dict):
 
         annotations_json = []
 
@@ -241,7 +233,8 @@ class Data2cocoConverter:
         labels = np.unique(mask)
         for label in labels[1:]:
 
-            class_id = 0
+            class_id = self.map_class_id(annotation_dict[label])
+            
             category_info = {
                 "id": class_id,
                 "is_crowd": False,
@@ -315,6 +308,7 @@ class Data2cocoConverter:
                 max_image=row["max_image"],
                 segmentation_id=segmentation_id,
                 images_coco_data_path=images_coco_data_path,
+                output_csv=row["output_csv"],
             )
 
             coco_output["images"] += images
