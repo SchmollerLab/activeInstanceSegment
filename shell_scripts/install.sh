@@ -11,6 +11,9 @@ sudo apt install python3-pip -y
 sudo apt-get install python-is-python3 -y
 sudo apt install python3-venv
 
+sudo apt install p7zip-full -y
+sudo apt install libgl1-mesa-glx -y
+
 
 echo installing cuda
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
@@ -45,8 +48,7 @@ python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
 pip3 install -r ./requirements.txt
 
 
-sudo apt install p7zip-full -y
-sudo apt install libgl1-mesa-glx -y
+
 
 
 

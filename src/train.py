@@ -154,6 +154,7 @@ def do_train(cfg, logger, resume=False):
                 
                 
                 
+                
 
             if iteration - start_iter > 5 and (
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1

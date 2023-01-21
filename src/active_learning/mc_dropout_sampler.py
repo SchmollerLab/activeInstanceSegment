@@ -1,7 +1,11 @@
-import os
-import sys
+import os, sys
+PROJECT_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+)
+sys.path.append(PROJECT_ROOT)
 
-sys.path.append("..")
+
+
 
 import random as rd
 import numpy as np
@@ -10,9 +14,9 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
-from globals import *
-from register_datasets import register_by_ids, get_dataset_name
-from active_learning.query_strategies import QueryStrategy
+from src.globals import *
+from src.register_datasets import register_by_ids, get_dataset_name
+from src.active_learning.query_strategies import QueryStrategy
 
 
 import numpy as np
@@ -40,16 +44,24 @@ class MCDropoutSampler(QueryStrategy):
         super().__init__(cfg)
         self.strategy = "mc_dropout"
         self.clean_output_dir()
+        self.max_entropy = self.calculate_max_entropy(cfg.MODEL.ROI_HEADS.NUM_CLASSES)
+
+    def calculate_max_entropy(self, num_classes):
+        least_confident = np.divide(np.ones(num_classes), num_classes).astype(np.float32)
+        probs = torch.from_numpy(least_confident)
+        max_entropy = torch.distributions.Categorical(probs).entropy()
+        return max_entropy
 
     def sample(self, cfg, ids):
 
         num_samples = self.cfg.AL.INCREMENT_SIZE
         #num_samples = 2**self.counter
 
-        #id_pool = ids  # rd.sample(ids, min(60,len(ids)))
-
-        rand_int = rd.randint(0,30)
-        id_pool = list(filter(lambda x: (int(x.split("_")[-1]) + rand_int) % 3 == 0, ids))
+        if cfg.AL.SAMPLE_EVERY <= 1:
+            id_pool = ids
+        else:
+            rand_int = rd.randint(0,cfg.AL.SAMPLE_EVERY)
+            id_pool = list(filter(lambda x: (int(x.split("_")[-1]) + rand_int) % cfg.AL.SAMPLE_EVERY == 0, ids))
 
         register_by_ids(
             "MCDropoutSampler_DS",
@@ -72,10 +84,10 @@ class MCDropoutSampler(QueryStrategy):
 
             im_json = ds_catalog[i]
             im = cv2.imread(im_json["file_name"])
-            outputs = self.get_mc_dropout_samples(cfg, model, im, 10)
-            predictions = self.get_observations(outputs)
+            predictions = self.get_mc_dropout_samples(cfg, model, im, cfg.AL.NUM_MC_SAMPLES)
+            outputs = self.get_observations(predictions)
             height, width = im.shape[:2]
-            uncertainty = self.get_uncertainty(predictions, 10, height, width)
+            uncertainty = self.get_uncertainty(outputs, cfg.AL.NUM_MC_SAMPLES, height, width, mode=cfg.AL.OBJECT_TO_IMG_AGG)
 
             uncertainty_dict[im_json["image_id"]] = float(uncertainty)
 
@@ -134,14 +146,19 @@ class MCDropoutSampler(QueryStrategy):
             for _ in range(iterrations):
                 box_features = model.roi_heads.box_head(box_features_pooler)
                 predictions = model.roi_heads.box_predictor(box_features)
+
                 pred_instances, pred_inds = model.roi_heads.box_predictor.inference(
                     predictions, proposals
                 )
+                softmaxes = torch.index_select(predictions[0],0,pred_inds[0])
+                
                 pred_instances = model.roi_heads.forward_with_given_boxes(
                     features, pred_instances
                 )
-
+                
                 outputs = model._postprocess(pred_instances, inputs, images.image_sizes)
+                for output in outputs:
+                    output["instances"].set("softmaxes",softmaxes)
                 prediction_list.append(outputs)
             return list(chain.from_iterable(prediction_list))
 
@@ -202,7 +219,18 @@ class MCDropoutSampler(QueryStrategy):
 
         device = "cuda"
 
+        torch_softmax = torch.nn.Softmax(dim=0)
+
         for key, val in predictions.items():
+            
+            softmaxes = [torch_softmax(v['softmaxes']) for v in val]
+            if len(softmaxes[0]) == 1:
+                inv_entropies_norm = torch.stack([softmax for softmax in softmaxes])
+            else:
+                entropies = torch.stack([torch.distributions.Categorical(torch.clamp(softmax,min=0)).entropy() for softmax in softmaxes])
+                entropies_norm = torch.stack([torch.divide(entropy, self.max_entropy.to(device)) for entropy in entropies]) ## first normalize the entropy-value with the maximum entropy (which is the least confident situation with equal softmaxes for all classes)
+                inv_entropies_norm = torch.stack([torch.subtract(torch.ones(1).to(device), entropy_norm) for entropy_norm in entropies_norm]) ## invert the normalized entropy-values so it can be properly used in the uncertainty calculation
+
 
             mean_bbox = torch.mean(
                 torch.stack([v["pred_boxes"].tensor for v in val]), axis=0
@@ -264,33 +292,42 @@ class MCDropoutSampler(QueryStrategy):
             val_len = torch.tensor(len(val)).to(device)
             outputs_len = torch.tensor(iterrations).to(device)
 
+            u_sem = torch.clamp(torch.mean(inv_entropies_norm), min=0, max=1)
+
             u_spl_m = torch.clamp(torch.divide(mask_IOUs.sum(), val_len), min=0, max=1)
             u_spl_b = torch.clamp(torch.divide(bbox_IOUs.sum(), val_len), min=0, max=1)
             u_spl = torch.multiply(u_spl_m, u_spl_b)
 
+            u_sem_spl = torch.multiply(u_sem, u_spl)
+
+            
             try:
                 u_n = torch.clamp(torch.divide(val_len, outputs_len), min=0, max=1)
             except:
                 u_n = 0.0
 
-            u_n = torch.multiply(u_n, u_n)
-            u_h = torch.multiply(u_spl, u_n)
-            if not torch.isnan(u_h.unsqueeze(0)) and u_spl != 1:
+            
+            # u_n = torch.multiply(u_n, u_n)
+            u_h = torch.multiply(u_sem_spl, u_n)
+            if not torch.isnan(u_h.unsqueeze(0)): #and u_spl != 1:
                 uncertainty_list.append(u_h.unsqueeze(0))
 
         if uncertainty_list:
             uncertainty_list = torch.cat(uncertainty_list)
-
             if mode == "min":
                 uncertainty = torch.min(uncertainty_list)
             elif mode == "mean":
                 uncertainty = torch.mean(uncertainty_list)
             elif mode == "max":
                 uncertainty = torch.max(uncertainty_list)
+            elif mode == "quant20":
+                uncertainty = torch.max(uncertainty_list)
             else:
-                uncertainty = torch.mean(uncertainty_list)
+                quant = torch.quantile(uncertainty_list, 0.2, 0)
+                uncertainty = torch.where(uncertainty_list < quant,uncertainty_list, 0*uncertainty_list)
 
         else:
             uncertainty = torch.tensor([float("NaN")]).to(device)
 
         return uncertainty.detach().cpu().numpy().squeeze(0)
+

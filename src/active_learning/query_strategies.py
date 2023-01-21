@@ -1,6 +1,8 @@
-import sys
-
-sys.path.append("..")
+import os, sys
+PROJECT_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+)
+sys.path.append(PROJECT_ROOT)
 
 import random as rd
 import numpy as np
@@ -11,8 +13,8 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
-from globals import *
-from register_datasets import register_by_ids
+from src.globals import *
+from src.register_datasets import register_by_ids
 
 
 class QueryStrategy(object):
