@@ -3,7 +3,7 @@ AL:
     TRAIN_UNLABELED: acdc_large_train
   INCREMENT_SIZE: 5
   INIT_SIZE: 5
-  MAX_LOOPS: 10
+  MAX_LOOPS: 15
   QUERY_STRATEGY: random
   OUTPUT_DIR: ./al_output/acdc_large_al
 CUDNN_BENCHMARK: false
@@ -22,7 +22,7 @@ DATASETS:
   - acdc_large_test
   TRAIN:
   - acdc_large_train
-EARLY_STOPPING_ROUNDS: 2
+EARLY_STOPPING_ROUNDS: 4
 GLOBAL:
   HACK: 1.0
 INPUT:
@@ -175,7 +175,7 @@ MODEL:
     BBOX_REG_WEIGHTS: *id001
     CLS_AGNOSTIC_BBOX_REG: false
     CONV_DIM: 256
-    DROPOUT_PROBABILITY: 0.3
+    DROPOUT_PROBABILITY: 0.25
     FC_DIM: 1024
     FED_LOSS_FREQ_WEIGHT_POWER: 0.5
     FED_LOSS_NUM_CLASSES: 50
@@ -229,7 +229,7 @@ MODEL:
   ROI_MASK_HEAD:
     CLS_AGNOSTIC_MASK: false
     CONV_DIM: 256
-    DROPOUT_PROBABILITY: 0.3
+    DROPOUT_PROBABILITY: 0.25
     NAME: MaskRCNNConvUpsampleHeadDropout
     NORM: ''
     NUM_CONV: 4
@@ -282,7 +282,7 @@ MODEL:
   WEIGHTS: https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/137849600/model_final_f10217.pkl
 NAME: acdc_large_al
 OUTPUT_DIR: ./output/acdc_large_al
-SEED: -1
+SEED: 1337
 SOLVER:
   AMP:
     ENABLED: false
