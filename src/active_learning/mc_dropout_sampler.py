@@ -320,11 +320,15 @@ class MCDropoutSampler(QueryStrategy):
                 uncertainty = torch.mean(uncertainty_list)
             elif mode == "max":
                 uncertainty = torch.max(uncertainty_list)
+            elif mode == "quant10":
+                quant = torch.quantile(uncertainty_list, 0.1, 0)
+                uncertainty = torch.where(uncertainty_list < quant,uncertainty_list, 0*uncertainty_list)
             elif mode == "quant20":
-                uncertainty = torch.max(uncertainty_list)
-            else:
                 quant = torch.quantile(uncertainty_list, 0.2, 0)
                 uncertainty = torch.where(uncertainty_list < quant,uncertainty_list, 0*uncertainty_list)
+            else:
+                uncertainty = torch.max(uncertainty_list)
+                
 
         else:
             uncertainty = torch.tensor([float("NaN")]).to(device)
