@@ -7,7 +7,7 @@ AL:
   NUM_MC_SAMPLES: 40
   OBJECT_TO_IMG_AGG: "quant20"
   MAX_LOOPS: 15
-  OUTPUT_DIR: ./al_output/acdc_large_al
+  OUTPUT_DIR: ./al_output/classes_acdc_large_al
 CUDNN_BENCHMARK: false
 DATALOADER:
   ASPECT_RATIO_GROUPING: true
@@ -24,7 +24,7 @@ DATASETS:
   - acdc_large_test
   TRAIN:
   - acdc_large_train
-EARLY_STOPPING_ROUNDS: 4
+EARLY_STOPPING_ROUNDS: 3
 GLOBAL:
   HACK: 1.0
 INPUT:
@@ -282,8 +282,8 @@ MODEL:
     NORM: GN
     NUM_CLASSES: 54
   WEIGHTS: https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/137849600/model_final_f10217.pkl
-NAME: acdc_large_al
-OUTPUT_DIR: ./output/acdc_large_al
+NAME: classes_acdc_large_al
+OUTPUT_DIR: ./output/classes_acdc_large_al
 SEED: 1337
 SOLVER:
   AMP:
@@ -329,7 +329,7 @@ TEST:
     - 1100
     - 1200
   DETECTIONS_PER_IMAGE: 100
-  EVAL_PERIOD: 1000
+  EVAL_PERIOD: 500
   EXPECTED_RESULTS: []
   KEYPOINT_OKS_SIGMAS: []
   PRECISE_BN:

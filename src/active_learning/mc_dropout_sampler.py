@@ -309,7 +309,7 @@ class MCDropoutSampler(QueryStrategy):
             
             # u_n = torch.multiply(u_n, u_n)
             u_h = torch.multiply(u_sem_spl, u_n)
-            if not torch.isnan(u_h.unsqueeze(0)): #and u_spl != 1:
+            if not torch.isnan(u_h.unsqueeze(0)) and u_spl != 1:
                 uncertainty_list.append(u_h.unsqueeze(0))
 
         if uncertainty_list:
@@ -322,10 +322,15 @@ class MCDropoutSampler(QueryStrategy):
                 uncertainty = torch.max(uncertainty_list)
             elif mode == "quant10":
                 quant = torch.quantile(uncertainty_list, 0.1, 0)
-                uncertainty = torch.where(uncertainty_list < quant,uncertainty_list, 0*uncertainty_list)
+                uncertainty = torch.mean(torch.where(uncertainty_list < quant,uncertainty_list, 0*uncertainty_list))
             elif mode == "quant20":
                 quant = torch.quantile(uncertainty_list, 0.2, 0)
                 uncertainty = torch.mean(torch.where(uncertainty_list < quant,uncertainty_list, 0*uncertainty_list))
+            elif mode == "sum":
+                uncertainty = torch.pow(torch.sum(torch.pow(uncertainty_list,-1)),-1)
+            elif mode == "mean50":
+                uncertainty_list = torch.where(uncertainty_list < 0.50,uncertainty_list, 0*uncertainty_list)
+                uncertainty = torch.mean(uncertainty_list)
             else:
                 uncertainty = torch.max(uncertainty_list)
                 

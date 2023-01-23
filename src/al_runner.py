@@ -11,6 +11,7 @@ if __name__ == "__main__":
     cfg = get_config("classes_acdc_large_al")
     for _ in range(5):
         cfg.SEED += 1
-        al_trainer = ActiveLearningTrainer(cfg, is_test_mode=not running_on_server)
-        al_trainer.run(dataset=ACDC_LARGE, query_strat=MC_DROPOUT)
-        al_trainer.run(dataset=ACDC_LARGE, query_strat=RANDOM)
+        for mode in ["mean",",min","quant10","quant20", "sum", "mean50"]:
+            cfg.AL.OBJECT_TO_IMG_AGG = mode
+            al_trainer = ActiveLearningTrainer(cfg, is_test_mode=not running_on_server)
+            al_trainer.run(dataset=ACDC_LARGE, query_strat=MC_DROPOUT)

@@ -5,7 +5,9 @@
 ### PATHS
 import os
 
-BASE_DATA_PATH = "./data/"
+PROJECT_ROOT = os.getenv("PROJECT_ROOT")
+DATA_PATH = os.getenv("DATA_PATH")
+BASE_DATA_PATH = DATA_PATH  + "/" # "./data/"
 
 REL_PATH_JSON = "cell_acdc_coco_ds.json"
 REL_PATH_IMAGES = "images"
