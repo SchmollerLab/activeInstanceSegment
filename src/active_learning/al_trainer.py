@@ -55,20 +55,20 @@ class ActiveLearningTrainer:
         sample_ids = self.query_strategy.sample(self.cfg, self.al_dataset.unlabeled_ids)
         self.al_dataset.update_labeled_data(sample_ids)
 
-    def run(self, dataset, query_strat):
+    def run(self, dataset, query_strat, cur_date=""):
 
         # initialize weights and biases
         if self.is_test_mode:
             wandb.init(
                 project="activeCell-ACDC",
-                name=str(os.uname()[1]) + "_" + query_strat,
+                name="",
                 sync_tensorboard=True,
                 mode="disabled",
             )
         else:
             wandb.init(
                 project="activeCell-ACDC",
-                name=str(os.uname()[1]) + "_" + query_strat,
+                name=str( cur_date + "_" + query_strat + "_" +  os.uname()[1]).split("-")[0],
                 sync_tensorboard=True,
             )
 
