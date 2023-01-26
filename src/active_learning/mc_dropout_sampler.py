@@ -93,7 +93,7 @@ class MCDropoutSampler(QueryStrategy):
 
         with open(os.path.join(self.cfg.AL.OUTPUT_DIR, self.strategy, f"uncertainties{str(self.counter)}.json"),"w") as file:
             json.dump(uncertainty_dict, file)
-        worst_ims = np.argsort(list(uncertainty_dict.values()))[:num_samples]
+        worst_ims = np.argsort(list(uncertainty_dict.values()))[-num_samples:]
         samples = [list(uncertainty_dict.keys())[id] for id in worst_ims]
         print("finished with mc dropout sampling.")
         print(
@@ -214,7 +214,7 @@ class MCDropoutSampler(QueryStrategy):
 
         return observations
 
-    def get_uncertainty(self, predictions, iterrations, height, width, mode="mean"):
+    def get_uncertainty(self, predictions, iterrations, height, width, mode="max"):
         uncertainty_list = []
 
         device = "cuda"
@@ -306,11 +306,12 @@ class MCDropoutSampler(QueryStrategy):
             except:
                 u_n = 0.0
 
-            
-            # u_n = torch.multiply(u_n, u_n)
             u_h = torch.multiply(u_sem_spl, u_n)
-            if not torch.isnan(u_h.unsqueeze(0)) and u_spl != 1:
-                uncertainty_list.append(u_h.unsqueeze(0))
+
+            # transform certainty to uncertainty
+            u_h = 1 - u_h
+
+            uncertainty_list.append(u_h.unsqueeze(0))
 
         if uncertainty_list:
             uncertainty_list = torch.cat(uncertainty_list)
@@ -320,21 +321,20 @@ class MCDropoutSampler(QueryStrategy):
                 uncertainty = torch.mean(uncertainty_list)
             elif mode == "max":
                 uncertainty = torch.max(uncertainty_list)
-            elif mode == "quant10":
-                quant = torch.quantile(uncertainty_list, 0.1, 0)
-                uncertainty = torch.mean(torch.where(uncertainty_list < quant,uncertainty_list, 0*uncertainty_list))
-            elif mode == "quant20":
-                quant = torch.quantile(uncertainty_list, 0.2, 0)
-                uncertainty = torch.mean(torch.where(uncertainty_list < quant,uncertainty_list, 0*uncertainty_list))
+            elif mode.find("quant_") != -1:
+                alpha = float(mode.replace("quant_",""))/100
+                quant = torch.quantile(uncertainty_list, alpha, 0)
+                mask = uncertainty_list > quant
+                uncertainty = torch.divide(torch.sum(torch.where(mask,uncertainty_list, 0*uncertainty_list)), torch.sum(mask))
             elif mode == "sum":
-                uncertainty = torch.pow(torch.sum(torch.pow(uncertainty_list,-1)),-1)
-            elif mode == "mean50":
-                uncertainty_list = torch.where(uncertainty_list < 0.50,uncertainty_list, 0*uncertainty_list)
-                uncertainty = torch.mean(uncertainty_list)
+                uncertainty = torch.sum(uncertainty_list)
+            elif mode.find("sum_") != -1:
+                thresh = float(mode.replace("sum_",""))/100
+                mask = uncertainty_list > thresh
+                uncertainty = torch.sum(torch.where(mask,uncertainty_list, 0*uncertainty_list))
             else:
                 uncertainty = torch.max(uncertainty_list)
                 
-
         else:
             uncertainty = torch.tensor([float("NaN")]).to(device)
 
