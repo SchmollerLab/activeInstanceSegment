@@ -311,7 +311,8 @@ class MCDropoutSampler(QueryStrategy):
             # transform certainty to uncertainty
             u_h = 1 - u_h
 
-            uncertainty_list.append(u_h.unsqueeze(0))
+            if not torch.isnan(u_h.unsqueeze(0)):
+                uncertainty_list.append(u_h.unsqueeze(0))
 
         if uncertainty_list:
             uncertainty_list = torch.cat(uncertainty_list)
