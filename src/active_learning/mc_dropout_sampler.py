@@ -298,7 +298,10 @@ class MCDropoutSampler(QueryStrategy):
             u_spl_b = torch.clamp(torch.divide(bbox_IOUs.sum(), val_len), min=0, max=1)
             u_spl = torch.multiply(u_spl_m, u_spl_b)
 
-            u_sem_spl = torch.multiply(u_sem, u_spl)
+            if u_sem > 0:
+                u_sem_spl = torch.multiply(u_sem, u_spl)
+            else:
+                u_sem_spl = u_spl
 
             
             try:
@@ -311,7 +314,7 @@ class MCDropoutSampler(QueryStrategy):
             # transform certainty to uncertainty
             u_h = 1 - u_h
 
-            if not torch.isnan(u_h.unsqueeze(0)):
+            if not torch.isnan(u_h.unsqueeze(0)) and u_spl != 1:
                 uncertainty_list.append(u_h.unsqueeze(0))
 
         if uncertainty_list:
