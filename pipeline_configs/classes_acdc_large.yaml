@@ -17,9 +17,9 @@ DATASETS:
   PROPOSAL_FILES_TEST: []
   PROPOSAL_FILES_TRAIN: []
   TEST:
-  - acdc_large_test
+  - acdc_large_cls_test
   TRAIN:
-  - acdc_large_train
+  - acdc_large_cls_train
 EARLY_STOPPING_ROUNDS: 50
 GLOBAL:
   HACK: 1.0
