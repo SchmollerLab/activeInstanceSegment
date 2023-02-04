@@ -214,88 +214,106 @@ class MCDropoutSampler(QueryStrategy):
 
         return observations
 
+    def get_semantic_uncertainty(self, val, device = "cuda"):
+
+        torch_softmax = torch.nn.Softmax(dim=0)
+
+        softmaxes = torch.stack([torch_softmax(v['softmaxes']) for v in val])
+        if len(softmaxes[0]) == 1:
+             u_sem = torch.ones(1).to(device)
+        else:           
+            mean_softmaxes = torch.mean(softmaxes, axis = 0)
+            u_sem = torch.max(mean_softmaxes)
+
+        return u_sem
+
+    def get_mask_uncertainty(self, val, height, width, val_len, device="cuda"):
+
+        
+        mean_mask = torch.mean(
+            torch.stack(
+                [
+                    v["pred_masks"].flatten().type(torch.cuda.FloatTensor)
+                    for v in val
+                ]
+            ),
+            axis=0,
+        )
+
+        mean_mask[mean_mask < 0.25] = 0.0
+        mean_mask = mean_mask.reshape(-1, height, width)
+        mask_IOUs = []
+        for v in val:
+            current_mask = v["pred_masks"]
+            overlap = torch.logical_and(mean_mask, current_mask)
+            union = torch.logical_or(mean_mask, current_mask)
+            if union.sum() > 0:
+                IOU = torch.divide(overlap.sum(), union.sum())
+                mask_IOUs.append(IOU.unsqueeze(0))
+
+        if len(mask_IOUs) > 0:
+            mask_IOUs = torch.cat(mask_IOUs)
+        else:
+            mask_IOUs = torch.tensor([float("NaN")]).to(device)
+
+        u_spl_m = torch.clamp(torch.divide(mask_IOUs.sum(), val_len), min=0, max=1)
+
+        return u_spl_m
+
+
+
+    def get_box_uncertainty(self, val, val_len, device="cuda"):
+        mean_bbox = torch.mean(
+            torch.stack([v["pred_boxes"].tensor for v in val]), axis=0
+        )
+
+        bbox_IOUs = []
+        mean_bbox = mean_bbox.squeeze(0)
+        boxAArea = torch.multiply(
+            (mean_bbox[2] - mean_bbox[0] + 1), (mean_bbox[3] - mean_bbox[1] + 1)
+        )
+
+        for v in val:
+            current_bbox = v["pred_boxes"].tensor.squeeze(0)
+            xA = torch.max(mean_bbox[0], current_bbox[0])
+            yA = torch.max(mean_bbox[1], current_bbox[1])
+            xB = torch.min(mean_bbox[2], current_bbox[2])
+            yB = torch.min(mean_bbox[3], current_bbox[3])
+            interArea = torch.multiply(
+                torch.max(torch.tensor(0).to(device), xB - xA + 1),
+                torch.max(torch.tensor(0).to(device), yB - yA + 1),
+            )
+            boxBArea = torch.multiply(
+                (current_bbox[2] - current_bbox[0] + 1),
+                (current_bbox[3] - current_bbox[1] + 1),
+            )
+            bbox_IOU = torch.divide(interArea, (boxAArea + boxBArea - interArea))
+            bbox_IOUs.append(bbox_IOU.unsqueeze(0))
+
+        if len(bbox_IOUs) > 0:
+            bbox_IOUs = torch.cat(bbox_IOUs)
+        else:
+            bbox_IOUs = torch.tensor([float("NaN")]).to(device)
+
+        u_spl_b = torch.clamp(torch.divide(bbox_IOUs.sum(), val_len), min=0, max=1)
+
+        return u_spl_b
+
+
     def get_uncertainty(self, predictions, iterrations, height, width, mode="max"):
         uncertainty_list = []
 
         device = "cuda"
 
-        torch_softmax = torch.nn.Softmax(dim=0)
-
         for key, val in predictions.items():
-            
-            softmaxes = [torch_softmax(v['softmaxes']) for v in val]
-            if len(softmaxes[0]) == 1:
-                inv_entropies_norm = torch.stack([softmax for softmax in softmaxes])
-            else:
-                entropies = torch.stack([torch.distributions.Categorical(torch.clamp(softmax,min=0)).entropy() for softmax in softmaxes])
-                entropies_norm = torch.stack([torch.divide(entropy, self.max_entropy.to(device)) for entropy in entropies]) ## first normalize the entropy-value with the maximum entropy (which is the least confident situation with equal softmaxes for all classes)
-                inv_entropies_norm = torch.stack([torch.subtract(torch.ones(1).to(device), entropy_norm) for entropy_norm in entropies_norm]) ## invert the normalized entropy-values so it can be properly used in the uncertainty calculation
-
-
-            mean_bbox = torch.mean(
-                torch.stack([v["pred_boxes"].tensor for v in val]), axis=0
-            )
-            mean_mask = torch.mean(
-                torch.stack(
-                    [
-                        v["pred_masks"].flatten().type(torch.cuda.FloatTensor)
-                        for v in val
-                    ]
-                ),
-                axis=0,
-            )
-
-            mean_mask[mean_mask < 0.25] = 0.0
-            mean_mask = mean_mask.reshape(-1, height, width)
-            mask_IOUs = []
-            for v in val:
-                current_mask = v["pred_masks"]
-                overlap = torch.logical_and(mean_mask, current_mask)
-                union = torch.logical_or(mean_mask, current_mask)
-                if union.sum() > 0:
-                    IOU = torch.divide(overlap.sum(), union.sum())
-                    mask_IOUs.append(IOU.unsqueeze(0))
-
-            if len(mask_IOUs) > 0:
-                mask_IOUs = torch.cat(mask_IOUs)
-            else:
-                mask_IOUs = torch.tensor([float("NaN")]).to(device)
-
-            bbox_IOUs = []
-            mean_bbox = mean_bbox.squeeze(0)
-            boxAArea = torch.multiply(
-                (mean_bbox[2] - mean_bbox[0] + 1), (mean_bbox[3] - mean_bbox[1] + 1)
-            )
-
-            for v in val:
-                current_bbox = v["pred_boxes"].tensor.squeeze(0)
-                xA = torch.max(mean_bbox[0], current_bbox[0])
-                yA = torch.max(mean_bbox[1], current_bbox[1])
-                xB = torch.min(mean_bbox[2], current_bbox[2])
-                yB = torch.min(mean_bbox[3], current_bbox[3])
-                interArea = torch.multiply(
-                    torch.max(torch.tensor(0).to(device), xB - xA + 1),
-                    torch.max(torch.tensor(0).to(device), yB - yA + 1),
-                )
-                boxBArea = torch.multiply(
-                    (current_bbox[2] - current_bbox[0] + 1),
-                    (current_bbox[3] - current_bbox[1] + 1),
-                )
-                bbox_IOU = torch.divide(interArea, (boxAArea + boxBArea - interArea))
-                bbox_IOUs.append(bbox_IOU.unsqueeze(0))
-
-            if len(bbox_IOUs) > 0:
-                bbox_IOUs = torch.cat(bbox_IOUs)
-            else:
-                bbox_IOUs = torch.tensor([float("NaN")]).to(device)
 
             val_len = torch.tensor(len(val)).to(device)
-            outputs_len = torch.tensor(iterrations).to(device)
+         
+            u_sem = self.get_semantic_uncertainty(val=val, device=device)
 
-            u_sem = torch.clamp(torch.mean(inv_entropies_norm), min=0, max=1)
-
-            u_spl_m = torch.clamp(torch.divide(mask_IOUs.sum(), val_len), min=0, max=1)
-            u_spl_b = torch.clamp(torch.divide(bbox_IOUs.sum(), val_len), min=0, max=1)
+            u_spl_m = self.get_mask_uncertainty(val=val, height=height, width=width, val_len=val_len, device=device)
+            u_spl_b = self.get_box_uncertainty(val=val, val_len=val_len, device=device)
+            
             u_spl = torch.multiply(u_spl_m, u_spl_b)
 
             if u_sem > 0:
@@ -305,6 +323,7 @@ class MCDropoutSampler(QueryStrategy):
 
             
             try:
+                outputs_len = torch.tensor(iterrations).to(device)
                 u_n = torch.clamp(torch.divide(val_len, outputs_len), min=0, max=1)
             except:
                 u_n = 0.0
@@ -325,17 +344,6 @@ class MCDropoutSampler(QueryStrategy):
                 uncertainty = torch.mean(uncertainty_list)
             elif mode == "max":
                 uncertainty = torch.max(uncertainty_list)
-            elif mode.find("quant_") != -1:
-                alpha = float(mode.replace("quant_",""))/100
-                quant = torch.quantile(uncertainty_list, alpha, 0)
-                mask = uncertainty_list > quant
-                uncertainty = torch.divide(torch.sum(torch.where(mask,uncertainty_list, 0*uncertainty_list)), torch.sum(mask))
-            elif mode == "sum":
-                uncertainty = torch.sum(uncertainty_list)
-            elif mode.find("sum_") != -1:
-                thresh = float(mode.replace("sum_",""))/100
-                mask = uncertainty_list > thresh
-                uncertainty = torch.sum(torch.where(mask,uncertainty_list, 0*uncertainty_list))
             else:
                 uncertainty = torch.max(uncertainty_list)
                 
