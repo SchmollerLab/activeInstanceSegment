@@ -16,6 +16,7 @@ PATH_PIPELINE_CONFIGS = "./pipeline_configs"
 
 ACDC_SMALL = "acdc_small"
 ACDC_LARGE = "acdc_large"
+ACDC_LARGE_CLS = "acdc_large_cls"
 
 # CELLPOSE = "cellpose"
 # ACDC_LAST_IMAGES = "acdc_last_images"
@@ -24,6 +25,7 @@ ACDC_LARGE = "acdc_large"
 DATASETS_DSPLITS = {
     ACDC_SMALL: ["train", "test"],
     ACDC_LARGE: ["train", "test"],
+    ACDC_LARGE_CLS: ["train", "test"],
 }
 
 ### NAMES REGISTERED DATASETS

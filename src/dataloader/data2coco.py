@@ -48,11 +48,12 @@ CATEGORIES = [
 
 
 class Data2cocoConverter:
+
     def __init__(self) -> None:
-        self.create_dir_to_path(path=os.getenv("DATA_PATH"), dir_name="acdc_large")
-        self.coco_data_path = os.path.join(os.getenv("DATA_PATH"), "acdc_large")
+        self.create_dir_to_path(path=os.getenv("DATA_PATH"), dir_name="acdc_large_cls")
+        self.coco_data_path = os.path.join(os.getenv("DATA_PATH"), "acdc_large_cls")
         self.create_dir_to_path(
-                path=os.getenv("DATA_PATH"), dir_name="acdc_large"
+                path=os.getenv("DATA_PATH"), dir_name="acdc_large_cls"
             )
 
     def create_dir_to_path(self, path, dir_name):
@@ -64,7 +65,7 @@ class Data2cocoConverter:
         print("converting acdc dataset to coco format ...")
 
         
-        raw_images_path = os.path.join(os.getenv("DATA_PATH"), "raw_data", "acdc_large")
+        raw_images_path = os.path.join(os.getenv("DATA_PATH"), "raw_data", "acdc_large_cls")
         data_map = self.build_data_map(raw_images_path)
     
         index = data_map.index.to_numpy()
@@ -162,7 +163,7 @@ class Data2cocoConverter:
         df_clean = df[df["segm"] != ""].copy().reset_index()
         df_clean["min_image"] = 0
 
-        return df_clean.sort_values(by=["paths"])
+        return df_clean.sort_values(by=["paths"]).reset_index(drop=True)
 
     def process_acdc_position(
         self, data, base_image_id, max_image, segmentation_id, images_coco_data_path, output_csv
@@ -316,8 +317,29 @@ class Data2cocoConverter:
 
         return coco_output
 
+def acdc_large_cls_to_acdc_large():
 
-if __name__ == "__main__":
+    os.system("cp -r ./data/acdc_large/ ./data/acdc_large_cls/")
+
+    for dtype in ["train", "test"]:
+        with open(f"data/acdc_large_cls/{dtype}/cell_acdc_coco_ds.json", "r") as file: 
+            coco_data = json.load(file)
+
+        coco_data["categories"] = [{'id': 0, 'name': 'cell', 'supercategory': 'cell'}]
+        annotations = coco_data['annotations']
+        coco_data['annotations'] = []
+
+        for anno in annotations:
+            anno['category_id'] = 0
+            coco_data['annotations'].append(anno)
+
+        with open(f"data/acdc_large/{dtype}/cell_acdc_coco_ds.json", "w") as file: 
+            json.dump(coco_data, file)
+
+if __name__ == "__main__":                  
 
     acdc_conv = Data2cocoConverter()
     acdc_conv.convert()
+
+    acdc_large_cls_to_acdc_large()
+
