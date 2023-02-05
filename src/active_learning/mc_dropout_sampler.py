@@ -299,6 +299,14 @@ class MCDropoutSampler(QueryStrategy):
 
         return u_spl_b
 
+    def get_detection_uncertainty(self, iterrations, val_len, device="cuda"):
+        try:
+            outputs_len = torch.tensor(iterrations).to(device)
+            u_n = torch.clamp(torch.divide(val_len, outputs_len), min=0, max=1)
+        except:
+            u_n = 0.0
+
+        return u_n
 
     def get_uncertainty(self, predictions, iterrations, height, width, mode="max"):
         uncertainty_list = []
@@ -321,13 +329,8 @@ class MCDropoutSampler(QueryStrategy):
             else:
                 u_sem_spl = u_spl
 
-            
-            try:
-                outputs_len = torch.tensor(iterrations).to(device)
-                u_n = torch.clamp(torch.divide(val_len, outputs_len), min=0, max=1)
-            except:
-                u_n = 0.0
-
+            u_n = self.get_box_uncertainty(iterrations=iterrations, val_len=val_len, device=device)
+           
             u_h = torch.multiply(u_sem_spl, u_n)
 
             # transform certainty to uncertainty
