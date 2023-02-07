@@ -329,7 +329,7 @@ class MCDropoutSampler(QueryStrategy):
             else:
                 u_sem_spl = u_spl
 
-            u_n = self.get_box_uncertainty(iterrations=iterrations, val_len=val_len, device=device)
+            u_n = self.get_detection_uncertainty(iterrations=iterrations, val_len=val_len, device=device)
            
             u_h = torch.multiply(u_sem_spl, u_n)
 
