@@ -3,6 +3,7 @@ import os
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 sys.path.append(PROJECT_ROOT)
+print(PROJECT_ROOT)
 
 import random as rd
 
@@ -45,6 +46,12 @@ class ActiveLearingDataset:
 
     def get_len_labeled(self):
         return len(self.labeled_ids)
+
+    def get_num_objects(self):
+        labeled_ds_jsons = DatasetCatalog.get(self.labeled_data_name)
+        num_objects = sum([len(json_img["annotations"]) for json_img in labeled_ds_jsons])
+        return num_objects
+        
 
     def precompute_augmentation_ids(self, unlabeled_ids):
 
@@ -118,19 +125,21 @@ class ActiveLearingDataset:
 
 if __name__ == "__main__":
 
-    from config_builder import get_config
+    from src.config_builder import get_config
 
-    cfg = get_config("al_pipeline_config")
+    cfg = get_config("acdc_large_al")
     cfg.AL.INIT_SIZE = 5
     al_ds = ActiveLearingDataset(cfg=cfg)
+    print("num objs", al_ds.get_num_objects())
     print(
         len(al_ds.unlabeled_ids),
         len(DatasetCatalog.get(cfg.AL.DATASETS.TRAIN_UNLABELED)),
     )
-    print(len(al_ds.labeled_ids), len(al_ds.labeled_ids_aug))
+    print(len(al_ds.labeled_ids))
     al_ds.update_labeled_data(al_ds.unlabeled_ids[1:3])
+    print("num objs", al_ds.get_num_objects())
     print(
         len(al_ds.unlabeled_ids),
         len(DatasetCatalog.get(cfg.AL.DATASETS.TRAIN_UNLABELED)),
     )
-    print(len(al_ds.labeled_ids), len(al_ds.labeled_ids_aug))
+    print(len(al_ds.labeled_ids))

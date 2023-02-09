@@ -48,6 +48,7 @@ class ActiveLearningTrainer:
                     "bbox_ap": result["bbox"]["AP"],
                     "segm_ap": result["segm"]["AP"],
                     "used_data_points": self.al_dataset.get_len_labeled(),
+                    "num_labeled_objects": self.al_dataset.get_num_objects(),
                 }
             }
         )
