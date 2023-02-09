@@ -91,7 +91,8 @@ def get_config(config_name, path_configs=PATH_PIPELINE_CONFIGS, complete_path=No
 
     if os.getenv("SEED"):
         cfg.SEED = os.getenv("SEED")
-        
+    cfg.SEED = int(cfg.SEED)
+
     return cfg
 
 

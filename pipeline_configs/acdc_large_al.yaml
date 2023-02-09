@@ -5,7 +5,7 @@ AL:
   INIT_SIZE: 5
   SAMPLE_EVERY: 10
   NUM_MC_SAMPLES: 40
-  OBJECT_TO_IMG_AGG: "quant20"
+  OBJECT_TO_IMG_AGG: "max"
   MAX_LOOPS: 15
   OUTPUT_DIR: ./al_output/acdc_large_al
 CUDNN_BENCHMARK: false
