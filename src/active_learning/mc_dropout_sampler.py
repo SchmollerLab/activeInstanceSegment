@@ -133,17 +133,22 @@ class MCDropoutSampler(QueryStrategy):
             image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
             inputs = [{"image": image, "height": height, "width": width}]
 
-            images = model.preprocess_image(inputs)
-            features = model.backbone(images.tensor)
+            
 
-            proposals, _ = model.proposal_generator(images, features, None)
-            features_ = [features[f] for f in model.roi_heads.box_in_features]
-
-            box_features_pooler = model.roi_heads.box_pooler(
-                features_, [x.proposal_boxes for x in proposals]
-            )
             prediction_list = []
             for _ in range(iterrations):
+                
+                images = model.preprocess_image(inputs)
+                features = model.backbone(images.tensor)
+                
+                proposals, _ = model.proposal_generator(images, features, None)
+                features_ = [features[f] for f in model.roi_heads.box_in_features]
+
+                box_features_pooler = model.roi_heads.box_pooler(
+                    features_, [x.proposal_boxes for x in proposals]
+                )
+                
+            
                 box_features = model.roi_heads.box_head(box_features_pooler)
                 predictions = model.roi_heads.box_predictor(box_features)
 
@@ -215,16 +220,19 @@ class MCDropoutSampler(QueryStrategy):
         return observations
 
     def get_semantic_uncertainty(self, val, device = "cuda"):
-
-        torch_softmax = torch.nn.Softmax(dim=0)
-
-        softmaxes = torch.stack([torch_softmax(v['softmaxes']) for v in val])
-        if len(softmaxes[0]) == 1:
-             u_sem = torch.ones(1).to(device)
-        else:           
-            mean_softmaxes = torch.mean(softmaxes, axis = 0)
-            u_sem = torch.max(mean_softmaxes)
-
+        
+        try:
+            torch_softmax = torch.nn.Softmax(dim=0)
+            softmaxes = torch.stack([torch_softmax(v['softmaxes']) for v in val])
+        
+            if len(softmaxes[0]) == 1:
+                 u_sem = torch.ones(1).to(device)
+            else:
+                mean_softmaxes = torch.mean(softmaxes, axis = 0)
+                u_sem = torch.max(mean_softmaxes)
+        
+        except:
+            return torch.ones(1).to(device)
         return u_sem
 
     def get_mask_uncertainty(self, val, height, width, val_len, device="cuda"):
