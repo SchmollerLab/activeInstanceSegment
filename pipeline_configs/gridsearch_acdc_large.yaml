@@ -274,7 +274,7 @@ MODEL:
     LOSS_WEIGHT: 1.0
     NAME: SemSegFPNHead
     NORM: GN
-    NUM_CLASSES: 54
+    NUM_CLASSES: 1
   WEIGHTS: https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/137849600/model_final_f10217.pkl
 NAME: default_acdc_large_full_ds
 OUTPUT_DIR: ./output/default_acdc_large_full_ds
@@ -292,7 +292,7 @@ SOLVER:
     ENABLED: false
     NORM_TYPE: 2.0
   GAMMA: 0.1
-  IMS_PER_BATCH: 16
+  IMS_PER_BATCH: 4
   LR_SCHEDULER_NAME: WarmupMultiStepLR
   MAX_ITER: 400000
   MOMENTUM: 0.9
