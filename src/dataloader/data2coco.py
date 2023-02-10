@@ -319,7 +319,8 @@ class Data2cocoConverter:
 
 def acdc_large_cls_to_acdc_large():
 
-    os.system("cp -r ./data/acdc_large/ ./data/acdc_large_cls/")
+    
+    os.system(f"cp -r {os.getenv('DATA_PATH')}/acdc_large/ {os.getenv('DATA_PATH')}/acdc_large_cls/")
 
     for dtype in ["train", "test"]:
         with open(f"data/acdc_large_cls/{dtype}/cell_acdc_coco_ds.json", "r") as file: 

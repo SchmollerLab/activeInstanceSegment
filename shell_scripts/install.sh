@@ -31,6 +31,9 @@ python -m venv ac_acdc_env
 project_root="$(pwd)"
 data_path="$(pwd)"/data
 
+mkdir data
+mkdir output
+
 echo "set enviromental variables"
 echo export IS_SERVER=true | sudo tee -a ac_acdc_env/bin/activate
 echo export PROJECT_ROOT=\"$project_root\" | sudo tee -a ac_acdc_env/bin/activate
