@@ -69,7 +69,7 @@ class ActiveLearningTrainer:
         else:
             wandb.init(
                 project="activeCell-ACDC",
-                name=str( cur_date + "_" + query_strat + "_" +  os.uname()[1]).split("-")[0],
+                name=str( query_strat + "_" +  cur_date + "_" + os.uname()[1]).split("-")[0],
                 sync_tensorboard=True,
             )
 
