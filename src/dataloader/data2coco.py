@@ -65,7 +65,7 @@ class Data2cocoConverter:
         print("converting acdc dataset to coco format ...")
 
         
-        raw_images_path = os.path.join(os.getenv("DATA_PATH"), "raw_data", "acdc_large_cls")
+        raw_images_path = os.path.join(os.getenv("DATA_PATH"), "raw_data", "acdc_large")
         data_map = self.build_data_map(raw_images_path)
     
         index = data_map.index.to_numpy()
