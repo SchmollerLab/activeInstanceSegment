@@ -75,6 +75,8 @@ class Data2cocoConverter:
         data_dict["train"] = index[:33]
         data_dict["test"] = index[33:]
 
+        print(f"test dataset:\n{data_map.iloc[data_dict['test']]['paths']}")
+        print(f"train dataset:\n{data_map.iloc[data_dict['train']]['paths']}")
         for split_type in ["test", "train"]:
 
             self.create_dir_to_path(
