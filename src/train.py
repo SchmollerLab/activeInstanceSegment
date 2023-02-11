@@ -1,6 +1,5 @@
 import torch, detectron2
 import wandb
-import yaml
 import os
 import shutil
 import sys
@@ -23,6 +22,7 @@ sys.path.append(PROJECT_ROOT)
 
 from src.test import do_test
 from src.globals import *
+from src.logging.wandb_event_writer import WandBWriter
 
 
 
@@ -68,7 +68,7 @@ def do_train(cfg, logger, resume=False):
     max_iter = cfg.SOLVER.MAX_ITER
 
     writers = (
-        default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
+        default_writers(cfg.OUTPUT_DIR, max_iter) + [WandBWriter()] if comm.is_main_process() else []
     )
 
     # define augmentations
