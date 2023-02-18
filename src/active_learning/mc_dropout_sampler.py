@@ -162,7 +162,7 @@ class MCDropoutSampler(QueryStrategy):
                 prediction_list.append(outputs)
             return list(chain.from_iterable(prediction_list))
 
-    def get_observations(self, outputs, iou_thres=0.1):
+    def get_observations(self, outputs, iou_thres=0.5):
         """
         To cluster the segmentations for the different Monte-Carlo runs
         """
@@ -339,7 +339,7 @@ class MCDropoutSampler(QueryStrategy):
             # transform certainty to uncertainty
             u_h = 1 - u_h
 
-            if not torch.isnan(u_h.unsqueeze(0)): # and u_spl != 1:
+            if not torch.isnan(u_h.unsqueeze(0)) and u_spl != 1:
                 uncertainty_list.append(u_h.unsqueeze(0))
 
         if uncertainty_list:
