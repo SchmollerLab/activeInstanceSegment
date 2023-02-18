@@ -5,10 +5,6 @@ from detectron2.config.config import CfgNode as CN
 import sys
 import os
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-
-sys.path.append(PROJECT_ROOT)
-
 from src.globals import *
 from src.register_datasets import get_dataset_name
 from src.active_learning.nn_modules.dropout import *

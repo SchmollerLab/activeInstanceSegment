@@ -11,8 +11,7 @@ import pycococreatortools
 
 import sys
 
-sys.path.insert(0, sys.path[0] + "/..")
-from globals import *
+from src.globals import *
 
 DATASET_NAME = "acdc_dataset"
 

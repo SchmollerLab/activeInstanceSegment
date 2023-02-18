@@ -1,7 +1,5 @@
-try:
-    from globals import *
-except:
-    from src.globals import *
+
+from src.globals import *
 
 import json
 import random as rd

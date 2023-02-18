@@ -17,9 +17,6 @@ from detectron2.modeling import build_model
 
 from argparse import ArgumentParser
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-sys.path.append(PROJECT_ROOT)
-
 from src.register_datasets import register_datasets
 from src.train import do_train
 from src.test import do_test

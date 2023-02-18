@@ -1,8 +1,8 @@
 import os
 from datetime import date
-from globals import *
-from config_builder import get_config
-from active_learning.al_trainer import ActiveLearningTrainer
+from src.globals import *
+from src.config_builder import get_config
+from src.active_learning.al_trainer import ActiveLearningTrainer
 
 
 if __name__ == "__main__":
