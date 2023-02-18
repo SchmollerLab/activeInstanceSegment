@@ -75,6 +75,10 @@ def do_train(cfg, logger, resume=False):
     augs = [
         T.RandomFlip(prob=0.5, horizontal=True, vertical=False),
         T.RandomFlip(prob=0.5, horizontal=False, vertical=True),
+        #T.RandomRotation((0,360), expand=False),
+        #T.RandomBrightness(0.5, 2),
+        #T.RandomContrast(0.5, 2),
+        #T.RandomSaturation(0.5, 2),
         T.ResizeShortestEdge(
             short_edge_length=cfg.INPUT.MIN_SIZE_TRAIN,
             max_size=cfg.INPUT.MAX_SIZE_TRAIN,
@@ -151,10 +155,6 @@ def do_train(cfg, logger, resume=False):
                     early_counter = 0
 
                 wandb.log({"max_early_counter": max_early_counter})
-                
-                
-                
-                
 
             if iteration - start_iter > 5 and (
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1

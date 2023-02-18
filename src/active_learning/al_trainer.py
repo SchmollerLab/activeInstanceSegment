@@ -22,7 +22,12 @@ from src.train import do_train
 from src.active_learning.al_dataset import ActiveLearingDataset
 from src.active_learning.query_strategies import *
 from src.active_learning.mc_dropout_sampler import MCDropoutSampler
+<<<<<<< HEAD
 from src.active_learning.hybrid_sampler import HybridSampler
+=======
+from src.active_learning.tta_sampler import TTASampler
+
+>>>>>>> main
 
 class ActiveLearningTrainer:
     def __init__(self, cfg, is_test_mode=False):
@@ -82,6 +87,8 @@ class ActiveLearningTrainer:
             self.query_strategy = MCDropoutSampler(self.cfg)
         elif query_strat == HYBRID:
             self.query_strategy = HybridSampler(self.cfg)
+        elif query_strat == TTA:
+            self.query_strategy = TTASampler(self.cfg)
         else:
             raise Exception("Query strategy {} not defined".format(query_strat))
 

@@ -175,6 +175,9 @@ class MCDropoutSampler(QueryStrategy):
             dets = sample["instances"].get_fields()
 
             for det in range(detections):
+                if torch.sum(dets["pred_masks"][det]) == 0:
+                    continue
+
                 if not observations:
                     detection = {}
                     for key, val in dets.items():

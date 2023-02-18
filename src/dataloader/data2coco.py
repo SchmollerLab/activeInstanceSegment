@@ -124,7 +124,7 @@ class Data2cocoConverter:
             max_id = -1
             output_csv = ""
 
-            if root.find("Images"):
+            if root.find("Images") != -1:
                 for filename in files:
 
 
