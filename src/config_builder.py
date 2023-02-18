@@ -28,6 +28,7 @@ def build_config(config_name):
     cfg.AL.SAMPLE_EVERY = 10
     cfg.AL.NUM_MC_SAMPLES = 40
     cfg.AL.OBJECT_TO_IMG_AGG = "quant20"
+    cfg.AL.QUERY_STRATEGY = "random"
 
     cfg.DATASETS.TRAIN = (get_dataset_name(ACDC_SMALL, TRAIN),)
     cfg.DATASETS.TEST = (get_dataset_name(ACDC_SMALL, TEST),)
@@ -71,6 +72,7 @@ def get_config(config_name, path_configs=PATH_PIPELINE_CONFIGS, complete_path=No
     cfg.AL.SAMPLE_EVERY = 0
     cfg.AL.NUM_MC_SAMPLES = 0
     cfg.AL.OBJECT_TO_IMG_AGG = ""
+    cfg.AL.QUERY_STRATEGY = ""
     cfg.EARLY_STOPPING_ROUNDS = 0
 
     cfg.MODEL.ROI_HEADS.SOFTMAXES = False

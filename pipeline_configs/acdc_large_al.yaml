@@ -8,6 +8,7 @@ AL:
   OBJECT_TO_IMG_AGG: "max"
   MAX_LOOPS: 15
   OUTPUT_DIR: ./al_output/acdc_large_al
+  QUERY_STRATEGY: random
 CUDNN_BENCHMARK: false
 DATALOADER:
   ASPECT_RATIO_GROUPING: true

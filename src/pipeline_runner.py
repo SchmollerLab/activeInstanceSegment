@@ -44,7 +44,7 @@ def run_pipeline(config_name, cfg=None, cur_date=""):
 
     # empty gpu cache
     torch.cuda.empty_cache()
-    # run training
+    # run trainingrunning_on_server
     wandb.config.update(yaml.load(cfg.dump(),Loader=yaml.Loader))
     do_train(cfg, logger=logger)
     # run testing
@@ -113,9 +113,9 @@ if __name__ == "__main__":
 
     parser = ArgumentParser()
     parser.add_argument(
-        "-f",
-        "--file",
-        dest="filename",
+        "-c",
+        "--config",
+        dest="config_filename",
         help="Path to pipeline configuration",
         metavar="FILE",
     )
@@ -129,12 +129,12 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    filename = args.filename
+    config_filename = args.config_filename
     do_grid_search = args.do_grid_search
 
     register_datasets()
-    config_name = filename.split("/")[-1].replace(".yaml", "")
-    cfg = get_config(config_name, complete_path=filename)
+    config_name = config_filename.split("/")[-1].replace(".yaml", "")
+    cfg = get_config(config_name, complete_path=config_filename)
 
     if do_grid_search:
         grid_search(cfg)

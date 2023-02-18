@@ -22,12 +22,48 @@ from src.active_learning.tta_sampler import TTASampler
 
 
 class ActiveLearningTrainer:
-    def __init__(self, cfg, is_test_mode=False):
+    def __init__(self, cfg, cur_date= "", is_test_mode=False):
         self.cfg = cfg
         self.is_test_mode = is_test_mode
 
         self.logger = setup_logger(output="./log/main.log")
         self.logger.setLevel(10)
+
+        query_strat = cfg.AL.QUERY_STRATEGY
+
+        # define strategy
+        if query_strat == RANDOM:
+            self.query_strategy = RandomSampler(self.cfg)
+        elif query_strat == KNOWN_VALIDATION:
+            self.query_strategy = GTknownSampler(self.cfg)
+        elif query_strat == MC_DROPOUT:
+            self.query_strategy = MCDropoutSampler(self.cfg)
+        elif query_strat == HYBRID:
+            self.query_strategy = HybridSampler(self.cfg)
+        elif query_strat == TTA:
+            self.query_strategy = TTASampler(self.cfg)
+        else:
+            raise Exception("Query strategy {} not defined".format(query_strat))
+
+        self.al_dataset = ActiveLearingDataset(self.cfg)
+
+
+        # initialize weights and biases
+        if self.is_test_mode:
+            wandb.init(
+                project="activeCell-ACDC",
+                name="",
+                sync_tensorboard=True,
+                mode="disabled",
+            )
+        else:
+            wandb.init(
+                project="activeCell-ACDC",
+                name=str( query_strat + "_" +  cur_date + "_" + os.uname()[1]).split("-")[0],
+                sync_tensorboard=True,
+            )
+
+        wandb.config.update(yaml.load(self.cfg.dump(),Loader=yaml.Loader))
 
 
     def __del__(self):
@@ -53,45 +89,7 @@ class ActiveLearningTrainer:
         sample_ids = self.query_strategy.sample(self.cfg, self.al_dataset.unlabeled_ids)
         self.al_dataset.update_labeled_data(sample_ids)
 
-    def run(self, dataset, query_strat, cur_date=""):
-
-        # initialize weights and biases
-        if self.is_test_mode:
-            wandb.init(
-                project="activeCell-ACDC",
-                name="",
-                sync_tensorboard=True,
-                mode="disabled",
-            )
-        else:
-            wandb.init(
-                project="activeCell-ACDC",
-                name=str( query_strat + "_" +  cur_date + "_" + os.uname()[1]).split("-")[0],
-                sync_tensorboard=True,
-            )
-
-        # define strategy
-        if query_strat == RANDOM:
-            self.query_strategy = RandomSampler(self.cfg)
-        elif query_strat == KNOWN_VALIDATION:
-            self.query_strategy = GTknownSampler(self.cfg)
-        elif query_strat == MC_DROPOUT:
-            self.query_strategy = MCDropoutSampler(self.cfg)
-        elif query_strat == HYBRID:
-            self.query_strategy = HybridSampler(self.cfg)
-        elif query_strat == TTA:
-            self.query_strategy = TTASampler(self.cfg)
-        else:
-            raise Exception("Query strategy {} not defined".format(query_strat))
-
-        # define al dataset and specify what dataset to use
-        self.cfg.AL.DATASETS.TRAIN_UNLABELED = get_dataset_name(
-            dataset, DATASETS_DSPLITS[dataset][0]
-        )
-        # self.cfg.DATASETS.TRAIN = (get_dataset_name(dataset, DATASETS_DSPLITS[dataset][0],))
-        # self.cfg.DATASETS.TEST = (get_dataset_name(dataset, TEST),)
-        self.al_dataset = ActiveLearingDataset(self.cfg)
-        wandb.config.update(yaml.load(self.cfg.dump(),Loader=yaml.Loader))
+    def run(self):
         try:
             for i in range(self.cfg.AL.MAX_LOOPS):
                 self.step(resume=(i > 0))
