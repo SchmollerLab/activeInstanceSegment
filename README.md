@@ -10,7 +10,7 @@ The following active learning strategies are implemented:
 
 The al strategy can be specified in the cfg.yaml in /pipeline_configs. Benchmarking can be done with
 ```console
-python ./src/al_runner.py
+python -m src.al_runner
 ```
 
 ## Installation
@@ -28,13 +28,13 @@ $ ./shell_scripts/downloadData
 First of all the data needs to be converted from Cell-ACDC format to [COCO format](https://cocodataset.org/#format-data). This can be done by running
 
 ```console
-python ./src/data/data2coco.py
+python -m utils.datapreprocessing.data2coco
 ```
 
 
 ## Model Architecture
 The active learning is built ontop of the [detectron2](https://github.com/facebookresearch/detectron2) implementation of Mask R-CNN. Training a model without active learning can be done by running
 ```console
-python ./src/pipeline_runner -f default_acdc_large_full_ds.yaml
+python -m src.pipeline_runner -f default_acdc_large_full_ds.yaml
 ```
 

@@ -156,5 +156,5 @@ ignore*
 
 /ac_acdc_env
 /jupyter_notebooks
-/jupyter_notebooks_local
+/local
 

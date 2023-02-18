@@ -67,4 +67,4 @@ mkdir ./output
 
 echo setting up data
 ./shell_scripts/downloadDataLarge.sh
-python src/dataloader/data2coco.py
+python -m utils.datapreprocessing.data2coco
