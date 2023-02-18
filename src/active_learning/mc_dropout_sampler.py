@@ -6,7 +6,7 @@ from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
 from src.globals import *
-from src.register_datasets import register_by_ids, get_dataset_name
+from utils.register_datasets import register_by_ids, get_dataset_name
 from src.active_learning.query_strategies import QueryStrategy
 
 

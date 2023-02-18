@@ -11,7 +11,7 @@ from detectron2 import model_zoo
 from detectron2.modeling import build_model
 
 from src.globals import *
-from src.register_datasets import get_dataset_name
+from utils.register_datasets import get_dataset_name
 from src.test import do_test
 from src.train import do_train
 from src.active_learning.al_dataset import ActiveLearingDataset
