@@ -6,7 +6,7 @@ import random as rd
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
 from src.globals import *
-from src.register_datasets import register_datasets, register_by_ids
+from utils.register_datasets import register_datasets, register_by_ids
 
 
 class ActiveLearingDataset:
@@ -121,7 +121,7 @@ class ActiveLearingDataset:
 
 if __name__ == "__main__":
 
-    from src.config_builder import get_config
+    from utils.config_builder import get_config
 
     cfg = get_config("acdc_large_al")
     cfg.AL.INIT_SIZE = 5

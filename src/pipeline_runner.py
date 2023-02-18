@@ -17,10 +17,10 @@ from detectron2.modeling import build_model
 
 from argparse import ArgumentParser
 
-from src.register_datasets import register_datasets
+from utils.register_datasets import register_datasets
 from src.train import do_train
 from src.test import do_test
-from src.config_builder import get_config
+from utils.config_builder import get_config
 
 
 def run_pipeline(config_name, cfg=None, cur_date=""):

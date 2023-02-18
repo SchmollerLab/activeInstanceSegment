@@ -3,7 +3,7 @@ from datetime import date
 from argparse import ArgumentParser
 
 from src.globals import *
-from src.config_builder import get_config
+from utils.config_builder import get_config
 from src.active_learning.al_trainer import ActiveLearningTrainer
 
 

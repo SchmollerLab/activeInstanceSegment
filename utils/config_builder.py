@@ -6,7 +6,7 @@ import sys
 import os
 
 from src.globals import *
-from src.register_datasets import get_dataset_name
+from utils.register_datasets import get_dataset_name
 from src.active_learning.nn_modules.dropout import *
 
 
