@@ -154,7 +154,7 @@ class TTASampler(QueryStrategy):
             return list(chain.from_iterable(prediction_list))
 
 
-    def get_observations(self, outputs, iou_thres=0.5):
+    def get_observations(self, outputs, iou_thres=0.2):
         """
         To cluster the segmentations for the different Monte-Carlo runs
         """
