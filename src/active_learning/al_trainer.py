@@ -22,6 +22,7 @@ from src.train import do_train
 from src.active_learning.al_dataset import ActiveLearingDataset
 from src.active_learning.query_strategies import *
 from src.active_learning.mc_dropout_sampler import MCDropoutSampler
+from src.active_learning.tta_sampler import TTASampler
 
 
 class ActiveLearningTrainer:
@@ -80,6 +81,8 @@ class ActiveLearningTrainer:
             self.query_strategy = GTknownSampler(self.cfg)
         elif query_strat == MC_DROPOUT:
             self.query_strategy = MCDropoutSampler(self.cfg)
+        elif query_strat == TTA:
+            self.query_strategy = TTASampler(self.cfg)
         else:
             raise Exception("Query strategy {} not defined".format(query_strat))
 
