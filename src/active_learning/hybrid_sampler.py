@@ -44,7 +44,7 @@ class HybridSampler(MCDropoutSampler):
     def sample(self, cfg, ids):
 
         num_samples = self.cfg.AL.INCREMENT_SIZE
-        id_pool = self.presample_id_pool(cfg, ids)[:6]
+        id_pool = self.presample_id_pool(cfg, ids)
         register_by_ids(
             "ALSampler_DS",
             id_pool,
