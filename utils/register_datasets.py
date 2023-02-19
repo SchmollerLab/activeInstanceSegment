@@ -65,7 +65,7 @@ def register_by_ids(dataset_name, image_ids, output_dir, dataset_full):
     DatasetCatalog.register(
         dataset_name, build_register_function(image_ids, dataset_full)
     )
-    MetadataCatalog.get(dataset_name).set(thing_classes=[CELL])
+    MetadataCatalog.get(dataset_name).set(thing_classes=MetadataCatalog.get(dataset_full).thing_classes)
 
     return dataset_name
 
