@@ -38,21 +38,6 @@ class MCDropoutSampler(UncertaintySampler):
         self.clean_output_dir()
         
 
-    def presample_id_pool(self, cfg, ids):
-
-        if cfg.AL.SAMPLE_EVERY <= 1:
-            id_pool = ids
-        else:
-            rand_int = rd.randint(0,cfg.AL.SAMPLE_EVERY)
-            id_pool = list(filter(lambda x: (int(x.split("_")[-1]) + rand_int) % cfg.AL.SAMPLE_EVERY == 0, ids))
-        
-        return id_pool
-
-    def load_image(self, im_json):
-        im = cv2.imread(im_json["file_name"])
-
-        return im
-
     def log_results(self,uncertainty_dict, samples):
         with open(os.path.join(self.cfg.AL.OUTPUT_DIR, self.strategy, f"uncertainties{str(self.counter)}.json"),"w") as file:
             json.dump(uncertainty_dict, file)

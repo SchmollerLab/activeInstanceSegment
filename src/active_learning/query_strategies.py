@@ -3,6 +3,7 @@ import os, sys
 import random as rd
 import numpy as np
 import torch
+import cv2
 
 import shutil
 
@@ -78,6 +79,22 @@ class UncertaintySampler(QueryStrategy):
         probs = torch.from_numpy(least_confident)
         max_entropy = torch.distributions.Categorical(probs).entropy()
         return max_entropy
+
+    def presample_id_pool(self, cfg, ids):
+
+        if cfg.AL.SAMPLE_EVERY <= 1:
+            id_pool = ids
+        else:
+            rand_int = rd.randint(0,cfg.AL.SAMPLE_EVERY)
+            id_pool = list(filter(lambda x: (int(x.split("_")[-1]) + rand_int) % cfg.AL.SAMPLE_EVERY == 0, ids))
+        
+        return id_pool
+
+    def load_image(self, im_json):
+        im = cv2.imread(im_json["file_name"])
+
+        return im
+
 
     def preprocess_image(self, input_image, model):
 
