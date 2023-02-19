@@ -95,7 +95,7 @@ class TTASampler(UncertaintySampler):
 
 
             height, width = im.shape[:2]
-            uncertainty = self.get_uncertainty(combinded_instances, cfg.AL.NUM_MC_SAMPLES, height, width, mode=cfg.AL.OBJECT_TO_IMG_AGG)
+            uncertainty = self.get_uncertainty(combinded_instances, cfg.AL.NUM_MC_SAMPLES, height, width, mode=cfg.AL.OBJECT_TO_IMG_AGG, bbox=False)
 
             uncertainty_dict[im_json["image_id"]] = float(uncertainty)
 

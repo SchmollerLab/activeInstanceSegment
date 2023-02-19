@@ -289,7 +289,7 @@ class UncertaintySampler(QueryStrategy):
 
         return u_n
 
-    def get_uncertainty(self, predictions, iterrations, height, width, mode="max"):
+    def get_uncertainty(self, predictions, iterrations, height, width, mode="max", bbox=True):
         uncertainty_list = []
 
         device = "cuda"
@@ -299,9 +299,11 @@ class UncertaintySampler(QueryStrategy):
             val_len = torch.tensor(len(val)).to(device)
 
             u_spl_m = self.get_mask_uncertainty(val=val, height=height, width=width, val_len=val_len, device=device)
-            u_spl_b = self.get_box_uncertainty(val=val, val_len=val_len, device=device)
-            
-            u_spl = torch.multiply(u_spl_m, u_spl_b)
+            if bbox:
+                u_spl_b = self.get_box_uncertainty(val=val, val_len=val_len, device=device)
+                u_spl = torch.multiply(u_spl_m, u_spl_b)
+            else:
+                u_spl = u_spl_m
 
             if self.classification:
                 u_sem = self.get_semantic_uncertainty(val=val, device=device)
