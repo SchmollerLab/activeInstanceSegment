@@ -132,11 +132,17 @@ class TTASampler(UncertaintySampler):
                 proposals, box_features_pooler = self.get_backbone_roi_proposals(model, images, features)
                
                 instances = self.get_instance_detections(model, inputs, images, features, proposals, box_features_pooler)
+                instances = self.transform_back(instances, angle)
                 prediction_list.append(instances)
 
             return list(chain.from_iterable(prediction_list))
 
-    
+    def transform_back(self, instances, angle):
+        for i in range(len(instances)):
+            instances[i]["instances"].pred_masks = TF.rotate(instances[i]["instances"].pred_masks, -angle)
+
+        return instances
+
 if __name__ == "__main__":
 
     import cProfile
