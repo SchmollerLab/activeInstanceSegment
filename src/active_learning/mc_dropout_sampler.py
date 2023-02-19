@@ -106,7 +106,7 @@ class MCDropoutSampler(UncertaintySampler):
             im_json = ds_catalog[i]
             im = self.load_image(im_json)
 
-            instance_list = self.get_mc_dropout_samples(cfg, model, im, cfg.AL.NUM_MC_SAMPLES)
+            instance_list = self.get_mc_dropout_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
             combinded_instances = self.get_combinded_instances(instance_list)
 
 
@@ -143,5 +143,24 @@ class MCDropoutSampler(UncertaintySampler):
 
     
 
-    
+if __name__ == "__main__":
 
+    import cProfile
+    from utils.config_builder import get_config
+    from src.active_learning.al_dataset import ActiveLearingDataset
+
+    wandb.init(
+        project="activeCell-ACDC",
+        name="",
+        sync_tensorboard=True,
+        mode="disabled",
+    )
+
+    config_name = "acdc_large_al"
+    cfg = get_config(config_name)
+
+    cfg.AL.SAMPLE_EVERY = 240
+    al_dataset = ActiveLearingDataset(cfg)
+    query_strategy = MCDropoutSampler(cfg)
+
+    cProfile.run('query_strategy.sample(cfg, al_dataset.unlabeled_ids)')

@@ -9,6 +9,7 @@ import shutil
 from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
+import detectron2.data.transforms as T
 
 from src.globals import *
 from utils.register_datasets import register_by_ids
@@ -122,7 +123,7 @@ class UncertaintySampler(QueryStrategy):
 
         return instances
 
-    def get_get_combinded_instances(self, outputs, iou_thres=0.5):
+    def get_combinded_instances(self, outputs, iou_thres=0.5):
         """
         To cluster the segmentations for the different Monte-Carlo runs
         """
