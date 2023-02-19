@@ -12,7 +12,6 @@ from src.active_learning.query_strategies import UncertaintySampler
 
 import numpy as np
 import torch
-import cv2
 from tqdm import tqdm
 import operator
 import wandb
@@ -36,7 +35,51 @@ class MCDropoutSampler(UncertaintySampler):
         super().__init__(cfg)
         self.strategy = "mc_dropout"
         self.clean_output_dir()
-        
+
+
+    def sample(self, cfg, ids):
+
+        num_samples = self.cfg.AL.INCREMENT_SIZE
+        id_pool = self.presample_id_pool(cfg, ids)
+        register_by_ids(
+            "ALSampler_DS",
+            id_pool,
+            self.cfg.OUTPUT_DIR,
+            self.cfg.AL.DATASETS.TRAIN_UNLABELED,
+        )
+
+        model = build_model(cfg)
+        model = patch_module(model)
+        model.eval()
+
+        checkpointer = DetectionCheckpointer(model)
+        checkpointer.load(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
+
+        ds_catalog = DatasetCatalog.get("ALSampler_DS")
+        uncertainty_dict = {}
+        print("running mc dropout sampling...")
+        for i in tqdm(range(len(ds_catalog))):
+
+            im_json = ds_catalog[i]
+            im = self.load_image(im_json)
+
+            instance_list = self.get_mc_dropout_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
+            combinded_instances = self.get_combinded_instances(instance_list)
+
+
+            height, width = im.shape[:2]
+            uncertainty = self.get_uncertainty(combinded_instances, cfg.AL.NUM_MC_SAMPLES, height, width, mode=cfg.AL.OBJECT_TO_IMG_AGG)
+
+            uncertainty_dict[im_json["image_id"]] = float(uncertainty)
+
+        worst_ims = np.argsort(list(uncertainty_dict.values()))[-num_samples:]
+        samples = [list(uncertainty_dict.keys())[id] for id in worst_ims]
+
+        self.log_results(uncertainty_dict, samples)
+
+        self.counter += 1
+        return samples
+
 
     def log_results(self,uncertainty_dict, samples):
         with open(os.path.join(self.cfg.AL.OUTPUT_DIR, self.strategy, f"uncertainties{str(self.counter)}.json"),"w") as file:
@@ -64,50 +107,6 @@ class MCDropoutSampler(UncertaintySampler):
 
         with open(os.path.join(self.cfg.AL.OUTPUT_DIR, self.strategy, f"{self.strategy}_samples{str(self.counter)}.txt"),"w") as file:
             file.write("\n".join(samples))
-
-    def sample(self, cfg, ids):
-
-        num_samples = self.cfg.AL.INCREMENT_SIZE
-        id_pool = self.presample_id_pool(cfg, ids)
-        register_by_ids(
-            "MCDropoutSampler_DS",
-            id_pool,
-            self.cfg.OUTPUT_DIR,
-            self.cfg.AL.DATASETS.TRAIN_UNLABELED,
-        )
-
-        model = build_model(cfg)
-        model = patch_module(model)
-        model.eval()
-
-        checkpointer = DetectionCheckpointer(model)
-        checkpointer.load(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
-
-        ds_catalog = DatasetCatalog.get("MCDropoutSampler_DS")
-        uncertainty_dict = {}
-        print("running mc dropout sampling...")
-        for i in tqdm(range(len(ds_catalog))):
-
-            im_json = ds_catalog[i]
-            im = self.load_image(im_json)
-
-            instance_list = self.get_mc_dropout_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
-            combinded_instances = self.get_combinded_instances(instance_list)
-
-
-            height, width = im.shape[:2]
-            uncertainty = self.get_uncertainty(combinded_instances, cfg.AL.NUM_MC_SAMPLES, height, width, mode=cfg.AL.OBJECT_TO_IMG_AGG)
-
-            uncertainty_dict[im_json["image_id"]] = float(uncertainty)
-
-        worst_ims = np.argsort(list(uncertainty_dict.values()))[-num_samples:]
-        samples = [list(uncertainty_dict.keys())[id] for id in worst_ims]
-
-        self.log_results(uncertainty_dict, samples)
-
-        self.counter += 1
-        return samples
-
 
     def get_mc_dropout_samples(self, model, input_image, iterrations):
 
