@@ -91,7 +91,7 @@ class TTASampler(UncertaintySampler):
             im = self.load_image(im_json)
 
             instance_list = self.get_tta_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
-            combinded_instances = self.get_combinded_instances(instance_list)
+            combinded_instances = self.get_combinded_instances(instance_list, iou_thres=0.1)
 
 
             height, width = im.shape[:2]
