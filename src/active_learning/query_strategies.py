@@ -140,7 +140,7 @@ class UncertaintySampler(QueryStrategy):
 
         return instances
 
-    def get_combinded_instances(self, outputs, iou_thres=0.5):
+    def get_combinded_instances(self, outputs, iou_thres=0.1):
         """
         To cluster the segmentations for the different Monte-Carlo runs
         """
