@@ -8,6 +8,7 @@ from tqdm import tqdm
 import datetime
 import json
 from utils.datapreprocessing.pycococreatortools import *
+from utils.datapreprocessing.data2coco import Data2cocoConverter
 
 import sys
 
@@ -46,13 +47,13 @@ CATEGORIES = [
 ]
 
 
-class Data2cocoConverter:
+class ChlamyData2cocoConverter:
 
     def __init__(self) -> None:
-        self.create_dir_to_path(path=os.getenv("DATA_PATH"), dir_name="acdc_large_cls")
-        self.coco_data_path = os.path.join(os.getenv("DATA_PATH"), "acdc_large_cls")
+        self.create_dir_to_path(path=os.getenv("DATA_PATH"), dir_name="chlamy")
+        self.coco_data_path = os.path.join(os.getenv("DATA_PATH"), "chlamy")
         self.create_dir_to_path(
-                path=os.getenv("DATA_PATH"), dir_name="acdc_large_cls"
+                path=os.getenv("DATA_PATH"), dir_name="chlamy"
             )
 
     def create_dir_to_path(self, path, dir_name):
@@ -64,18 +65,18 @@ class Data2cocoConverter:
         print("converting acdc dataset to coco format ...")
 
         
-        raw_images_path = os.path.join(os.getenv("DATA_PATH"), "raw_data", "acdc_large")
+        raw_images_path = os.path.join(os.getenv("DATA_PATH"), "raw_data", "chlamy")
         data_map = self.build_data_map(raw_images_path)
     
         index = data_map.index.to_numpy()
         np.random.seed(1221)
         np.random.shuffle(index)
         data_dict = {}
-        data_dict["train"] = index[:33]
-        data_dict["test"] = index[33:]
+        data_dict["train"] = index[:1]
+        data_dict["test"] = index[1:]
 
-        print(f"test dataset:\n{data_map.iloc[data_dict['test']]['paths'].str.split('acdc_large/').str[-1]}")
-        print(f"train dataset:\n{data_map.iloc[data_dict['train']]['paths'].str.split('acdc_large/').str[-1]}")
+        print(f"test dataset:\n{data_map.iloc[data_dict['test']]['paths'].str.split('chlamy/').str[-1]}")
+        print(f"train dataset:\n{data_map.iloc[data_dict['train']]['paths'].str.split('chlamy/').str[-1]}")
         for split_type in ["test", "train"]:
 
             self.create_dir_to_path(
@@ -131,11 +132,11 @@ class Data2cocoConverter:
                         filename.find("phase_contr_aligned.np") != -1
                     ):
                         phase_contr_npz = filename
-                    if (filename.find("phase_contr.tif") != -1) or (
+                    if (filename.find("MT_T1.tif") != -1) or (
                         filename.find("Ph3.tif") != -1
                     ):
                         phase_contr_tif = filename
-                    if filename.find("segm.npz") != -1:
+                    if filename.find("segm_1.npz") != -1:
                         segm = filename
 
                     if filename.find("output.csv") != -1:
@@ -173,49 +174,45 @@ class Data2cocoConverter:
         images: np.array = data[0]
         masks: np.array = data[1]
 
-        output_df = pd.read_csv(output_csv)
+        
         
         
 
         images_json = []
         annotations_json = []
 
-        if max_image < 0:
-            max_image = 1e6
+
+        max_image = 1e6
         num_images: int = min(images.shape[0], masks.shape[0], max_image)
 
         for i in range(num_images):
-            if (masks[i] > 0).sum():
 
-                df_out = output_df[output_df["frame_i"] == i][["Cell_ID", "cell_cycle_stage", "relationship"]]
-                df_out = df_out.set_index("Cell_ID")
-                annotation_dict = df_out.to_dict('index')
 
-                image_id = str(base_image_id) + "_" + str(i)
 
-                image = images[i]
-                mask = masks[i]
+            image_id = str(base_image_id) + "_" + str(i)
 
-                plt.imsave(
-                    os.path.join(images_coco_data_path, image_id + ".png"),
-                    image.astype(float),
-                    cmap="gray",
-                )
-                h, w = image.shape
-                image_info = create_image_info(
-                    image_id, os.path.basename(image_id + ".png"), (w, h)
-                )
+            image = images[i]
+            mask = np.max(masks, axis=0)
 
-                images_json.append(image_info)
+            plt.imsave(
+                os.path.join(images_coco_data_path, image_id + ".png"),
+                image.astype(float),
+                cmap="gray",
+            )
+            h, w = image.shape
+            image_info = create_image_info(
+                image_id, os.path.basename(image_id + ".png"), (w, h)
+            )
 
-                new_annotations_json, segmentation_id = self.extract_annotations(
-                    mask=mask,
-                    image=image,
-                    image_id=image_id,
-                    segmentation_id=segmentation_id,
-                    annotation_dict = annotation_dict,
-                )
-                annotations_json += new_annotations_json
+            images_json.append(image_info)
+
+            new_annotations_json, segmentation_id = self.extract_annotations(
+                mask=mask,
+                image=image,
+                image_id=image_id,
+                segmentation_id=segmentation_id
+            )
+            annotations_json += new_annotations_json
 
         return images_json, annotations_json, segmentation_id
 
@@ -227,7 +224,7 @@ class Data2cocoConverter:
         else:
             return 2
 
-    def extract_annotations(self, mask, image, image_id, segmentation_id, annotation_dict):
+    def extract_annotations(self, mask, image, image_id, segmentation_id):
 
         annotations_json = []
 
@@ -235,7 +232,7 @@ class Data2cocoConverter:
         labels = np.unique(mask)
         for label in labels[1:]:
 
-            class_id = self.map_class_id(annotation_dict[label])
+            class_id = 0
             
             category_info = {
                 "id": class_id,
@@ -340,7 +337,7 @@ def acdc_large_cls_to_acdc_large():
 
 if __name__ == "__main__":                  
 
-    acdc_conv = Data2cocoConverter()
+    acdc_conv = ChlamyData2cocoConverter()
     acdc_conv.convert()
 
     acdc_large_cls_to_acdc_large()
