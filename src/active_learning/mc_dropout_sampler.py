@@ -36,11 +36,15 @@ class MCDropoutSampler(UncertaintySampler):
 
     def sample(self, cfg, ids, custom_model=None):
         """Sample datapoints using Monte Carlo dropout method
+
         Parameters
         ----------
-            cfg: Detectron2 config file
-            ids: id pool from which ids are sampled
-            custom_model: custom model which should be used for sampling. If not specified, model is built from config
+        cfg
+            Detectron2 config file
+        ids
+            id pool from which ids are sampled
+        custom_model
+            custom model which should be used for sampling. If not specified, model is built from config
         """
 
         num_samples = self.cfg.AL.INCREMENT_SIZE
@@ -142,9 +146,12 @@ class MCDropoutSampler(UncertaintySampler):
 
         Parameters
         ----------
-            model: model used for sampling
-            input_image: image as numpy array which should be usef for inferences
-            iterrations: number of inferences
+        model
+            model used for sampling
+        input_image
+            image as numpy array which should be usef for inferences
+        iterrations
+            number of inferences
 
         Returns
         -------
