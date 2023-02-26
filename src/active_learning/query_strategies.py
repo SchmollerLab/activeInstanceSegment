@@ -140,7 +140,7 @@ class UncertaintySampler(QueryStrategy):
 
         return instances
 
-    def get_combinded_instances(self, outputs, iou_thres=0.5):
+    def get_combinded_instances(self, outputs, iou_thres=0.2):
         """
         To cluster the segmentations for the different Monte-Carlo runs
         """
@@ -153,7 +153,7 @@ class UncertaintySampler(QueryStrategy):
             dets = sample["instances"].get_fields()
 
             for det in range(detections):
-                if torch.sum(dets["pred_masks"][det]) == 0:
+                if torch.sum(dets["pred_masks"][det]) < 50:
                     continue
 
                 if not observations:
@@ -281,11 +281,11 @@ class UncertaintySampler(QueryStrategy):
         return u_spl_b
 
     def get_detection_uncertainty(self, iterrations, val_len, device="cuda"):
-        try:
-            outputs_len = torch.tensor(iterrations).to(device)
-            u_n = torch.clamp(torch.divide(val_len, outputs_len), min=0, max=1)
-        except:
-            u_n = 0.0
+
+        outputs_len = torch.tensor(iterrations).to(device)
+        #u_n = torch.clamp(torch.divide(val_len, outputs_len), min=0, max=1)
+        u_n = 2*torch.abs(torch.clamp(torch.divide(val_len, outputs_len), min=0, max=1) - 0.5)
+
 
         return u_n
 
@@ -313,12 +313,12 @@ class UncertaintySampler(QueryStrategy):
 
             u_n = self.get_detection_uncertainty(iterrations=iterrations, val_len=val_len, device=device)
            
-            u_h = torch.multiply(u_sem_spl, u_n)
-
+            #u_h = torch.multiply(u_sem_spl, u_n)
+            u_h = u_n
             # transform certainty to uncertainty
             u_h = 1 - u_h
 
-            if not torch.isnan(u_h.unsqueeze(0)) and u_spl != 1:
+            if not torch.isnan(u_h.unsqueeze(0)): # and u_spl != 1:
                 uncertainty_list.append(u_h.unsqueeze(0))
 
         if uncertainty_list:
@@ -329,6 +329,8 @@ class UncertaintySampler(QueryStrategy):
                 uncertainty = torch.mean(uncertainty_list)
             elif mode == "max":
                 uncertainty = torch.max(uncertainty_list)
+            elif mode == "sum":
+                uncertainty = torch.sum(uncertainty_list)
             else:
                 uncertainty = torch.max(uncertainty_list)
                 

@@ -182,7 +182,7 @@ MODEL:
     FC_DIM: 1024
     FED_LOSS_FREQ_WEIGHT_POWER: 0.5
     FED_LOSS_NUM_CLASSES: 50
-    NAME: FastRCNNConvFCHeadDropout
+    NAME: FastRCNNConvFCHead
     NORM: ''
     NUM_CONV: 0
     NUM_FC: 2
@@ -205,7 +205,7 @@ MODEL:
     - 1
     IOU_THRESHOLDS:
     - 0.5
-    NAME: StandardROIHeadsDropout
+    NAME: StandardROIHeads
     NMS_THRESH_TEST: 0.5
     NUM_CLASSES: 1
     POSITIVE_FRACTION: 0.25
@@ -233,7 +233,7 @@ MODEL:
     CLS_AGNOSTIC_MASK: false
     CONV_DIM: 256
     DROPOUT_PROBABILITY: 0.25
-    NAME: MaskRCNNConvUpsampleHeadDropout
+    NAME: MaskRCNNConvUpsampleHead
     NORM: ''
     NUM_CONV: 4
     POOLER_RESOLUTION: 14

@@ -27,7 +27,7 @@ if __name__ == "__main__":
     config_name = config_filename.split("/")[-1].replace(".yaml", "")
     cfg = get_config(config_name, complete_path=config_filename)
     
-    cur_date = "test_thres09_" + str(date.today().month) + str(date.today().day)
+    cur_date = "u_det_kmeans" + str(date.today().month) + str(date.today().day)
     for _ in range(2):
 
         cfg.SEED += 1

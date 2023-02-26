@@ -5,9 +5,9 @@ AL:
   INIT_SIZE: 5
   SAMPLE_EVERY: 10
   NUM_MC_SAMPLES: 40
-  OBJECT_TO_IMG_AGG: "max"
+  OBJECT_TO_IMG_AGG: "sum"
   MAX_LOOPS: 8
-  OUTPUT_DIR: ./al_output/acdc_large_al
+  OUTPUT_DIR: ./al_output/mc_drop_acdc_large_al
   QUERY_STRATEGY: mc_dropout
 CUDNN_BENCHMARK: false
 DATALOADER:
@@ -210,7 +210,7 @@ MODEL:
     NUM_CLASSES: 1
     POSITIVE_FRACTION: 0.25
     PROPOSAL_APPEND_GT: true
-    SCORE_THRESH_TEST: 0.9
+    SCORE_THRESH_TEST: 0.4
   ROI_KEYPOINT_HEAD:
     CONV_DIMS:
     - 512
@@ -283,8 +283,8 @@ MODEL:
     NORM: GN
     NUM_CLASSES: 54
   WEIGHTS: https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/137849600/model_final_f10217.pkl
-NAME: acdc_large_al
-OUTPUT_DIR: ./output/acdc_large_al
+NAME: mc_drop_acdc_large_al
+OUTPUT_DIR: ./output/mc_drop_acdc_large_al
 SEED: 1337
 SOLVER:
   AMP:

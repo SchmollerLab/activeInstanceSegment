@@ -74,7 +74,7 @@ class HybridSampler(MCDropoutSampler):
             im_json = ds_catalog[i]
             im = self.load_image(im_json)
 
-            instance_list = self.get_mc_dropout_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
+            instance_list = self.get_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
             combinded_instances = self.get_combinded_instances(instance_list)
 
             height, width = im.shape[:2]

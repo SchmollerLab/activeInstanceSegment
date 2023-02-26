@@ -37,7 +37,7 @@ class MCDropoutSampler(UncertaintySampler):
         self.clean_output_dir()
 
 
-    def sample(self, cfg, ids):
+    def sample(self, cfg, ids, custom_model=None):
 
         num_samples = self.cfg.AL.INCREMENT_SIZE
         id_pool = self.presample_id_pool(cfg, ids)
@@ -48,12 +48,18 @@ class MCDropoutSampler(UncertaintySampler):
             self.cfg.AL.DATASETS.TRAIN_UNLABELED,
         )
 
-        model = build_model(cfg)
-        model = patch_module(model)
-        model.eval()
+        if not custom_model:
+            model = build_model(cfg)
+            model = patch_module(model)
+            model.eval()
 
-        checkpointer = DetectionCheckpointer(model)
-        checkpointer.load(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
+            checkpointer = DetectionCheckpointer(model)
+            print("loading default_model")
+            checkpointer.load(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
+        else:
+            print(f"loading custom model")
+            model = custom_model
+
 
         ds_catalog = DatasetCatalog.get("ALSampler_DS")
         uncertainty_dict = {}
@@ -63,7 +69,7 @@ class MCDropoutSampler(UncertaintySampler):
             im_json = ds_catalog[i]
             im = self.load_image(im_json)
 
-            instance_list = self.get_mc_dropout_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
+            instance_list = self.get_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
             combinded_instances = self.get_combinded_instances(instance_list)
 
 
@@ -108,7 +114,7 @@ class MCDropoutSampler(UncertaintySampler):
         with open(os.path.join(self.cfg.AL.OUTPUT_DIR, self.strategy, f"{self.strategy}_samples{str(self.counter)}.txt"),"w") as file:
             file.write("\n".join(samples))
 
-    def get_mc_dropout_samples(self, model, input_image, iterrations):
+    def get_samples(self, model, input_image, iterrations):
 
         with torch.no_grad():
             
