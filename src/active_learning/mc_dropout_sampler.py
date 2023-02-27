@@ -48,7 +48,7 @@ class MCDropoutSampler(UncertaintySampler):
         """
 
         num_samples = self.cfg.AL.INCREMENT_SIZE
-        id_pool = self.presample_id_pool(cfg, ids)
+        id_pool = self.presample_id_pool(cfg, ids, cfg.AL.SAMPLE_EVERY)
         register_by_ids(
             "ALSampler_DS",
             id_pool,

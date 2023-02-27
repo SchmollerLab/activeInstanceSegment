@@ -22,7 +22,7 @@ from src.active_learning.tta_sampler import TTASampler
 
 
 class ActiveLearningTrainer:
-    def __init__(self, cfg, cur_date= "", is_test_mode=False):
+    def __init__(self, cfg, cur_date="", is_test_mode=False):
         self.cfg = cfg
         self.is_test_mode = is_test_mode
 
@@ -47,7 +47,6 @@ class ActiveLearningTrainer:
 
         self.al_dataset = ActiveLearingDataset(self.cfg)
 
-
         # initialize weights and biases
         if self.is_test_mode:
             wandb.init(
@@ -59,20 +58,23 @@ class ActiveLearningTrainer:
         else:
             wandb.init(
                 project="activeCell-ACDC",
-                name=str( query_strat + "_" +  cur_date + "_" + os.uname()[1]).split("-")[0],
+                name=str(query_strat + "_" + cur_date + "_" + os.uname()[1]).split("-")[
+                    0
+                ],
                 sync_tensorboard=True,
             )
 
-        wandb.config.update(yaml.load(self.cfg.dump(),Loader=yaml.Loader))
-
+        wandb.config.update(yaml.load(self.cfg.dump(), Loader=yaml.Loader))
 
     def __del__(self):
         wandb.run.finish()
 
     def step(self, resume):
-
+        len_ds = self.al_dataset.get_len_labeled()
         model_name = f"{self.query_strategy.strategy}/best_model{self.al_dataset.get_len_labeled()}.pth"
-        result = do_train(self.cfg, self.logger, resume=resume)
+        result = do_train(
+            self.cfg, self.logger, resume=resume, custom_max_iter=len_ds * 220
+        )
         model_path = os.path.join(self.cfg.OUTPUT_DIR, "best_model.pth")
         os.system(f"cp {model_path} {os.path.join(self.cfg.AL.OUTPUT_DIR, model_name)}")
         wandb.log(
@@ -92,7 +94,7 @@ class ActiveLearningTrainer:
     def run(self):
         try:
             for i in range(self.cfg.AL.MAX_LOOPS):
-                self.step(resume=(i > 0))
+                self.step(resume=(False))
         except Exception as e:
             wandb.run.finish()
             raise e

@@ -34,7 +34,7 @@ class ActiveLearingDataset:
 
         # set seed
         rd.seed(cfg.SEED)
-        
+
         sample_ids = rd.sample(self.unlabeled_ids, self.init_size)
         self.update_labeled_data(sample_ids)
         self.get_labeled_dataset()
@@ -45,12 +45,12 @@ class ActiveLearingDataset:
 
     def get_num_objects(self):
         labeled_ds_jsons = DatasetCatalog.get(self.labeled_data_name)
-        num_objects = sum([len(json_img["annotations"]) for json_img in labeled_ds_jsons])
+        num_objects = sum(
+            [len(json_img["annotations"]) for json_img in labeled_ds_jsons]
+        )
         return num_objects
-        
 
     def precompute_augmentation_ids(self, unlabeled_ids):
-
         dict_jsons_by_filename = {
             record["file_name"]: record for record in self.unlabeled_jsons
         }
@@ -72,7 +72,6 @@ class ActiveLearingDataset:
         return dict_aug_ids_by_id
 
     def remove_data_from_catalog(self, name):
-
         if name in DatasetCatalog:
             DatasetCatalog.remove(name)
             MetadataCatalog.remove(name)
@@ -120,7 +119,6 @@ class ActiveLearingDataset:
 
 
 if __name__ == "__main__":
-
     from utils.config_builder import get_config
 
     cfg = get_config("acdc_large_al")
