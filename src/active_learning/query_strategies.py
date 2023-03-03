@@ -402,7 +402,7 @@ class UncertaintySampler(QueryStrategy):
         for key, val in predictions.items():
             val_len = torch.tensor(len(val)).to(device)
 
-            c_det = self.get_detection_certainty(
+            """c_det = self.get_detection_certainty(
                 iterrations=iterrations, val_len=val_len, device=device
             )
 
@@ -413,14 +413,14 @@ class UncertaintySampler(QueryStrategy):
             if c_spl_m > 0.9:
                 c_spl_m = torch.tensor(1).to(device)
 
-            c_h = torch.multiply(c_det, c_spl_m)
+            c_h = torch.multiply(c_det, c_spl_m)"""
 
             if self.classification:
                 c_sem = self.get_semantic_certainty(val=val, device=device)
                 if c_sem > 0.7:
                     c_sem = torch.tensor(1).to(device)
 
-                c_h = torch.multiply(c_sem, c_h)
+                c_h = c_sem  # torch.multiply(c_sem, c_h)
 
             # certainty to uncertainty
             u_h = 1 - c_h

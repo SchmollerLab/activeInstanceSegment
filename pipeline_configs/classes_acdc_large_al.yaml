@@ -5,7 +5,7 @@ AL:
   INIT_SIZE: 5
   SAMPLE_EVERY: 10
   NUM_MC_SAMPLES: 40
-  OBJECT_TO_IMG_AGG: "mean"
+  OBJECT_TO_IMG_AGG: "sum"
   MAX_LOOPS: 15
   OUTPUT_DIR: ./al_output/classes_acdc_large_al
   QUERY_STRATEGY: hybrid
