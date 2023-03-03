@@ -5,7 +5,7 @@ AL:
   INIT_SIZE: 5
   SAMPLE_EVERY: 10
   NUM_MC_SAMPLES: 40
-  OBJECT_TO_IMG_AGG: "sum"
+  OBJECT_TO_IMG_AGG: "mean"
   MAX_LOOPS: 15
   OUTPUT_DIR: ./al_output/classes_acdc_large_al
   QUERY_STRATEGY: hybrid
@@ -25,7 +25,7 @@ DATASETS:
   - acdc_large_cls_test
   TRAIN:
   - acdc_large_cls_train
-EARLY_STOPPING_ROUNDS: 4
+EARLY_STOPPING_ROUNDS: 10
 GLOBAL:
   HACK: 1.0
 INPUT:
