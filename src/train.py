@@ -134,7 +134,7 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
                         "add counter: ",
                         early_counter,
                     )
-                    if early_counter >= cfg.EARLY_STOPPING_ROUNDS:
+                    if False and early_counter >= cfg.EARLY_STOPPING_ROUNDS:
                         print("stopping training")
                         break
                 else:

@@ -34,8 +34,6 @@ class ActiveLearningTrainer:
         # define strategy
         if query_strat == RANDOM:
             self.query_strategy = RandomSampler(self.cfg)
-        elif query_strat == KNOWN_VALIDATION:
-            self.query_strategy = GTknownSampler(self.cfg)
         elif query_strat == MC_DROPOUT:
             self.query_strategy = MCDropoutSampler(self.cfg)
         elif query_strat == HYBRID:
@@ -73,7 +71,7 @@ class ActiveLearningTrainer:
         len_ds = self.al_dataset.get_len_labeled()
         model_name = f"{self.query_strategy.strategy}/best_model{self.al_dataset.get_len_labeled()}.pth"
         result = do_train(
-            self.cfg, self.logger, resume=resume, custom_max_iter=len_ds * 220
+            self.cfg, self.logger, resume=resume, custom_max_iter=len_ds * 80
         )
         model_path = os.path.join(self.cfg.OUTPUT_DIR, "best_model.pth")
         os.system(f"cp {model_path} {os.path.join(self.cfg.AL.OUTPUT_DIR, model_name)}")
