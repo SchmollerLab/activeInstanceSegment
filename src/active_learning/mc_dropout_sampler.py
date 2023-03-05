@@ -72,22 +72,23 @@ class MCDropoutSampler(UncertaintySampler):
         uncertainty_dict = {}
         print("running mc dropout sampling...")
         for i in tqdm(range(len(ds_catalog))):
-            im_json = ds_catalog[i]
-            im = self.load_image(im_json)
+            with torch.no_grad():
+                im_json = ds_catalog[i]
+                im = self.load_image(im_json)
 
-            instance_list = self.get_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
-            combinded_instances = self.get_combinded_instances(instance_list)
+                instance_list = self.get_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
+                combinded_instances = self.get_combinded_instances(instance_list)
 
-            height, width = im.shape[:2]
-            uncertainty = self.get_uncertainty(
-                combinded_instances,
-                cfg.AL.NUM_MC_SAMPLES,
-                height,
-                width,
-                mode=cfg.AL.OBJECT_TO_IMG_AGG,
-            )
+                height, width = im.shape[:2]
+                uncertainty = self.get_uncertainty(
+                    combinded_instances,
+                    cfg.AL.NUM_MC_SAMPLES,
+                    height,
+                    width,
+                    mode=cfg.AL.OBJECT_TO_IMG_AGG,
+                )
 
-            uncertainty_dict[im_json["image_id"]] = float(uncertainty)
+                uncertainty_dict[im_json["image_id"]] = float(uncertainty)
 
         worst_ims = np.argsort(list(uncertainty_dict.values()))[-num_samples:]
         samples = [list(uncertainty_dict.keys())[id] for id in worst_ims]

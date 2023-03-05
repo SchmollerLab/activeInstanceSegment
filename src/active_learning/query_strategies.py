@@ -231,7 +231,7 @@ class UncertaintySampler(QueryStrategy):
     def get_semantic_certainty(self, val, device="cuda"):
         """Return calculated certainty in the class prediction"""
 
-        torch_softmax = torch.nn.Softmax(dim=0)
+        torch_softmax = torch.nn.Softmax(dim=0).to(device)
 
         softmaxes = torch.stack([torch_softmax(v["softmaxes"]) for v in val])
         if len(softmaxes[0]) == 1:
@@ -418,7 +418,7 @@ class UncertaintySampler(QueryStrategy):
             if self.classification:
                 c_sem = self.get_semantic_certainty(val=val, device=device)
                 if c_sem > 0.7:
-                    c_sem = torch.tensor(1).to(device)
+                    c_sem = torch.tensor(1.0).to(device)
 
                 c_h = c_sem  # torch.multiply(c_sem, c_h)
 

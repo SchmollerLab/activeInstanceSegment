@@ -68,30 +68,31 @@ class HybridSampler(MCDropoutSampler):
 
         print("running hybrid sampling...")
         for i in tqdm(range(len(ds_catalog))):
-            im_json = ds_catalog[i]
-            im = self.load_image(im_json)
+            with torch.no_grad():
+                im_json = ds_catalog[i]
+                im = self.load_image(im_json)
 
-            instance_list = self.get_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
-            combinded_instances = self.get_combinded_instances(instance_list)
+                instance_list = self.get_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
+                combinded_instances = self.get_combinded_instances(instance_list)
 
-            height, width = im.shape[:2]
-            uncertainty = self.get_uncertainty(
-                combinded_instances,
-                cfg.AL.NUM_MC_SAMPLES,
-                height,
-                width,
-                mode=cfg.AL.OBJECT_TO_IMG_AGG,
-            )
+                height, width = im.shape[:2]
+                uncertainty = self.get_uncertainty(
+                    combinded_instances,
+                    cfg.AL.NUM_MC_SAMPLES,
+                    height,
+                    width,
+                    mode=cfg.AL.OBJECT_TO_IMG_AGG,
+                )
 
-            features = self.get_latent_feature(model, im)
-            feature_list.append(features)
+                features = self.get_latent_feature(model, im)
+                feature_list.append(features)
 
-            sample_list.append(
-                {
-                    "image_id": im_json["image_id"],
-                    "uncertainty": float(uncertainty),
-                }
-            )
+                sample_list.append(
+                    {
+                        "image_id": im_json["image_id"],
+                        "uncertainty": float(uncertainty),
+                    }
+                )
 
         samples_df = pd.DataFrame.from_records(sample_list)
         samples_df["cluster"] = self.get_k_means(feature_list, num_samples)
@@ -139,7 +140,7 @@ class HybridSampler(MCDropoutSampler):
         )
         return kmeans.labels_
 
-    def get_latent_feature(self, model, input_image, offs=10, layer="p4"):
+    def get_latent_feature(self, model, input_image, offs=10, layer="p5"):
         with torch.no_grad():
             images, _ = self.preprocess_image(input_image, model)
             features = model.backbone(images.tensor)
