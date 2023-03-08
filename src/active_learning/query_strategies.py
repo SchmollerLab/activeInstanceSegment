@@ -418,7 +418,7 @@ class UncertaintySampler(QueryStrategy):
                 if c_sem > 0.7:
                     c_sem = torch.tensor(1.0).to(device)
 
-                torch.multiply(c_sem, c_h)
+                c_h = torch.multiply(c_sem, c_h)
 
             # certainty to uncertainty
             u_h = 1 - c_h
