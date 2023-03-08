@@ -8,7 +8,7 @@ AL:
   OBJECT_TO_IMG_AGG: "mean"
   MAX_LOOPS: 100
   OUTPUT_DIR: ./al_output/classes_acdc_large_al
-  QUERY_STRATEGY: random
+  QUERY_STRATEGY: hybrid
 CUDNN_BENCHMARK: false
 DATALOADER:
   ASPECT_RATIO_GROUPING: true
