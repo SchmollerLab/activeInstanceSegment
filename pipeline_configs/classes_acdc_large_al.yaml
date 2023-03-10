@@ -6,9 +6,9 @@ AL:
   SAMPLE_EVERY: 10
   NUM_MC_SAMPLES: 40
   OBJECT_TO_IMG_AGG: "mean"
-  MAX_LOOPS: 100
+  MAX_LOOPS: 20
   OUTPUT_DIR: ./al_output/classes_acdc_large_al
-  QUERY_STRATEGY: hybrid
+  QUERY_STRATEGY: random
 CUDNN_BENCHMARK: false
 DATALOADER:
   ASPECT_RATIO_GROUPING: true
