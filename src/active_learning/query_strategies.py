@@ -231,16 +231,19 @@ class UncertaintySampler(QueryStrategy):
     def get_semantic_certainty(self, val, device="cuda"):
         """Return calculated certainty in the class prediction"""
 
-        torch_softmax = torch.nn.Softmax(dim=0).to(device)
+        # torch_softmax = torch.nn.Softmax(dim=0).to(device)
+        class_preds = [v["pred_classes"] for v in val]
+        sum_class = torch.zeros(3).to(device)
+        for class_pred in class_preds:
+            sum_class[class_pred] += 1.0
 
-        softmaxes = torch.stack([torch_softmax(v["softmaxes"]) for v in val])
-        if len(softmaxes[0]) == 1:
-            c_sem = torch.ones(1).to(device)
-        else:
-            mean_softmaxes = torch.mean(softmaxes, axis=0)
-            c_sem = torch.max(mean_softmaxes)
+        mean_class = 1 / len(class_preds) * sum_class
 
-        return c_sem
+        logits_class = -1 * mean_class * torch.nan_to_num(torch.log(mean_class))
+
+        c_sem = torch.sum(logits_class)
+
+        return torch.clamp(1 - c_sem, min=0, max=1)
 
     def get_mask_certainty(self, val, height, width, val_len, device="cuda"):
         """Calculate certainty in the mask prediction.
@@ -272,7 +275,12 @@ class UncertaintySampler(QueryStrategy):
             axis=0,
         )
 
-        mean_mask[mean_mask < 0.25] = 0.0
+        certainty_mask = 4 * torch.mul(mean_mask, 1 - mean_mask)
+        c_spl_m = 1 - torch.divide(
+            torch.sum(certainty_mask), torch.count_nonzero(mean_mask > 0)
+        )
+
+        """mean_mask[mean_mask < 0.25] = 0.0
         mean_mask = mean_mask.reshape(-1, height, width)
         mask_IOUs = []
         for v in val:
@@ -288,7 +296,7 @@ class UncertaintySampler(QueryStrategy):
         else:
             mask_IOUs = torch.tensor([float("NaN")]).to(device)
 
-        c_spl_m = torch.clamp(torch.divide(mask_IOUs.sum(), val_len), min=0, max=1)
+        c_spl_m = torch.clamp(torch.divide(mask_IOUs.sum(), val_len), min=0, max=1)"""
 
         return c_spl_m
 
@@ -408,14 +416,14 @@ class UncertaintySampler(QueryStrategy):
                 val=val, height=height, width=width, val_len=val_len, device=device
             )
 
-            if c_spl_m > 0.9:
+            if c_spl_m > 0.8 and False:
                 c_spl_m = torch.tensor(1).to(device)
 
             c_h = torch.multiply(c_det, c_spl_m)
 
             if self.classification:
                 c_sem = self.get_semantic_certainty(val=val, device=device)
-                if c_sem > 0.7:
+                if c_sem > 0.5 and False:
                     c_sem = torch.tensor(1.0).to(device)
 
                 c_h = torch.multiply(c_sem, c_h)

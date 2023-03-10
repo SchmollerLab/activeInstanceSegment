@@ -75,10 +75,8 @@ class MCDropoutSampler(UncertaintySampler):
             with torch.no_grad():
                 im_json = ds_catalog[i]
                 im = self.load_image(im_json)
-
                 instance_list = self.get_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
                 combinded_instances = self.get_combinded_instances(instance_list)
-
                 height, width = im.shape[:2]
                 uncertainty = self.get_uncertainty(
                     combinded_instances,
@@ -87,7 +85,6 @@ class MCDropoutSampler(UncertaintySampler):
                     width,
                     mode=cfg.AL.OBJECT_TO_IMG_AGG,
                 )
-
                 uncertainty_dict[im_json["image_id"]] = float(uncertainty)
 
         worst_ims = np.argsort(list(uncertainty_dict.values()))[-num_samples:]
