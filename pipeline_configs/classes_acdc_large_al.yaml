@@ -1,12 +1,12 @@
 AL:
   DATASETS:
     TRAIN_UNLABELED: acdc_large_cls_train
-  INCREMENT_SIZE: 15
+  INCREMENT_SIZE: 5
   INIT_SIZE: 15
   SAMPLE_EVERY: 10
   NUM_MC_SAMPLES: 40
   OBJECT_TO_IMG_AGG: "mean"
-  MAX_LOOPS: 20
+  MAX_LOOPS: 60
   OUTPUT_DIR: ./al_output/classes_acdc_large_al
   QUERY_STRATEGY: hybrid
 CUDNN_BENCHMARK: false
