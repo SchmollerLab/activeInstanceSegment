@@ -95,13 +95,15 @@ class HybridSampler(MCDropoutSampler):
                 )
 
         samples_df = pd.DataFrame.from_records(sample_list)
-        samples_df["cluster"] = self.get_k_means(feature_list, num_samples)
+        samples_df["cluster"] = self.get_k_means(
+            feature_list, num_samples, samples_df["uncertainty"]
+        )
         samples = []
         for cluster in samples_df.cluster.unique():
             df_tmp = samples_df[samples_df["cluster"] == cluster].copy()
-            image_id = samples_df[
-                samples_df["uncertainty"] == df_tmp["uncertainty"].max()
-            ]["image_id"].values[0]
+            image_id = df_tmp[df_tmp["uncertainty"] == df_tmp["uncertainty"].max()][
+                "image_id"
+            ].values[0]
             samples.append(image_id)
 
         self.log_results(samples_df, samples)
@@ -131,12 +133,12 @@ class HybridSampler(MCDropoutSampler):
         ) as file:
             file.write("\n".join(samples))
 
-    def get_k_means(self, feature_list, n_clusters):
+    def get_k_means(self, feature_list, n_clusters, sample_weight):
         np_feature_list = np.stack(feature_list)
-        umap_10d = UMAP(n_components=10, init="random", random_state=0)
-        proj_10d = umap_10d.fit_transform(np_feature_list)
+        # umap_10d = UMAP(n_components=10, init="random", random_state=0)
+        # proj_10d = umap_10d.fit_transform(np_feature_list)
         kmeans = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(
-            proj_10d
+            X=np_feature_list, sample_weight=sample_weight
         )
         return kmeans.labels_
 
