@@ -97,8 +97,12 @@ class UncertaintySampler(QueryStrategy):
         max_entropy = torch.distributions.Categorical(probs).entropy()
         return max_entropy
 
-    def presample_id_pool(self, cfg, ids, sample_every):
+    def presample_id_pool(self, cfg, ids, sample_every, random=False):
         """Reduce id_pool by sampleing every sample_every-th image of a video with a random offset."""
+
+        if random:
+            return rd.sample(ids, int(len(ids) / sample_every))
+
         if cfg.AL.SAMPLE_EVERY <= 1:
             id_pool = ids
         else:

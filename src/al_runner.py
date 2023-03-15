@@ -26,9 +26,9 @@ if __name__ == "__main__":
     config_name = config_filename.split("/")[-1].replace(".yaml", "")
     cfg = get_config(config_name, complete_path=config_filename)
 
-    cur_date = "u_new_long" + str(date.today().month) + str(date.today().day)
+    cur_date = "" + str(date.today().month) + str(date.today().day)
     for _ in range(2):
-        cfg.SEED += 10
+        cfg.SEED += 1
         al_trainer = ActiveLearningTrainer(
             cfg, cur_date=cur_date, is_test_mode=not running_on_server
         )

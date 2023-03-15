@@ -41,7 +41,7 @@ class HybridSampler(MCDropoutSampler):
 
     def sample(self, cfg, ids):
         num_samples = self.cfg.AL.INCREMENT_SIZE
-        id_pool = self.presample_id_pool(cfg, ids, cfg.AL.SAMPLE_EVERY)
+        id_pool = self.presample_id_pool(cfg, ids, cfg.AL.SAMPLE_EVERY, random=True)
         register_by_ids(
             "ALSampler_DS",
             id_pool,
@@ -95,15 +95,15 @@ class HybridSampler(MCDropoutSampler):
                 )
 
         samples_df = pd.DataFrame.from_records(sample_list)
-        samples_df["cluster"] = self.get_k_means(
+        samples_df["cluster"], samples_df["distance_center"] = self.get_k_means(
             feature_list, num_samples, samples_df["uncertainty"]
         )
         samples = []
         for cluster in samples_df.cluster.unique():
             df_tmp = samples_df[samples_df["cluster"] == cluster].copy()
-            image_id = df_tmp[df_tmp["uncertainty"] == df_tmp["uncertainty"].max()][
-                "image_id"
-            ].values[0]
+            image_id = df_tmp[
+                df_tmp["distance_center"] == df_tmp["distance_center"].min()
+            ]["image_id"].values[0]
             samples.append(image_id)
 
         self.log_results(samples_df, samples)
@@ -140,7 +140,10 @@ class HybridSampler(MCDropoutSampler):
         kmeans = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(
             X=np_feature_list, sample_weight=sample_weight
         )
-        return kmeans.labels_
+
+        dist_transforms = kmeans.transform(np_feature_list)
+        distances = dist_transforms[np.arange(dist_transforms.shape[0]), kmeans.labels_]
+        return kmeans.labels_, distances
 
     def get_latent_feature(self, model, input_image, offs=10, layer="p5"):
         with torch.no_grad():
@@ -177,5 +180,5 @@ if __name__ == "__main__":
     cfg.AL.SAMPLE_EVERY = 240
     al_dataset = ActiveLearingDataset(cfg)
     query_strategy = HybridSampler(cfg)
-    query_strategy.sample(cfg, al_dataset.unlabeled_ids)
+    print(query_strategy.sample(cfg, al_dataset.unlabeled_ids))
     # cProfile.run('query_strategy.sample(cfg, al_dataset.unlabeled_ids)')
