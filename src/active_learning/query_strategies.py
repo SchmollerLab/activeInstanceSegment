@@ -249,6 +249,35 @@ class UncertaintySampler(QueryStrategy):
 
         return torch.clamp(1 - c_sem, min=0, max=1)
 
+    def get_semantic_certainty_max(self, val, device="cuda"):
+        """Return calculated certainty in the class prediction"""
+
+        torch_softmax = torch.nn.Softmax(dim=0)
+
+        softmaxes = torch.stack([torch_softmax(v["softmaxes"]) for v in val])
+        if len(softmaxes[0]) == 1:
+            c_sem = torch.ones(1).to(device)
+        else:
+            mean_softmaxes = torch.mean(softmaxes, axis=0)
+            c_sem = torch.max(mean_softmaxes)
+
+        return c_sem
+
+    def get_semantic_certainty_margin(self, val, device="cuda"):
+        """Return calculated certainty in the class prediction"""
+
+        torch_softmax = torch.nn.Softmax(dim=0)
+
+        softmaxes = torch.stack([torch_softmax(v["softmaxes"]) for v in val])
+        if len(softmaxes[0]) == 1:
+            c_sem = torch.ones(1).to(device)
+        else:
+            mean_softmaxes = torch.mean(softmaxes, axis=0)
+            top_2 = torch.topk(mean_softmaxes, 2)
+            c_sem = top_2[0] - top_2[1]
+
+        return c_sem
+
     def get_mask_certainty(self, val, height, width, val_len, device="cuda"):
         """Calculate certainty in the mask prediction.
 
@@ -284,7 +313,39 @@ class UncertaintySampler(QueryStrategy):
             torch.sum(certainty_mask), torch.count_nonzero(mean_mask > 0)
         )
 
-        """mean_mask[mean_mask < 0.25] = 0.0
+        return c_spl_m
+
+    def get_mask_certainty_iou(self, val, height, width, val_len, device="cuda"):
+        """Calculate certainty in the mask prediction.
+
+        The certainty is calculated by the mean iou of the masks with the mean mask
+
+        Parameters
+        ----------
+        val
+            detection of one inference
+        height
+            of input_image
+        width
+            of input_image
+        val_len
+            number of detections
+        device
+            torch device. Default: cuda
+
+        Returns
+        -------
+            mask certainty
+        """
+
+        mean_mask = torch.mean(
+            torch.stack(
+                [v["pred_masks"].flatten().type(torch.cuda.FloatTensor) for v in val]
+            ),
+            axis=0,
+        )
+
+        mean_mask[mean_mask < 0.25] = 0.0
         mean_mask = mean_mask.reshape(-1, height, width)
         mask_IOUs = []
         for v in val:
@@ -300,7 +361,7 @@ class UncertaintySampler(QueryStrategy):
         else:
             mask_IOUs = torch.tensor([float("NaN")]).to(device)
 
-        c_spl_m = torch.clamp(torch.divide(mask_IOUs.sum(), val_len), min=0, max=1)"""
+        c_spl_m = torch.clamp(torch.divide(mask_IOUs.sum(), val_len), min=0, max=1)
 
         return c_spl_m
 
@@ -416,18 +477,18 @@ class UncertaintySampler(QueryStrategy):
                 iterrations=iterrations, val_len=val_len, device=device
             )
 
-            c_spl_m = self.get_mask_certainty(
+            c_spl_m = self.get_mask_certainty_iou(
                 val=val, height=height, width=width, val_len=val_len, device=device
             )
 
-            if c_spl_m > 0.8:
+            if c_spl_m > 0.9:
                 c_spl_m = torch.tensor(1).to(device)
 
             c_h = torch.multiply(c_det, c_spl_m)
 
             if self.classification:
-                c_sem = self.get_semantic_certainty(val=val, device=device)
-                if c_sem > 0.5:
+                c_sem = self.get_semantic_certainty_max(val=val, device=device)
+                if c_sem > 0.7:
                     c_sem = torch.tensor(1.0).to(device)
 
                 c_h = torch.multiply(c_sem, c_h)
