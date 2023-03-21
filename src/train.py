@@ -71,10 +71,10 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
     augs = [
         T.RandomFlip(prob=0.5, horizontal=True, vertical=False),
         T.RandomFlip(prob=0.5, horizontal=False, vertical=True),
-        # T.RandomRotation((0,360), expand=False),
-        # T.RandomBrightness(0.5, 2),
-        # T.RandomContrast(0.5, 2),
-        # T.RandomSaturation(0.5, 2),
+        T.RandomRotation((0, 360), expand=False),
+        T.RandomBrightness(0.5, 2),
+        T.RandomContrast(0.5, 2),
+        T.RandomSaturation(0.5, 2),
         T.ResizeShortestEdge(
             short_edge_length=cfg.INPUT.MIN_SIZE_TRAIN,
             max_size=cfg.INPUT.MAX_SIZE_TRAIN,
@@ -118,16 +118,14 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
 
                 comm.synchronize()
 
-                wandb.log(
-                    {"early_stopping_ap": (res["segm"]["AP"] + res["bbox"]["AP"]) / 2}
-                )
-                if (res["segm"]["AP"] + res["bbox"]["AP"]) / 2 < max_ap:
+                wandb.log({"early_stopping_ap": res["segm"]["AP"]})
+                if res["segm"]["AP"] < max_ap:
                     early_counter += 1
                     max_early_counter = max(max_early_counter, early_counter)
 
                     print(
                         "new ap:",
-                        (res["segm"]["AP"] + res["bbox"]["AP"]) / 2,
+                        res["segm"]["AP"],
                         "max_ap",
                         max_ap,
                         "add counter: ",
@@ -139,13 +137,13 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
                 else:
                     print(
                         "new ap:",
-                        (res["segm"]["AP"] + res["bbox"]["AP"]) / 2,
+                        res["segm"]["AP"],
                         "max_ap",
                         max_ap,
                         "adjust max",
                     )
                     max_result = res
-                    max_ap = max(max_ap, (res["segm"]["AP"] + res["bbox"]["AP"]) / 2)
+                    max_ap = max(max_ap, res["segm"]["AP"])
                     checkpointer.save("best_model_ap")
                     early_counter = 0
 
