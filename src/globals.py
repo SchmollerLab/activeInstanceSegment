@@ -7,7 +7,7 @@ import os
 
 PROJECT_ROOT = os.getenv("PROJECT_ROOT")
 DATA_PATH = os.getenv("DATA_PATH")
-BASE_DATA_PATH = DATA_PATH  + "/" # "./data/"
+BASE_DATA_PATH = DATA_PATH + "/"  # "./data/"
 
 REL_PATH_JSON = "cell_acdc_coco_ds.json"
 REL_PATH_IMAGES = "images"
@@ -23,7 +23,7 @@ ACDC_LARGE_CLS = "acdc_large_cls"
 
 # LIST_DATASETS = [ACDC_LARGE, ACDC_SMALL] # [ACDC_LARGE, ACDC_SMALL, CELLPOSE, ACDC_LAST_IMAGES]
 DATASETS_DSPLITS = {
-    ACDC_SMALL: ["train", "test"],
+    # ACDC_SMALL: ["train", "test"],
     ACDC_LARGE: ["train", "test"],
     ACDC_LARGE_CLS: ["train", "test"],
 }

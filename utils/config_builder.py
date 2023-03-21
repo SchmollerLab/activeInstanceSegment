@@ -20,7 +20,7 @@ def build_config(config_name):
     cfg.NAME = config_name
     cfg.AL = CN()
     cfg.AL.DATASETS = CN()
-    cfg.AL.DATASETS.TRAIN_UNLABELED = get_dataset_name(ACDC_SMALL, TRAIN)
+    cfg.AL.DATASETS.TRAIN_UNLABELED = get_dataset_name(ACDC_LARGE_CLS, "train")
     cfg.AL.MAX_LOOPS = 10
     cfg.AL.INIT_SIZE = 20
     cfg.AL.INCREMENT_SIZE = 20
@@ -30,8 +30,8 @@ def build_config(config_name):
     cfg.AL.OBJECT_TO_IMG_AGG = "quant20"
     cfg.AL.QUERY_STRATEGY = "random"
 
-    cfg.DATASETS.TRAIN = (get_dataset_name(ACDC_SMALL, TRAIN),)
-    cfg.DATASETS.TEST = (get_dataset_name(ACDC_SMALL, TEST),)
+    cfg.DATASETS.TRAIN = (get_dataset_name(ACDC_LARGE_CLS, "train"),)
+    cfg.DATASETS.TEST = (get_dataset_name(ACDC_LARGE_CLS, "test"),)
     cfg.DATALOADER.NUM_WORKERS = 16
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
         "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
@@ -59,7 +59,6 @@ def build_config(config_name):
 
 
 def get_config(config_name, path_configs=PATH_PIPELINE_CONFIGS, complete_path=None):
-
     cfg = get_cfg()
     cfg.NAME = " "
     cfg.AL = CN()
@@ -79,8 +78,6 @@ def get_config(config_name, path_configs=PATH_PIPELINE_CONFIGS, complete_path=No
     cfg.MODEL.ROI_MASK_HEAD.DROPOUT_PROBABILITY = 0.5
     cfg.MODEL.ROI_BOX_HEAD.DROPOUT_PROBABILITY = 0.5
 
-    
-
     if not complete_path:
         file_path = path_configs + "/" + config_name + ".yaml"
     else:
@@ -95,5 +92,4 @@ def get_config(config_name, path_configs=PATH_PIPELINE_CONFIGS, complete_path=No
 
 
 if __name__ == "__main__":
-
-    build_config("acdc_small_al_20")
+    build_config("acdc_large_gs")

@@ -1,4 +1,3 @@
-
 from src.globals import *
 
 import json
@@ -26,7 +25,6 @@ def build_register_function(image_ids, dataset_full):
 
 
 def get_dataset_name(dataset, dsplit):
-
     if dsplit in DATASETS_DSPLITS[dataset]:
         return dataset + "_" + dsplit
     else:
@@ -34,7 +32,6 @@ def get_dataset_name(dataset, dsplit):
 
 
 def register_datasets():
-
     for dataset in DATASETS_DSPLITS.keys():
         print("registering {} dataset".format(dataset))
 
@@ -49,9 +46,26 @@ def register_datasets():
                     BASE_DATA_PATH + dataset + "/" + dsplit + "/" + REL_PATH_IMAGES,
                 )
 
+        # register slim test data set
+        test_data = DatasetCatalog.get(
+            get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1])
+        )
+
+        ids = [
+            image_json["image_id"]
+            for image_json in test_data
+            if int(image_json["image_id"].split("_")[-1]) % 3 == 0
+        ]
+
+        register_by_ids(
+            get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1]) + "_slim",
+            ids,
+            BASE_DATA_PATH + dataset + "/" + "test" + "/" + REL_PATH_JSON,
+            get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1]),
+        )
+
 
 def register_by_ids(dataset_name, image_ids, output_dir, dataset_full):
-
     if os.path.exists(output_dir + "/" + dataset_name + "_coco_format.json"):
         os.remove(output_dir + "/" + dataset_name + "_coco_format.json")
 
@@ -65,7 +79,9 @@ def register_by_ids(dataset_name, image_ids, output_dir, dataset_full):
     DatasetCatalog.register(
         dataset_name, build_register_function(image_ids, dataset_full)
     )
-    MetadataCatalog.get(dataset_name).set(thing_classes=MetadataCatalog.get(dataset_full).thing_classes)
+    MetadataCatalog.get(dataset_name).set(
+        thing_classes=MetadataCatalog.get(dataset_full).thing_classes
+    )
 
     return dataset_name
 
