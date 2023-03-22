@@ -24,7 +24,6 @@ from utils.config_builder import get_config
 
 
 def run_pipeline(config_name, cfg=None, cur_date=""):
-
     logger = setup_logger(output="./log/main.log")
     # logger.info("Model:\n{}".format(model))
 
@@ -39,28 +38,34 @@ def run_pipeline(config_name, cfg=None, cur_date=""):
             sync_tensorboard=True,
             mode="disabled",
         )
-    else: 
-        wandb.init(project="activeCell-ACDC", name=str(cur_date + "_" + config_name + "_" +  os.uname()[1]).split("-")[0], sync_tensorboard=True)
+    else:
+        wandb.init(
+            project="activeCell-ACDC",
+            name=str(cur_date + "_" + config_name + "_" + os.uname()[1]).split("-")[0],
+            sync_tensorboard=True,
+        )
 
     # empty gpu cache
     torch.cuda.empty_cache()
     # run trainingrunning_on_server
-    wandb.config.update(yaml.load(cfg.dump(),Loader=yaml.Loader))
-    do_train(cfg, logger=logger)
+    wandb.config.update(yaml.load(cfg.dump(), Loader=yaml.Loader))
+
+    for lr_iter in range(5):
+        do_train(cfg, logger=logger, resume=lr_iter > 0)
+        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
     # run testing
     result = do_test(cfg, logger=logger)
-    wandb.log({"max_ap": (result["segm"]["AP"] + result["bbox"]["AP"]) / 2})
+    wandb.log({"max_ap": result["segm"]["AP"]})
     cfg = None
 
     wandb.run.finish()
 
     return result
 
+
 def grid_search(cfg):
-
-
-    #print(cfg.MODEL.BACKBONE.FREEZE_AT)
-    #print(cfg.MODEL.RPN.BATCH_SIZE_PER_IMAGE)
+    # print(cfg.MODEL.BACKBONE.FREEZE_AT)
+    # print(cfg.MODEL.RPN.BATCH_SIZE_PER_IMAGE)
 
     max_ap = 0
     max_base_lr = 0
@@ -69,34 +74,58 @@ def grid_search(cfg):
 
     cur_date = str(date.today().month) + str(date.today().day)
 
-    for base_lr in [0.001,0.0005,0.0003,0.0001]:
+    for base_lr in [0.01, 0.001, 0.0001, 0.00001]:
         print("cfg.SOLVER.BASE_LR", base_lr)
         cfg.SOLVER.BASE_LR = base_lr
-        for lr_scheduler_name, steps in zip(["WarmupCosineLR", "WarmupMultiStepLR", "WarmupMultiStepLR", "WarmupMultiStepLR"],[(),(),(60000),(40000,80000)]):
-            
-            print("cfg.SOLVER.LR_SCHEDULER_NAME:", lr_scheduler_name)
-            cfg.SOLVER.LR_SCHEDULER_NAME = lr_scheduler_name
 
-            print("cfg.SOLVER.STEPS", steps)
-            cfg.SOLVER.STEPS = steps
-            
-            result = run_pipeline(config_name, cfg, cur_date=cur_date)
-            ap = (result["segm"]["AP"] + result["bbox"]["AP"]) / 2
+        """for lr_scheduler_name, steps in zip(
+            [
+                "WarmupCosineLR",
+                "WarmupMultiStepLR",
+                "WarmupMultiStepLR",
+                "WarmupMultiStepLR",
+            ],
+            [(), (), (60000), (40000, 80000)],
+        ):"""
+        # print("cfg.SOLVER.LR_SCHEDULER_NAME:", lr_scheduler_name)
+        # cfg.SOLVER.LR_SCHEDULER_NAME = lr_scheduler_name
 
-            if ap > max_ap:
-                max_ap = ap
-                max_base_lr = base_lr
-                max_lr_scheduler_name = lr_scheduler_name
-                max_steps = steps
-    
-    cfg.SOLVER.LR_SCHEDULER_NAME = max_lr_scheduler_name
+        # print("cfg.SOLVER.STEPS", steps)
+        # cfg.SOLVER.STEPS = steps
+
+        result = run_pipeline(config_name, cfg, cur_date=cur_date)
+        ap = result["segm"]["AP"]
+
+        if ap > max_ap:
+            max_ap = ap
+            max_base_lr = base_lr
+            # max_lr_scheduler_name = lr_scheduler_name
+            # max_steps = steps
+
+    print("max_ap:", max_ap, "\tmax_base_lr", max_base_lr)
+    """cfg.SOLVER.LR_SCHEDULER_NAME = max_lr_scheduler_name
     cfg.SOLVER.BASE_LR = max_base_lr
     cfg.SOLVER.STEPS = max_steps
 
-    for anchor_sizes in [[[32],[64],[128],[256],[512],],[[16],[32],[64],[128],[256],]]:
+    for anchor_sizes in [
+        [
+            [32],
+            [64],
+            [128],
+            [256],
+            [512],
+        ],
+        [
+            [16],
+            [32],
+            [64],
+            [128],
+            [256],
+        ],
+    ]:
         print("cfg.MODEL.ANCHOR_GENERATOR.SIZES", anchor_sizes)
         cfg.MODEL.ANCHOR_GENERATOR.SIZES = anchor_sizes
-        for iou_thresh in [0.5,0.4,0.6]:
+        for iou_thresh in [0.5, 0.4, 0.6]:
             print("cfg.MODEL.ROI_HEADS.IOU_THRESHOLDS", iou_thresh)
             cfg.MODEL.ROI_HEADS.IOU_THRESHOLDS = iou_thresh
             for score_thresh_test in [0.05, 0, 0.1, 0.9]:
@@ -105,12 +134,10 @@ def grid_search(cfg):
                 for clip_gradients in [False, True]:
                     print("cfg.SOLVER.CLIP_GRADIENTS.ENABLED", clip_gradients)
                     cfg.SOLVER.CLIP_GRADIENTS.ENABLED = clip_gradients
-                    result = run_pipeline(config_name, cfg, cur_date=cur_date)
-
+                    result = run_pipeline(config_name, cfg, cur_date=cur_date)"""
 
 
 if __name__ == "__main__":
-
     parser = ArgumentParser()
     parser.add_argument(
         "-c",
@@ -125,7 +152,7 @@ if __name__ == "__main__":
         "--gridsearch",
         dest="do_grid_search",
         help="Flag if gridsearch should be done",
-        action='store_true',
+        action="store_true",
     )
 
     args = parser.parse_args()

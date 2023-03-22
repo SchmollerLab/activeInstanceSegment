@@ -65,7 +65,7 @@ def plot_prediction(image_json, dataset_name, cfg):
     ground_truth_im = out.get_image()[:, :, ::-1]
 
     # prediction
-    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
+    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "last_model.pth")
     predictor = DefaultPredictor(cfg)
     outputs = predictor(raw_im)
 

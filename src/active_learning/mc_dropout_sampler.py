@@ -63,7 +63,7 @@ class MCDropoutSampler(UncertaintySampler):
 
             checkpointer = DetectionCheckpointer(model)
             print("loading default_model")
-            checkpointer.load(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
+            checkpointer.load(os.path.join(cfg.OUTPUT_DIR, "last_model.pth"))
         else:
             print(f"loading custom model")
             model = custom_model

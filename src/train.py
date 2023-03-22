@@ -144,7 +144,7 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
                     )
                     max_result = res
                     max_ap = max(max_ap, res["segm"]["AP"])
-                    checkpointer.save("best_model_ap")
+                    checkpointer.save("best_model")
                     early_counter = 0
 
                 wandb.log({"max_early_counter": max_early_counter})
@@ -155,5 +155,5 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
                 for writer in writers:
                     writer.write()
 
-    checkpointer.save("best_model")
+    checkpointer.save("last_model")
     return max_result
