@@ -51,7 +51,7 @@ def run_pipeline(config_name, cfg=None, cur_date=""):
     wandb.config.update(yaml.load(cfg.dump(), Loader=yaml.Loader))
 
     for lr_iter in range(5):
-        do_train(cfg, logger=logger, resume=lr_iter > 0)
+        do_train(cfg, logger=logger)
         cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
         cfg.SOLVER.BASE_LR = cfg.SOLVER.BASE_LR / 10
     # run testing
