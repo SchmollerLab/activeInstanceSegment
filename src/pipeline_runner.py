@@ -53,6 +53,7 @@ def run_pipeline(config_name, cfg=None, cur_date=""):
     for lr_iter in range(5):
         do_train(cfg, logger=logger, resume=lr_iter > 0)
         cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "best_model.pth")
+        cfg.SOLVER.BASE_LR = cfg.SOLVER.BASE_LR / 10
     # run testing
     result = do_test(cfg, logger=logger)
     wandb.log({"max_ap": result["segm"]["AP"]})
