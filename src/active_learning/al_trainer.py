@@ -79,7 +79,7 @@ class ActiveLearningTrainer:
 
         model_name = f"{self.query_strategy.strategy}/last_model{self.al_dataset.get_len_labeled()}.pth"
         result = do_train(
-            self.cfg, self.logger, resume=resume, custom_max_iter=len_ds * 10
+            self.cfg, self.logger, resume=resume, custom_max_iter=len_ds * 20
         )
         model_path = os.path.join(self.cfg.OUTPUT_DIR, "last_model.pth")
         os.system(f"cp {model_path} {os.path.join(self.cfg.AL.OUTPUT_DIR, model_name)}")
