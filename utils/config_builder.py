@@ -88,6 +88,9 @@ def get_config(config_name, path_configs=PATH_PIPELINE_CONFIGS, complete_path=No
         cfg.SEED = os.getenv("SEED")
     cfg.SEED = int(cfg.SEED)
 
+    cfg.OUTPUT_DIR = f"./output/{cfg.NAME}/model_training"
+    cfg.AL.OUTPUT_DIR = f"./output/{cfg.NAME}/al_output"
+
     return cfg
 
 

@@ -13,7 +13,6 @@ from detectron2.evaluation import print_csv_format
 
 
 def do_test(cfg, model=None, logger=None):
-
     if model is None:
         model = build_model(cfg)
         model.eval()
@@ -26,7 +25,9 @@ def do_test(cfg, model=None, logger=None):
     num_ds = len(cfg.DATASETS.TEST)
     for dataset_name in cfg.DATASETS.TEST:
         data_loader = build_detection_test_loader(cfg, dataset_name)
-        evaluator = COCOEvaluator(dataset_name, output_dir=cfg.OUTPUT_DIR)
+        evaluator = COCOEvaluator(
+            dataset_name, output_dir=cfg.OUTPUT_DIR.replace("/model_training", "")
+        )
         results_i = inference_on_dataset(model, data_loader, evaluator)
         for ap_type in ["segm", "bbox"]:
             for metric in results_i[ap_type].keys():

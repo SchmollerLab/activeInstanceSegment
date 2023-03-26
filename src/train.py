@@ -26,7 +26,7 @@ def clean_output_dir(output_dir):
     except:
         pass
 
-    os.mkdir(output_dir)
+    os.makedirs(output_dir)
 
 
 def do_train(cfg, logger, resume=False, custom_max_iter=None):
@@ -147,7 +147,7 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
                     checkpointer.save("best_model")
                     early_counter = 0
 
-                wandb.log({"max_early_counter": max_early_counter})
+                wandb.log({"early_counter": early_counter})
 
             if iteration - start_iter > 5 and (
                 (iteration + 1) % 20 == 0 or iteration == max_iter - 1
