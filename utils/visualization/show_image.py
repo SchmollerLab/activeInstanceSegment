@@ -19,18 +19,18 @@ from detectron2.checkpoint import DetectionCheckpointer
 
 
 def show_image(ims, normalize=True):
-    # figure(figsize=(10, 10), dpi=80)
-    plt.axis("off")
     if not isinstance(ims, list):
+        fig = plt.figure(figsize=(20, 15))
         if normalize:
             im_cont = exposure.equalize_adapthist(ims)
         else:
             im_cont = ims
+        plt.axis("off")
+        plt.bone()
         plt.imshow(im_cont)
 
     else:
-        fig = plt.figure(figsize=(15, 10))
-
+        fig = plt.figure(figsize=(20, 8))
         num_figures = len(ims)
         cols = 3
         rows = int(math.ceil(num_figures / cols))
@@ -41,8 +41,11 @@ def show_image(ims, normalize=True):
             else:
                 im_cont = ims[i]
             fig.add_subplot(rows, cols, i + 1)
+            plt.axis("off")
+            plt.bone()
             plt.imshow(im_cont)
 
+    fig.subplots_adjust(wspace=0.03, hspace=0.03)
     plt.show()
 
 
