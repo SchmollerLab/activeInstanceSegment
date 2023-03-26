@@ -58,6 +58,7 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
 
     if custom_max_iter:
         max_iter = custom_max_iter
+        cfg.SOLVER.MAX_ITER = custom_max_iter
     else:
         max_iter = cfg.SOLVER.MAX_ITER
 
