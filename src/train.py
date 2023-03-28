@@ -33,6 +33,12 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
     if not resume:
         clean_output_dir(cfg.OUTPUT_DIR)
 
+    if custom_max_iter:
+        max_iter = custom_max_iter
+        cfg.SOLVER.MAX_ITER = custom_max_iter
+    else:
+        max_iter = cfg.SOLVER.MAX_ITER
+
     model = build_model(cfg)
     model.train()
 
@@ -56,11 +62,6 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
         + 1
     )
 
-    if custom_max_iter:
-        max_iter = custom_max_iter
-        cfg.SOLVER.MAX_ITER = custom_max_iter
-    else:
-        max_iter = cfg.SOLVER.MAX_ITER
 
     writers = (
         default_writers(cfg.OUTPUT_DIR, max_iter) + [WandBWriter()]
