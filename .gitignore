@@ -159,3 +159,4 @@ ignore*
 /local
 
 .vscode/
+/experiments/results
