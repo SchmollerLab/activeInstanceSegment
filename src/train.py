@@ -62,7 +62,6 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
         + 1
     )
 
-
     writers = (
         default_writers(cfg.OUTPUT_DIR, max_iter) + [WandBWriter()]
         if comm.is_main_process()
@@ -115,6 +114,7 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
                 cfg.TEST.EVAL_PERIOD > 0
                 and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
                 and iteration != max_iter - 1
+                and iteration >= max_iter / 2
             ):
                 res = do_test(cfg, model=model, logger=logger)
 
@@ -133,7 +133,7 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
                         "add counter: ",
                         early_counter,
                     )
-                    if early_counter >= cfg.EARLY_STOPPING_ROUNDS:
+                    if False and early_counter >= cfg.EARLY_STOPPING_ROUNDS:
                         print("stopping training")
                         break
                 else:

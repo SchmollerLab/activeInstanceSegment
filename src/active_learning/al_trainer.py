@@ -74,7 +74,7 @@ class ActiveLearningTrainer:
 
     def step(self, resume):
         len_ds = self.al_dataset.get_len_labeled()
-        self.cfg.TEST.EVAL_PERIOD = int(len_ds / self.cfg.SOLVER.IMS_PER_BATCH)
+        self.cfg.TEST.EVAL_PERIOD = max(int(len_ds / self.cfg.SOLVER.IMS_PER_BATCH), 20)
         self.cfg.EARLY_STOPPING_ROUNDS = 3 + int(len_ds * 0.0025)
 
         model_name = f"{self.query_strategy.strategy}/last_model{self.al_dataset.get_len_labeled()}.pth"

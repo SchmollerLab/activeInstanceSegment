@@ -77,7 +77,7 @@ class TTASampler(UncertaintySampler):
         ) as file:
             file.write("\n".join(samples))
 
-    def sample(self, cfg, ids, custom_model):
+    def sample(self, cfg, ids, custom_model=None):
         num_samples = self.cfg.AL.INCREMENT_SIZE
         id_pool = self.presample_id_pool(cfg, ids, cfg.AL.SAMPLE_EVERY)
         register_by_ids(
@@ -118,7 +118,6 @@ class TTASampler(UncertaintySampler):
                 height,
                 width,
                 mode=cfg.AL.OBJECT_TO_IMG_AGG,
-                bbox=False,
             )
 
             uncertainty_dict[im_json["image_id"]] = float(uncertainty)
@@ -131,11 +130,13 @@ class TTASampler(UncertaintySampler):
         self.counter += 1
         return samples
 
-    def preprocess_image_rotate(self, input_image, model, angle):
+    def preprocess_image_rotate(self, input_image, model, angle, max_noise=0.1):
         height, width = input_image.shape[:2]
         image = self.aug.get_transform(input_image).apply_image(input_image)
         image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
         rot_image = TF.rotate(image, angle)
+        rot_image += torch.normal(0.0, 255 * max_noise, size=rot_image.size())
+        rot_image = torch.clamp(rot_image, min=0, max=255)
         inputs = [{"image": rot_image, "height": height, "width": width}]
         images = model.preprocess_image(inputs)
 
@@ -145,7 +146,7 @@ class TTASampler(UncertaintySampler):
         with torch.no_grad():
             prediction_list = []
 
-            for angle in range(0, 360, int(360 / iterrations)):
+            for angle in rd.sample(range(0, 360), iterrations):
                 images, inputs = self.preprocess_image_rotate(input_image, model, angle)
 
                 features = model.backbone(images.tensor)

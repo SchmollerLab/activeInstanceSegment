@@ -1,0 +1,13 @@
+,num_mc_samples,dropout_prob,model_train_size,image_id,run_id,agg_uncertainty
+0,10,0.25,55,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.38944283
+1,10,0.5,55,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.51639175
+2,20,0.25,55,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.37732348
+3,20,0.5,55,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.52927125
+4,40,0.25,55,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.37884304
+5,40,0.5,55,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.43675113
+6,10,0.25,240,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.15229282
+7,10,0.5,240,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.3288348
+8,20,0.25,240,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.16003683
+9,20,0.5,240,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.31117186
+10,40,0.25,240,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.1660403
+11,40,0.5,240,TimeLapse_2D_MIA_KC_htb1_mCitrine_labeled_pos_5_0,0,0.3021804

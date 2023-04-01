@@ -77,6 +77,7 @@ def get_config(config_name, path_configs=PATH_PIPELINE_CONFIGS, complete_path=No
     cfg.MODEL.ROI_HEADS.SOFTMAXES = False
     cfg.MODEL.ROI_MASK_HEAD.DROPOUT_PROBABILITY = 0.5
     cfg.MODEL.ROI_BOX_HEAD.DROPOUT_PROBABILITY = 0.5
+    cfg.MODEL.ROI_HEADS.DROPOUT_PROBABILITY = 0.5
 
     if not complete_path:
         file_path = path_configs + "/" + config_name + ".yaml"

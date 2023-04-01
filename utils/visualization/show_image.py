@@ -18,7 +18,7 @@ from detectron2.modeling import build_model
 from detectron2.checkpoint import DetectionCheckpointer
 
 
-def show_image(ims, normalize=True):
+def show_image(ims, normalize=True, colormap="bone"):
     if not isinstance(ims, list):
         fig = plt.figure(figsize=(20, 15))
         if normalize:
@@ -42,7 +42,10 @@ def show_image(ims, normalize=True):
                 im_cont = ims[i]
             fig.add_subplot(rows, cols, i + 1)
             plt.axis("off")
-            plt.bone()
+            if colormap == "plasma":
+                plt.magma()
+            else:
+                plt.bone()
             plt.imshow(im_cont)
 
     fig.subplots_adjust(wspace=0.03, hspace=0.03)

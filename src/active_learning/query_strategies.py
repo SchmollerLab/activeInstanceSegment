@@ -481,15 +481,15 @@ class UncertaintySampler(QueryStrategy):
                 val=val, height=height, width=width, val_len=val_len, device=device
             )
 
-            if c_spl_m > 0.9:
-                c_spl_m = torch.tensor(1).to(device)
+            # if c_spl_m > 0.9:
+            #    c_spl_m = torch.tensor(1).to(device)
 
             c_h = torch.multiply(c_det, c_spl_m)
 
             if self.classification:
                 c_sem = self.get_semantic_certainty_max(val=val, device=device)
-                if c_sem > 0.7:
-                    c_sem = torch.tensor(1.0).to(device)
+                # if c_sem > 0.7:
+                #    c_sem = torch.tensor(1.0).to(device)
 
                 c_h = torch.multiply(c_sem, c_h)
 
