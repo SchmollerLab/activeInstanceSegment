@@ -106,7 +106,9 @@ class TTASampler(UncertaintySampler):
             im_json = ds_catalog[i]
             im = self.load_image(im_json)
 
-            instance_list = self.get_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
+            instance_list = self.get_samples(
+                model, im, cfg.AL.NUM_MC_SAMPLES, max_noise=cfg.AL.TTA_MAX_NOISE
+            )
             combinded_instances = self.get_combinded_instances(
                 instance_list, iou_thres=0.1
             )
@@ -130,24 +132,41 @@ class TTASampler(UncertaintySampler):
         self.counter += 1
         return samples
 
-    def preprocess_image_rotate(self, input_image, model, angle, max_noise=0.1):
+    def preprocess_image_rotate(
+        self, input_image, model, angle, flip=(False, False), max_noise=0.1
+    ):
         height, width = input_image.shape[:2]
+
         image = self.aug.get_transform(input_image).apply_image(input_image)
         image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
+
+        if flip[0]:  # horizontal
+            image = torch.flip(image, [1])
+        if flip[1]:  # vertical
+            image = torch.flip(image, [2])
+
         rot_image = TF.rotate(image, angle)
-        rot_image += torch.normal(0.0, 255 * max_noise, size=rot_image.size())
+        noise = rd.random() * max_noise
+        rot_image += torch.normal(0.0, 255 * noise, size=rot_image.size())
         rot_image = torch.clamp(rot_image, min=0, max=255)
         inputs = [{"image": rot_image, "height": height, "width": width}]
         images = model.preprocess_image(inputs)
 
         return images, inputs
 
-    def get_samples(self, model, input_image, iterrations):
+    def get_samples(self, model, input_image, iterrations, max_noise=0.1):
         with torch.no_grad():
             prediction_list = []
 
             for angle in rd.sample(range(0, 360), iterrations):
-                images, inputs = self.preprocess_image_rotate(input_image, model, angle)
+                flip = (
+                    bool(rd.getrandbits(1)),
+                    bool(rd.getrandbits(1)),
+                )  # (horizontal, vertical)
+
+                images, inputs = self.preprocess_image_rotate(
+                    input_image, model, angle, flip=flip, max_noise=max_noise
+                )
 
                 features = model.backbone(images.tensor)
                 proposals, box_features_pooler = self.get_backbone_roi_proposals(
@@ -157,16 +176,25 @@ class TTASampler(UncertaintySampler):
                 instances = self.get_instance_detections(
                     model, inputs, images, features, proposals, box_features_pooler
                 )
-                instances = self.transform_back(instances, angle)
+                instances = self.transform_back(instances, angle, flip)
                 prediction_list.append(instances)
 
             return list(chain.from_iterable(prediction_list))
 
-    def transform_back(self, instances, angle):
+    def transform_back(self, instances, angle, flip=(False, False)):
         for i in range(len(instances)):
             instances[i]["instances"].pred_masks = TF.rotate(
                 instances[i]["instances"].pred_masks, -angle
             )
+
+            if flip[0]:  # horizontal
+                instances[i]["instances"].pred_masks = torch.flip(
+                    instances[i]["instances"].pred_masks, [1]
+                )
+            if flip[1]:  # vertical
+                instances[i]["instances"].pred_masks = torch.flip(
+                    instances[i]["instances"].pred_masks, [2]
+                )
 
         return instances
 

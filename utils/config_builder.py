@@ -30,6 +30,8 @@ def build_config(config_name):
     cfg.AL.OBJECT_TO_IMG_AGG = "quant20"
     cfg.AL.QUERY_STRATEGY = "random"
 
+    cfg.AL.TTA_MAX_NOISE = 0.1
+
     cfg.DATASETS.TRAIN = (get_dataset_name(ACDC_LARGE_CLS, "train"),)
     cfg.DATASETS.TEST = (get_dataset_name(ACDC_LARGE_CLS, "test"),)
     cfg.DATALOADER.NUM_WORKERS = 16
@@ -70,9 +72,12 @@ def get_config(config_name, path_configs=PATH_PIPELINE_CONFIGS, complete_path=No
     cfg.AL.OUTPUT_DIR = ""
     cfg.AL.SAMPLE_EVERY = 0
     cfg.AL.NUM_MC_SAMPLES = 0
+
     cfg.AL.OBJECT_TO_IMG_AGG = ""
     cfg.AL.QUERY_STRATEGY = ""
     cfg.EARLY_STOPPING_ROUNDS = 0
+
+    cfg.AL.TTA_MAX_NOISE = 0.1
 
     cfg.MODEL.ROI_HEADS.SOFTMAXES = False
     cfg.MODEL.ROI_MASK_HEAD.DROPOUT_PROBABILITY = 0.5

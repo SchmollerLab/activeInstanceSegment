@@ -9,6 +9,7 @@ AL:
   MAX_LOOPS: 15
   OUTPUT_DIR: ./al_output/tta_acdc_large_al
   QUERY_STRATEGY: tta
+  TTA_MAX_NOISE: 0.1
 CUDNN_BENCHMARK: false
 DATALOADER:
   ASPECT_RATIO_GROUPING: true

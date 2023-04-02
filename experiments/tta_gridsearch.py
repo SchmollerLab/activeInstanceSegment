@@ -42,7 +42,9 @@ def val2dicts(val):
 
 def get_uncertainties(im_json, model, query_strategy):
     im = query_strategy.load_image(im_json)
-    instance_list = query_strategy.get_samples(model, im, cfg.AL.NUM_MC_SAMPLES)
+    instance_list = query_strategy.get_samples(
+        model, im, cfg.AL.NUM_MC_SAMPLES, cfg.AL.TTA_MAX_NOISE
+    )
     combinded_instances = query_strategy.get_combinded_instances(instance_list)
 
     height, width = im.shape[:2]
@@ -106,13 +108,15 @@ def get_uncertainties(im_json, model, query_strategy):
     return uncertainties, agg_uncertainty
 
 
-results_path = "jupyter_notebooks/results"
+results_path = "experiments/results"
 
 dataset = ACDC_LARGE_CLS
 config_name = "classes_acdc_large_al"
 
 model_path = "/mnt/activeCell-ACDC/al_output/classes_acdc_large_al/random"
-
+"""model_path = (
+    "/home/florian/GitRepos/activeCell-ACDC/al_output/classes_acdc_large_al/random"
+)"""
 register_datasets()
 
 test_data = DatasetCatalog.get("acdc_large_cls_test_slim")
@@ -137,19 +141,20 @@ tta_strategy = TTASampler(cfg)
 
 records = []
 
-
 for num_train_data in [15, 240, 3000, 6000]:
     for num_mc_samples in [10, 20, 40]:
         cfg_test = cfg
         cfg_test.AL.NUM_MC_SAMPLES = num_mc_samples
-        mc_strategy = MCDropoutSampler(cfg_test)
+        tta_strategy = TTASampler(cfg)
 
-        for dropout_prob in [0.25, 0.5]:
+        for max_noise in [
+            0.05,
+            0.1,
+            0.2,
+        ]:
             cfg_test = cfg
 
-            cfg_test.MODEL.ROI_HEADS.DROPOUT_PROBABILITY = dropout_prob
-            cfg_test.MODEL.ROI_MASK_HEAD.DROPOUT_PROBABILITY = dropout_prob
-            cfg_test.MODEL.ROI_BOX_HEAD.DROPOUT_PROBABILITY = dropout_prob
+            cfg_test.AL.TTA_MAX_NOISE = max_noise
 
             cfg_test = cfg
             cfg_test.AL.NUM_MC_SAMPLES
@@ -157,34 +162,33 @@ for num_train_data in [15, 240, 3000, 6000]:
                 cfg_test,
                 os.path.join(model_path, f"best_model{str(num_train_data)}.pth"),
             )
-            mc_model = patch_module(mc_model)
 
             print(
                 "num_mc_samples",
                 num_mc_samples,
-                "dropout_prob",
-                dropout_prob,
+                "max_noise",
+                max_noise,
                 "model_train_size",
                 num_train_data,
             )
             for im_json in tqdm(test_data):
                 single_im_unc = []
                 for run_id in range(10):
-                    pass
-                    """uncertainties, agg_uncertainty = get_uncertainties(
-                        im_json, mc_model, mc_strategy
+                    uncertainties, agg_uncertainty = get_uncertainties(
+                        im_json, mc_model, tta_strategy
                     )
                     records.append(
                         {
                             "num_mc_samples": num_mc_samples,
-                            "dropout_prob": dropout_prob,
+                            "max_noise": max_noise,
                             "model_train_size": num_train_data,
                             "image_id": im_json["image_id"],
                             "run_id": run_id,
                             "agg_uncertainty": agg_uncertainty,
                             # "uncertainties": uncertainties,
                         }
-                    )"""
+                    )
+
 
 df = pd.DataFrame.from_records(records)
-df.to_csv(os.path.join(results_path, "mc_drop_gridseach.csv"))
+df.to_csv(os.path.join(results_path, "tta_gridseach.csv"))
