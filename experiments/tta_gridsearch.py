@@ -108,7 +108,10 @@ def get_uncertainties(im_json, model, query_strategy):
     return uncertainties, agg_uncertainty
 
 
-results_path = "experiments/results"
+results_path = "experiments/results/tta_gridsearch"
+
+if not os.path.exists(results_path):
+   os.makedirs(results_path)
 
 dataset = ACDC_LARGE_CLS
 config_name = "classes_acdc_large_al"
@@ -139,10 +142,11 @@ cfg.AL.OBJECT_TO_IMG_AGG = "mean"
 mc_strategy = MCDropoutSampler(cfg)
 tta_strategy = TTASampler(cfg)
 
-records = []
+rd.seed(1337)
+sample_jsons = rd.sample(test_data,100)
 
-for num_train_data in [15, 240, 3000, 6000]:
-    for num_mc_samples in [10, 20, 40]:
+for num_train_data in [15, 240, 3000, 5800]:
+    for num_mc_samples in [10, 20, 30, 40]:
         cfg_test = cfg
         cfg_test.AL.NUM_MC_SAMPLES = num_mc_samples
         tta_strategy = TTASampler(cfg)
@@ -171,9 +175,10 @@ for num_train_data in [15, 240, 3000, 6000]:
                 "model_train_size",
                 num_train_data,
             )
-            for im_json in tqdm(test_data):
+            records = []
+            for im_json in tqdm(sample_jsons):
                 single_im_unc = []
-                for run_id in range(10):
+                for run_id in range(1):
                     uncertainties, agg_uncertainty = get_uncertainties(
                         im_json, mc_model, tta_strategy
                     )
@@ -190,5 +195,5 @@ for num_train_data in [15, 240, 3000, 6000]:
                     )
 
 
-df = pd.DataFrame.from_records(records)
-df.to_csv(os.path.join(results_path, "tta_gridseach.csv"))
+            df = pd.DataFrame.from_records(records)
+            df.to_csv(os.path.join(results_path, f"tta_gridseach{num_mc_samples}_{max_noise}_{num_train_data}.csv"))

@@ -111,10 +111,7 @@ results_path = "experiments/results"
 dataset = ACDC_LARGE_CLS
 config_name = "classes_acdc_large_al"
 
-# model_path = "/mnt/activeCell-ACDC/al_output/classes_acdc_large_al/random"
-model_path = (
-    "/home/florian/GitRepos/activeCell-ACDC/al_output/classes_acdc_large_al/random"
-)
+model_path = "/mnt/activeCell-ACDC/al_output/classes_acdc_large_al/random"
 register_datasets()
 
 test_data = DatasetCatalog.get("acdc_large_cls_test_slim")
@@ -135,18 +132,17 @@ cfg.OUTPUT_DIR = "./al_output/classes_acdc_large_al"
 cfg.AL.OBJECT_TO_IMG_AGG = "mean"
 
 mc_strategy = MCDropoutSampler(cfg)
-tta_strategy = TTASampler(cfg)
 
-records = []
+rd.seed(1337)
+sub_samples = rd.sample(test_data,100)
 
-# for num_train_data in [15, 240, 3000, 6000]:
-for num_train_data in [55, 240]:
-    for num_mc_samples in [10, 20, 40]:
+for num_train_data in [15, 240, 3000, 5800]:
+    for num_mc_samples in [10, 20, 30]:
         cfg_test = cfg
         cfg_test.AL.NUM_MC_SAMPLES = num_mc_samples
         mc_strategy = MCDropoutSampler(cfg_test)
 
-        for dropout_prob in [0.25, 0.5]:
+        for dropout_prob in [0.25, 0.35, 0.5]:
             cfg_test = cfg
 
             cfg_test.MODEL.ROI_HEADS.DROPOUT_PROBABILITY = dropout_prob
@@ -169,9 +165,11 @@ for num_train_data in [55, 240]:
                 "model_train_size",
                 num_train_data,
             )
-            for im_json in tqdm(test_data):
+
+            records = []
+            for im_json in tqdm(sub_samples):
                 single_im_unc = []
-                for run_id in range(10):
+                for run_id in range(1):
                     uncertainties, agg_uncertainty = get_uncertainties(
                         im_json, mc_model, mc_strategy
                     )
@@ -187,5 +185,5 @@ for num_train_data in [55, 240]:
                         }
                     )
 
-df = pd.DataFrame.from_records(records)
-df.to_csv(os.path.join(results_path, "mc_drop_gridseach.csv"))
+            df = pd.DataFrame.from_records(records)
+            df.to_csv(os.path.join(results_path, f"mc_drop_gridseach_{num_mc_samples}_{dropout_prob}_{num_train_data}.csv"))
