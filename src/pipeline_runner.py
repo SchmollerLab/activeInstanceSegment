@@ -14,6 +14,7 @@ import yaml
 
 # import some common detectron2 utilities
 from detectron2.modeling import build_model
+from detectron2.data import DatasetCatalog
 
 from argparse import ArgumentParser
 
@@ -154,13 +155,32 @@ if __name__ == "__main__":
         action="store_true",
     )
 
+    parser.add_argument(
+        "-e",
+        "--epochs",
+        dest="epochs",
+        help="Number of training epochs",
+        type=int,
+    )
+
     args = parser.parse_args()
     config_filename = args.config_filename
     do_grid_search = args.do_grid_search
+    if args.epochs:
+        epochs = args.epochs
+    else:
+        epochs = 80
 
     register_datasets()
     config_name = config_filename.split("/")[-1].replace(".yaml", "")
     cfg = get_config(config_name, complete_path=config_filename)
+
+    len_ds = len(DatasetCatalog.get(cfg.DATASETS.TRAIN[0]))
+    iter_per_epoch = int(len_ds / cfg.SOLVER.IMS_PER_BATCH)
+
+    cfg.TEST.EVAL_PERIOD = max(iter_per_epoch, 20)
+    cfg.EARLY_STOPPING_ROUNDS = 3 + int(len_ds * 0.0025)
+    cfg.SOLVER.MAX_ITER = iter_per_epoch * epochs
 
     if do_grid_search:
         grid_search(cfg)
