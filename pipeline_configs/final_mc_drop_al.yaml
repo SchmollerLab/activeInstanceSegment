@@ -7,7 +7,7 @@ AL:
   NUM_MC_SAMPLES: 10
   OBJECT_TO_IMG_AGG: mean
   OUTPUT_DIR: ./output/final_random_al/al_output
-  QUERY_STRATEGY: random
+  QUERY_STRATEGY: mc_dropout
   SAMPLE_EVERY: 3
 CUDNN_BENCHMARK: false
 DATALOADER:
