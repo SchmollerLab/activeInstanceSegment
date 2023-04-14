@@ -18,9 +18,9 @@ from detectron2.modeling import build_model
 from detectron2.checkpoint import DetectionCheckpointer
 
 
-def show_image(ims, normalize=True, colormap="bone"):
+def show_image(ims, normalize=True, titles=None, colormap="bone"):
     if not isinstance(ims, list):
-        fig = plt.figure(figsize=(20, 15))
+        fig = plt.figure(figsize=(20, 20))
         if normalize:
             im_cont = exposure.equalize_adapthist(ims)
         else:
@@ -30,7 +30,8 @@ def show_image(ims, normalize=True, colormap="bone"):
         plt.imshow(im_cont)
 
     else:
-        fig = plt.figure(figsize=(20, 8))
+        # fig = plt.figure(figsize=(20, 10))
+        fig = plt.figure()
         num_figures = len(ims)
         cols = 3
         rows = int(math.ceil(num_figures / cols))
@@ -40,7 +41,11 @@ def show_image(ims, normalize=True, colormap="bone"):
                 im_cont = exposure.equalize_adapthist(ims[i])
             else:
                 im_cont = ims[i]
-            fig.add_subplot(rows, cols, i + 1)
+            ax = fig.add_subplot(rows, cols, i + 1)
+            if titles:
+                ax.title.set_text(titles[i])
+                ax.title.set_size(20)
+
             plt.axis("off")
             if colormap == "plasma":
                 plt.magma()
@@ -48,11 +53,16 @@ def show_image(ims, normalize=True, colormap="bone"):
                 plt.bone()
             plt.imshow(im_cont)
 
-    fig.subplots_adjust(wspace=0.03, hspace=0.03)
+    plt.rcParams["figure.figsize"] = [
+        20,
+        20 / plt.rcParams["figure.figsize"][0] * plt.rcParams["figure.figsize"][1],
+    ]
+
+    fig.subplots_adjust(wspace=0.05, hspace=0.1)
     plt.show()
 
 
-def plot_prediction(image_json, dataset_name, cfg):
+def plot_prediction(image_json, dataset_name, cfg, model_path=None):
     logger = setup_logger(output="./log/main.log")
     logger.setLevel(0)
 
@@ -71,7 +81,11 @@ def plot_prediction(image_json, dataset_name, cfg):
     ground_truth_im = out.get_image()[:, :, ::-1]
 
     # prediction
-    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "last_model.pth")
+    if model_path:
+        cfg.MODEL.WEIGHTS = model_path
+    else:
+        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "last_model.pth")
+
     predictor = DefaultPredictor(cfg)
     outputs = predictor(raw_im)
 
@@ -117,5 +131,13 @@ def plot_prediction(image_json, dataset_name, cfg):
             ground_truth_mask,
             predicted_mask,
             (ground_truth_mask > 0) - predicted_mask,
-        ]
+        ],
+        titles=[
+            "Original image",
+            "Ground truth",
+            "Prediction",
+            "Ground truth mask",
+            "Predicted mask",
+            "Difference in segmentation masks",
+        ],
     )
