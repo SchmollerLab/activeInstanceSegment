@@ -285,8 +285,8 @@ MODEL:
     NORM: GN
     NUM_CLASSES: 3
   WEIGHTS: https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/137849600/model_final_f10217.pkl
-NAME: final_random_al
-OUTPUT_DIR: ./output/final_random_al/model_training
+NAME: final_mc_drop_al
+OUTPUT_DIR: ./output/final_mc_drop_al/model_training
 SEED: -1
 SOLVER:
   AMP:
