@@ -138,6 +138,7 @@ cfg = default_cfg
 
 cfg.OUTPUT_DIR = "./al_output/classes_acdc_large_al"
 cfg.AL.OBJECT_TO_IMG_AGG = "mean"
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.005
 
 mc_strategy = MCDropoutSampler(cfg)
 tta_strategy = TTASampler(cfg)
@@ -145,16 +146,18 @@ tta_strategy = TTASampler(cfg)
 rd.seed(1337)
 sample_jsons = rd.sample(test_data,100)
 
-for num_train_data in [15, 240, 3000, 5800]:
-    for num_mc_samples in [10, 20, 30, 40]:
+for num_train_data in [5800]: #[15, 240, 3000, 5800]:
+    for num_mc_samples in [20]: #[5, 10, 20, 30, 40]:
         cfg_test = cfg
         cfg_test.AL.NUM_MC_SAMPLES = num_mc_samples
         tta_strategy = TTASampler(cfg)
 
         for max_noise in [
-            0.05,
-            0.1,
-            0.2,
+            0,
+            #0.001,
+            #0.01
+            #0.05,
+            #0.1,
         ]:
             cfg_test = cfg
 

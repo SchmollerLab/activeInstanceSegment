@@ -142,7 +142,7 @@ rd.seed(1337)
 sub_samples = rd.sample(test_data,100)
 
 for num_train_data in [15, 240, 3000, 5800]:
-    num_mc_samples = 20
+    num_mc_samples = 10
     cfg_test = cfg
     cfg_test.AL.NUM_MC_SAMPLES = num_mc_samples
     mc_strategy = MCDropoutSampler(cfg_test)

@@ -274,8 +274,19 @@ class UncertaintySampler(QueryStrategy):
         else:
             mean_softmaxes = torch.mean(softmaxes, axis=0)
             top_2 = torch.topk(mean_softmaxes, 2)
-            c_sem = top_2[0] - top_2[1]
+            c_sem = top_2[0][0] - top_2[0][1]
 
+        return c_sem
+    
+    def get_semantic_certainty_margin_flo(self, val, device="cuda"):
+        class_preds = [v["pred_classes"] for v in val]
+        sum_class = torch.zeros(3).to(device)
+        for class_pred in class_preds:
+            sum_class[class_pred] += 1.0
+
+        mean_class = 1 / len(class_preds) * sum_class
+        top_2 = torch.topk(mean_class, 2)
+        c_sem = top_2[0][0] - top_2[0][1]
         return c_sem
 
     def get_mask_certainty(self, val, height, width, val_len, device="cuda"):
@@ -420,7 +431,7 @@ class UncertaintySampler(QueryStrategy):
 
         return c_spl_b
 
-    def get_detection_certainty(self, iterrations, val_len, device="cuda"):
+    def get_detection_certainty(self, iterrations, val_len, device="cuda", get_p_value=False):
         """Calculate certainty in detection of an object.
 
         Calculates detection certainty by comparing the number of
@@ -444,6 +455,8 @@ class UncertaintySampler(QueryStrategy):
         p = torch.clamp(torch.divide(val_len, outputs_len), min=0, max=1)
         c_det = 1 - 4 * p * (1 - p)
 
+        if get_p_value:
+            return c_det, p
         return c_det
 
     def get_uncertainty(self, predictions, iterrations, height, width, mode="max", cut=False, mask_iou=True):
@@ -473,9 +486,12 @@ class UncertaintySampler(QueryStrategy):
         for key, val in predictions.items():
             val_len = torch.tensor(len(val)).to(device)
 
-            c_det = self.get_detection_certainty(
-                iterrations=iterrations, val_len=val_len, device=device
+            c_det, p = self.get_detection_certainty(
+                iterrations=iterrations, val_len=val_len, device=device, get_p_value=True
             )
+            
+            #if p < 1/3:
+                #continue
             
             if mask_iou:
                 c_spl_m = self.get_mask_certainty_iou(

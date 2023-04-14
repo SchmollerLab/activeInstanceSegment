@@ -106,7 +106,9 @@ def get_uncertainties(im_json, model, query_strategy):
     return uncertainties, agg_uncertainty
 
 
-results_path = "experiments/results"
+results_path = "experiments/results/mc_drop_gridsearch"
+if not os.path.exists(results_path):
+    os.makedirs(results_path)
 
 dataset = ACDC_LARGE_CLS
 config_name = "classes_acdc_large_al"
@@ -130,19 +132,22 @@ cfg = default_cfg
 
 cfg.OUTPUT_DIR = "./al_output/classes_acdc_large_al"
 cfg.AL.OBJECT_TO_IMG_AGG = "mean"
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
 
 mc_strategy = MCDropoutSampler(cfg)
 
 rd.seed(1337)
 sub_samples = rd.sample(test_data,100)
 
-for num_train_data in [15, 240, 3000, 5800]:
-    for num_mc_samples in [10, 20, 30]:
+#for num_train_data in [15, 45, 240, 3000, 5800]:
+for num_train_data in [3000]:
+    #for num_mc_samples in [5, 10, 20, 30, 40]:
+    for num_mc_samples in [10]:
         cfg_test = cfg
         cfg_test.AL.NUM_MC_SAMPLES = num_mc_samples
         mc_strategy = MCDropoutSampler(cfg_test)
-
-        for dropout_prob in [0.25, 0.35, 0.5]:
+        for dropout_prob in [0.15, 0.35]:
+        #for dropout_prob in [0.1, 0.15, 0.25, 0.35, 0.45, 0.55]:
             cfg_test = cfg
 
             cfg_test.MODEL.ROI_HEADS.DROPOUT_PROBABILITY = dropout_prob
@@ -184,6 +189,8 @@ for num_train_data in [15, 240, 3000, 5800]:
                             # "uncertainties": uncertainties,
                         }
                     )
+                
 
             df = pd.DataFrame.from_records(records)
-            df.to_csv(os.path.join(results_path, f"mc_drop_gridseach_{num_mc_samples}_{dropout_prob}_{num_train_data}.csv"))
+            df.to_csv(os.path.join(results_path, f"results_{num_mc_samples}_{dropout_prob}_{num_train_data}.csv"))
+  
