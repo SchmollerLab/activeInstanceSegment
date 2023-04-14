@@ -13,6 +13,7 @@ from detectron2.evaluation import print_csv_format
 
 
 def do_test(cfg, model=None, logger=None):
+    cfg.MODEL.ROI_HEADS.NMS_THRESH_TEST = 0.0
     if model is None:
         model = build_model(cfg)
         model.eval()
