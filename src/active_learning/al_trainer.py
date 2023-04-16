@@ -4,6 +4,8 @@ import os
 import wandb
 import math
 import yaml
+import copy
+
 
 from detectron2.utils.logger import setup_logger
 from detectron2.data import MetadataCatalog, DatasetCatalog
@@ -73,13 +75,19 @@ class ActiveLearningTrainer:
         wandb.run.finish()
 
     def step(self, resume):
+        epochs = 80
         len_ds = self.al_dataset.get_len_labeled()
-        self.cfg.TEST.EVAL_PERIOD = max(int(len_ds / self.cfg.SOLVER.IMS_PER_BATCH), 20)
+        steps_per_epoch = int(len_ds / self.cfg.SOLVER.IMS_PER_BATCH)
+
+        self.cfg.TEST.EVAL_PERIOD = max(steps_per_epoch, 20)
         self.cfg.EARLY_STOPPING_ROUNDS = 3 + int(len_ds * 0.0025)
 
         model_name = f"{self.query_strategy.strategy}/last_model{self.al_dataset.get_len_labeled()}.pth"
         result = do_train(
-            self.cfg, self.logger, resume=resume, custom_max_iter=len_ds * 20
+            self.cfg,
+            self.logger,
+            resume=resume,
+            custom_max_iter=steps_per_epoch * epochs,
         )
         model_path = os.path.join(self.cfg.OUTPUT_DIR, "last_model.pth")
         os.system(f"cp {model_path} {os.path.join(self.cfg.AL.OUTPUT_DIR, model_name)}")
@@ -94,7 +102,10 @@ class ActiveLearningTrainer:
             }
         )
         print("test active learning", (result["segm"]["AP"] + result["bbox"]["AP"]) / 2)
-        sample_ids = self.query_strategy.sample(self.cfg, self.al_dataset.unlabeled_ids)
+
+        temp_cfg = copy.copy(self.cfg)
+        temp_cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
+        sample_ids = self.query_strategy.sample(temp_cfg, self.al_dataset.unlabeled_ids)
         self.al_dataset.update_labeled_data(sample_ids)
 
     def run(self):
