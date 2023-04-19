@@ -97,11 +97,14 @@ class UncertaintySampler(QueryStrategy):
         max_entropy = torch.distributions.Categorical(probs).entropy()
         return max_entropy
 
-    def presample_id_pool(self, cfg, ids, sample_every, random=False):
+    def presample_id_pool(self, cfg, ids, sample_every, random=True):
         """Reduce id_pool by sampleing every sample_every-th image of a video with a random offset."""
 
         if random:
-            return rd.sample(ids, int(len(ids) / sample_every))
+            if len(ids) > int(len(ids) / sample_every):
+                return rd.sample(ids, int(len(ids) / sample_every))
+            else:
+                return ids
 
         if cfg.AL.SAMPLE_EVERY <= 1:
             id_pool = ids
@@ -446,7 +449,16 @@ class UncertaintySampler(QueryStrategy):
 
         return c_det
 
-    def get_uncertainty(self, predictions, iterrations, height, width, mode="max", cut=False, mask_iou=True):
+    def get_uncertainty(
+        self,
+        predictions,
+        iterrations,
+        height,
+        width,
+        mode="max",
+        cut=False,
+        mask_iou=True,
+    ):
         """Calculate certainty in detection of an object.
 
         Calculates detection certainty by comparing the number of
@@ -476,7 +488,7 @@ class UncertaintySampler(QueryStrategy):
             c_det = self.get_detection_certainty(
                 iterrations=iterrations, val_len=val_len, device=device
             )
-            
+
             if mask_iou:
                 c_spl_m = self.get_mask_certainty_iou(
                     val=val, height=height, width=width, val_len=val_len, device=device
@@ -493,7 +505,7 @@ class UncertaintySampler(QueryStrategy):
 
             if self.classification:
                 c_sem = self.get_semantic_certainty_max(val=val, device=device)
-                if c_sem > 0.7  and cut:
+                if c_sem > 0.7 and cut:
                     c_sem = torch.tensor(1.0).to(device)
 
                 c_h = torch.multiply(c_sem, c_h)

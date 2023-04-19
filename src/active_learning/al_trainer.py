@@ -101,6 +101,16 @@ class ActiveLearningTrainer:
                 }
             }
         )
+        with open(
+            os.path.join(
+                self.cfg.AL.OUTPUT_DIR,
+                self.query_strategy.strategy,
+                f"{self.query_strategy.strategy}_traindata{str(self.al_dataset.get_len_labeled())}.txt",
+            ),
+            "w",
+        ) as file:
+            file.write("\n".join(self.al_dataset.labeled_ids))
+
         print("test active learning", (result["segm"]["AP"] + result["bbox"]["AP"]) / 2)
 
         temp_cfg = copy.copy(self.cfg)
