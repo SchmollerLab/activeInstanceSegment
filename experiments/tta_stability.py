@@ -143,16 +143,16 @@ mc_strategy = MCDropoutSampler(cfg)
 tta_strategy = TTASampler(cfg)
 
 rd.seed(1337)
-sample_jsons = rd.sample(test_data,100)
+sample_jsons = rd.sample(test_data,10)
 
-for num_train_data in [240, 3000, 5800]: # [15, 240, 3000, 5800]:
-    for num_mc_samples in [10]:
+for num_train_data in [15, 3000, 5800]: # [15, 240, 3000, 5800]:
+    for num_mc_samples in [30]:
         cfg_test = cfg
         cfg_test.AL.NUM_MC_SAMPLES = num_mc_samples
         tta_strategy = TTASampler(cfg)
 
         for max_noise in [
-            0.01
+            0.001
         ]:
             cfg_test = cfg
 
@@ -176,7 +176,7 @@ for num_train_data in [240, 3000, 5800]: # [15, 240, 3000, 5800]:
             records = []
             for im_json in tqdm(test_data):
                 single_im_unc = []
-                for run_id in range(10):
+                for run_id in range(5):
                     uncertainties, agg_uncertainty = get_uncertainties(
                         im_json, mc_model, tta_strategy
                     )
