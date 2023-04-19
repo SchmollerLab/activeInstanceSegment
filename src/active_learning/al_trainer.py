@@ -101,6 +101,16 @@ class ActiveLearningTrainer:
                 }
             }
         )
+        with open(
+            os.path.join(
+                self.cfg.AL.OUTPUT_DIR,
+                self.query_strategy.strategy,
+                f"{self.query_strategy.strategy}_traindata{str(self.al_dataset.get_len_labeled())}.txt",
+            ),
+            "w",
+        ) as file:
+            file.write("\n".join(self.al_dataset.labeled_ids))
+
         print("test active learning", (result["segm"]["AP"] + result["bbox"]["AP"]) / 2)
 
         temp_cfg = copy.copy(self.cfg)
@@ -108,10 +118,13 @@ class ActiveLearningTrainer:
         sample_ids = self.query_strategy.sample(temp_cfg, self.al_dataset.unlabeled_ids)
         self.al_dataset.update_labeled_data(sample_ids)
 
+        return len(sample_ids) > 0
+
     def run(self):
         try:
             for i in range(self.cfg.AL.MAX_LOOPS):
-                self.step(resume=(False))
+                if not self.step(resume=(False)):
+                    break
         except Exception as e:
             wandb.run.finish()
             raise e

@@ -8,7 +8,7 @@ sudo apt-get update -y
 
 echo install python and pip
 sudo apt install python3-pip -y
-sudo apt-get install python-is-python3 -y
+sudo apt install python-is-python3 -y
 sudo apt install python3-venv
 
 sudo apt install p7zip-full -y
@@ -23,6 +23,11 @@ sudo dpkg -i cuda-repo-ubuntu2204-11-7-local_11.7.0-515.43.04-1_amd64.deb
 sudo cp /var/cuda-repo-ubuntu2204-11-7-local/cuda-*-keyring.gpg /usr/share/keyrings/
 sudo apt-get update -y
 sudo apt-get -y install cuda
+
+
+sudo chown ubuntu: /mnt
+cd /mnt && git clone https://github.com/florian-bridges/activeCell-ACDC.git
+cd activeCell-ACDC/
 
 echo "create virtual enviroment"
 cd /mnt/activeCell-ACDC
@@ -56,8 +61,8 @@ pip3 install -r ./requirements.txt
 
 
 
-project_root="$(pwd)"/activeCell-ACDC
-data_path="$(pwd)"/activeCell-ACDC/data
+#project_root="$(pwd)"/activeCell-ACDC
+#data_path="$(pwd)"/activeCell-ACDC/data
 mkdir ./data
 mkdir ./data/raw_data
 mkdir ./output
