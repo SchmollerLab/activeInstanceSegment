@@ -85,3 +85,4 @@ urllib3
 wandb
 Werkzeug
 yacs
+umap-learn

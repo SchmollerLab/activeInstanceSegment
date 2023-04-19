@@ -118,10 +118,13 @@ class ActiveLearningTrainer:
         sample_ids = self.query_strategy.sample(temp_cfg, self.al_dataset.unlabeled_ids)
         self.al_dataset.update_labeled_data(sample_ids)
 
+        return len(sample_ids) > 0
+
     def run(self):
         try:
             for i in range(self.cfg.AL.MAX_LOOPS):
-                self.step(resume=(False))
+                if not self.step(resume=(False)):
+                    break
         except Exception as e:
             wandb.run.finish()
             raise e

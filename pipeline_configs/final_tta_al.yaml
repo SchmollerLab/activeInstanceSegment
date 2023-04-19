@@ -7,7 +7,7 @@ AL:
   NUM_MC_SAMPLES: 30
   OBJECT_TO_IMG_AGG: mean
   OUTPUT_DIR: ./output/final_tta_al/al_output
-  QUERY_STRATEGY: mc_dropout
+  QUERY_STRATEGY: tta
   SAMPLE_EVERY: 10
   TTA_MAX_NOISE: 0.001
 CUDNN_BENCHMARK: false
