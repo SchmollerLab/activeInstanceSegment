@@ -137,7 +137,7 @@ cfg.OUTPUT_DIR = "./al_output/classes_acdc_large_al"
 cfg.AL.OBJECT_TO_IMG_AGG = "mean"
 
 
-for num_train_data in [5800]: #[15, 240, 3000, 5800]
+for num_train_data in [45]: #[15, 240, 3000, 5800]
     
     model = load_model(
         cfg,
