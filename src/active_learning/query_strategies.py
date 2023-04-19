@@ -61,7 +61,10 @@ class RandomSampler(QueryStrategy):
         """
         num_samples = self.cfg.AL.INCREMENT_SIZE
         rd.seed(cfg.SEED)
-        samples = rd.sample(ids, num_samples)
+        if len(ids) > num_samples:
+            samples = rd.sample(ids, num_samples)
+        else:
+            samples = ids
 
         with open(
             os.path.join(
@@ -280,7 +283,7 @@ class UncertaintySampler(QueryStrategy):
             c_sem = top_2[0][0] - top_2[0][1]
 
         return c_sem
-    
+
     def get_semantic_certainty_margin_flo(self, val, device="cuda"):
         class_preds = [v["pred_classes"] for v in val]
         sum_class = torch.zeros(3).to(device)
@@ -434,7 +437,9 @@ class UncertaintySampler(QueryStrategy):
 
         return c_spl_b
 
-    def get_detection_certainty(self, iterrations, val_len, device="cuda", get_p_value=False):
+    def get_detection_certainty(
+        self, iterrations, val_len, device="cuda", get_p_value=False
+    ):
         """Calculate certainty in detection of an object.
 
         Calculates detection certainty by comparing the number of
@@ -499,9 +504,12 @@ class UncertaintySampler(QueryStrategy):
             val_len = torch.tensor(len(val)).to(device)
 
             c_det, p = self.get_detection_certainty(
-                iterrations=iterrations, val_len=val_len, device=device, get_p_value=True
+                iterrations=iterrations,
+                val_len=val_len,
+                device=device,
+                get_p_value=True,
             )
-            
+
             if mask_iou:
                 c_spl_m = self.get_mask_certainty_iou(
                     val=val, height=height, width=width, val_len=val_len, device=device
