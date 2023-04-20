@@ -160,3 +160,4 @@ ignore*
 
 .vscode/
 /experiments/results
+/pipeline_configs/old_configs
