@@ -4,12 +4,11 @@ AL:
   INCREMENT_SIZE: 600
   INIT_SIZE: 600
   MAX_LOOPS: 15
-  NUM_MC_SAMPLES: 30
+  NUM_MC_SAMPLES: 10
   OBJECT_TO_IMG_AGG: mean
-  OUTPUT_DIR: ./output/final_tta_al/al_output
-  QUERY_STRATEGY: tta
+  OUTPUT_DIR: ./output/final_mc_drop_al/al_output
+  QUERY_STRATEGY: hybrid
   SAMPLE_EVERY: 3
-  TTA_MAX_NOISE: 0.001
 CUDNN_BENCHMARK: false
 DATALOADER:
   ASPECT_RATIO_GROUPING: true
@@ -286,8 +285,8 @@ MODEL:
     NORM: GN
     NUM_CLASSES: 3
   WEIGHTS: https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/137849600/model_final_f10217.pkl
-NAME: final_tta_al
-OUTPUT_DIR: ./output/final_tta_al/model_training
+NAME: final_mc_drop_al
+OUTPUT_DIR: ./output/final_mc_drop_al/model_training
 SEED: -1
 SOLVER:
   AMP:

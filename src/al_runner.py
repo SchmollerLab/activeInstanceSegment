@@ -20,7 +20,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config_filename = args.config_filename
 
-    running_on_server = os.getenv("IS_SERVER") == "true"
+    running_on_server = True  # os.getenv("IS_SERVER") == "true"
     print("running on server:", running_on_server)
 
     config_name = config_filename.split("/")[-1].replace(".yaml", "")

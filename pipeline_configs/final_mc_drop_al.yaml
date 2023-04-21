@@ -6,7 +6,7 @@ AL:
   MAX_LOOPS: 15
   NUM_MC_SAMPLES: 10
   OBJECT_TO_IMG_AGG: mean
-  OUTPUT_DIR: ./output/final_random_al/al_output
+  OUTPUT_DIR: ./output/final_mc_drop_al/al_output
   QUERY_STRATEGY: mc_dropout
   SAMPLE_EVERY: 10
 CUDNN_BENCHMARK: false
@@ -292,7 +292,7 @@ SOLVER:
   AMP:
     ENABLED: false
   BASE_LR: 0.005
-  BASE_LR_END: 0.0001
+  BASE_LR_END: 0.001
   BIAS_LR_FACTOR: 1.0
   CHECKPOINT_PERIOD: 5000
   CLIP_GRADIENTS:
