@@ -8,7 +8,7 @@ AL:
   OBJECT_TO_IMG_AGG: mean
   OUTPUT_DIR: ./output/final_mc_drop_al/al_output
   QUERY_STRATEGY: mc_dropout
-  SAMPLE_EVERY: 10
+  SAMPLE_EVERY: 500
 CUDNN_BENCHMARK: false
 DATALOADER:
   ASPECT_RATIO_GROUPING: true

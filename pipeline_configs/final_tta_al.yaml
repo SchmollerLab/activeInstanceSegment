@@ -8,7 +8,7 @@ AL:
   OBJECT_TO_IMG_AGG: mean
   OUTPUT_DIR: ./output/final_tta_al/al_output
   QUERY_STRATEGY: tta
-  SAMPLE_EVERY: 3
+  SAMPLE_EVERY: 2000
   TTA_MAX_NOISE: 0.001
 CUDNN_BENCHMARK: false
 DATALOADER:

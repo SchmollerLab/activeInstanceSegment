@@ -104,8 +104,8 @@ class UncertaintySampler(QueryStrategy):
         """Reduce id_pool by sampleing every sample_every-th image of a video with a random offset."""
 
         if random:
-            if len(ids) > int(len(ids) / sample_every):
-                return rd.sample(ids, int(len(ids) / sample_every))
+            if len(ids) > int(sample_every):
+                return rd.sample(ids, int(sample_every))
             else:
                 return ids
 

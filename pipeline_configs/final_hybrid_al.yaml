@@ -8,7 +8,7 @@ AL:
   OBJECT_TO_IMG_AGG: mean
   OUTPUT_DIR: ./output/final_mc_drop_al/al_output
   QUERY_STRATEGY: hybrid
-  SAMPLE_EVERY: 3
+  SAMPLE_EVERY: 2000
 CUDNN_BENCHMARK: false
 DATALOADER:
   ASPECT_RATIO_GROUPING: true
