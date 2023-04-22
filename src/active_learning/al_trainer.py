@@ -75,7 +75,7 @@ class ActiveLearningTrainer:
         wandb.run.finish()
 
     def step(self, resume):
-        epochs = 300
+        epochs = 100
         len_ds = self.al_dataset.get_len_labeled()
         steps_per_epoch = int(len_ds / self.cfg.SOLVER.IMS_PER_BATCH)
 
