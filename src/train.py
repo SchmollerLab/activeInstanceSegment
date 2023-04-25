@@ -115,7 +115,7 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
                 cfg.TEST.EVAL_PERIOD > 0
                 and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
                 and iteration != max_iter - 1
-                and iteration >= 6 * max_iter / 8
+                and iteration >= 5 * max_iter / 8
             ):
                 res = do_test(cfg, model=model, logger=logger)
 

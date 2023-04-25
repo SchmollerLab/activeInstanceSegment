@@ -75,12 +75,12 @@ class ActiveLearningTrainer:
         wandb.run.finish()
 
     def step(self, resume):
-        epochs = 100
+        epochs = 400
         len_ds = self.al_dataset.get_len_labeled()
         steps_per_epoch = int(len_ds / self.cfg.SOLVER.IMS_PER_BATCH)
 
         self.cfg.TEST.EVAL_PERIOD = max(
-            4 * self.cfg.SOLVER.IMS_PER_BATCH * steps_per_epoch, 20
+            6 * self.cfg.SOLVER.IMS_PER_BATCH * steps_per_epoch, 20
         )
         self.cfg.EARLY_STOPPING_ROUNDS = 3 + int(len_ds * 0.0025)
 
