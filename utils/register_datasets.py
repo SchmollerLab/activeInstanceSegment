@@ -57,12 +57,13 @@ def register_datasets():
             if int(image_json["image_id"].split("_")[-1]) % 3 == 0
         ]
 
-        register_by_ids(
-            get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1]) + "_slim",
-            ids,
-            BASE_DATA_PATH + dataset + "/" + "test" + "/" + REL_PATH_JSON,
-            get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1]),
-        )
+        if dataset.find("acdc") != -1:
+            register_by_ids(
+                get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1]) + "_slim",
+                ids,
+                BASE_DATA_PATH + dataset + "/" + "test" + "/" + REL_PATH_JSON,
+                get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1]),
+            )
 
 
 def register_by_ids(dataset_name, image_ids, output_dir, dataset_full):

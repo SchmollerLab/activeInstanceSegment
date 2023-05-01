@@ -17,6 +17,7 @@ PATH_PIPELINE_CONFIGS = "./pipeline_configs"
 ACDC_SMALL = "acdc_small"
 ACDC_LARGE = "acdc_large"
 ACDC_LARGE_CLS = "acdc_large_cls"
+CHLAMY_DATASET = "chlamy_dataset"
 
 # CELLPOSE = "cellpose"
 # ACDC_LAST_IMAGES = "acdc_last_images"
@@ -26,6 +27,7 @@ DATASETS_DSPLITS = {
     # ACDC_SMALL: ["train", "test"],
     # ACDC_LARGE: ["train", "test"],
     ACDC_LARGE_CLS: ["train", "test"],
+    CHLAMY_DATASET: ["train", "test"],
 }
 
 ### NAMES REGISTERED DATASETS
