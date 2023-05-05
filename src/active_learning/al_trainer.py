@@ -75,7 +75,7 @@ class ActiveLearningTrainer:
         wandb.run.finish()
 
     def step(self, resume):
-        epochs = 400
+        epochs = 200
         len_ds = self.al_dataset.get_len_labeled()
         steps_per_epoch = int(len_ds / self.cfg.SOLVER.IMS_PER_BATCH)
 
@@ -115,9 +115,7 @@ class ActiveLearningTrainer:
 
         print("test active learning", (result["segm"]["AP"] + result["bbox"]["AP"]) / 2)
 
-        temp_cfg = copy.copy(self.cfg)
-        temp_cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
-        sample_ids = self.query_strategy.sample(temp_cfg, self.al_dataset.unlabeled_ids)
+        sample_ids = self.query_strategy.sample(self.cfg, self.al_dataset.unlabeled_ids)
         self.al_dataset.update_labeled_data(sample_ids)
 
         return len(sample_ids) > 0
