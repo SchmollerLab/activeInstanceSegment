@@ -35,35 +35,38 @@ def register_datasets():
     for dataset in DATASETS_DSPLITS.keys():
         print("registering {} dataset".format(dataset))
 
-        dsplits = DATASETS_DSPLITS[dataset]
+        try:
+            dsplits = DATASETS_DSPLITS[dataset]
 
-        for dsplit in dsplits:
-            if not get_dataset_name(dataset, dsplit) in MetadataCatalog:
-                register_coco_instances(
-                    get_dataset_name(dataset, dsplit),
-                    {},
-                    BASE_DATA_PATH + dataset + "/" + dsplit + "/" + REL_PATH_JSON,
-                    BASE_DATA_PATH + dataset + "/" + dsplit + "/" + REL_PATH_IMAGES,
-                )
+            for dsplit in dsplits:
+                if not get_dataset_name(dataset, dsplit) in MetadataCatalog:
+                    register_coco_instances(
+                        get_dataset_name(dataset, dsplit),
+                        {},
+                        BASE_DATA_PATH + dataset + "/" + dsplit + "/" + REL_PATH_JSON,
+                        BASE_DATA_PATH + dataset + "/" + dsplit + "/" + REL_PATH_IMAGES,
+                    )
 
-        # register slim test data set
-        test_data = DatasetCatalog.get(
-            get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1])
-        )
-
-        ids = [
-            image_json["image_id"]
-            for image_json in test_data
-            if int(image_json["image_id"].split("_")[-1]) % 3 == 0
-        ]
-
-        if dataset.find("acdc") != -1:
-            register_by_ids(
-                get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1]) + "_slim",
-                ids,
-                BASE_DATA_PATH + dataset + "/" + "test" + "/" + REL_PATH_JSON,
-                get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1]),
+            # register slim test data set
+            test_data = DatasetCatalog.get(
+                get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1])
             )
+
+            ids = [
+                image_json["image_id"]
+                for image_json in test_data
+                if int(image_json["image_id"].split("_")[-1]) % 3 == 0
+            ]
+
+            if dataset.find("acdc") != -1:
+                register_by_ids(
+                    get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1]) + "_slim",
+                    ids,
+                    BASE_DATA_PATH + dataset + "/" + "test" + "/" + REL_PATH_JSON,
+                    get_dataset_name(dataset, DATASETS_DSPLITS[dataset][1]),
+                )
+        except:
+            print(f"Error loading {dataset} dataset")
 
 
 def register_by_ids(dataset_name, image_ids, output_dir, dataset_full):
