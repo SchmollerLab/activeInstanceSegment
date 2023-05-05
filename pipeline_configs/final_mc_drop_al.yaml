@@ -3,7 +3,7 @@ AL:
     TRAIN_UNLABELED: acdc_large_cls_train
   INCREMENT_SIZE: 150
   INIT_SIZE: 75
-  MAX_LOOPS: 15
+  MAX_LOOPS: 20
   NUM_MC_SAMPLES: 10
   OBJECT_TO_IMG_AGG: mean
   OUTPUT_DIR: ./output/final_mc_drop_al/al_output
