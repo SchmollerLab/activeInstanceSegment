@@ -75,7 +75,8 @@ class ActiveLearningTrainer:
         wandb.run.finish()
 
     def step(self, resume):
-        epochs = 200
+        epochs = self.cfg.AL.MAX_TRAINING_EPOCHS
+
         len_ds = self.al_dataset.get_len_labeled()
         steps_per_epoch = int(len_ds / self.cfg.SOLVER.IMS_PER_BATCH)
 
@@ -123,7 +124,7 @@ class ActiveLearningTrainer:
     def run(self):
         try:
             for i in range(self.cfg.AL.MAX_LOOPS):
-                if not self.step(resume=(False)):
+                if not self.step(resume=not self.cfg.AL.RETRAIN):
                     break
         except Exception as e:
             wandb.run.finish()

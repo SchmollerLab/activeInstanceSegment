@@ -27,8 +27,10 @@ def build_config(config_name):
     cfg.AL.OUTPUT_DIR = "./al_output/" + cfg.NAME
     cfg.AL.SAMPLE_EVERY = 10
     cfg.AL.NUM_MC_SAMPLES = 40
-    cfg.AL.OBJECT_TO_IMG_AGG = "quant20"
+    cfg.AL.OBJECT_TO_IMG_AGG = "mean"
     cfg.AL.QUERY_STRATEGY = "random"
+    cfg.AL.MAX_TRAINING_EPOCHS = 300
+    cfg.AL.RETRAIN = True
 
     cfg.AL.TTA_MAX_NOISE = 0.1
 
@@ -51,7 +53,7 @@ def build_config(config_name):
     cfg.OUTPUT_DIR = "./output/" + cfg.NAME
     cfg.TEST.EVAL_PERIOD = 500
 
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05
     cfg.MODEL.ROI_HEADS.SOFTMAXES = False
     cfg.MODEL.ROI_MASK_HEAD.DROPOUT_PROBABILITY = 0.5
     cfg.MODEL.ROI_BOX_HEAD.DROPOUT_PROBABILITY = 0.5
@@ -72,6 +74,8 @@ def get_config(config_name, path_configs=PATH_PIPELINE_CONFIGS, complete_path=No
     cfg.AL.OUTPUT_DIR = ""
     cfg.AL.SAMPLE_EVERY = 0
     cfg.AL.NUM_MC_SAMPLES = 0
+    cfg.AL.MAX_TRAINING_EPOCHS = 300
+    cfg.AL.RETRAIN = True
 
     cfg.AL.OBJECT_TO_IMG_AGG = ""
     cfg.AL.QUERY_STRATEGY = ""

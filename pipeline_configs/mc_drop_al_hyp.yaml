@@ -2,11 +2,11 @@ AL:
   DATASETS:
     TRAIN_UNLABELED: acdc_large_cls_train
   INCREMENT_SIZE: 150
-  INIT_SIZE: 75
-  MAX_LOOPS: 20
+  INIT_SIZE: 675
+  MAX_LOOPS: 2
   NUM_MC_SAMPLES: 20
   OBJECT_TO_IMG_AGG: mean
-  OUTPUT_DIR: ./output/final_mc_drop_al/al_output
+  OUTPUT_DIR: ./output/mc_drop_al_hyp/al_output
   QUERY_STRATEGY: mc_dropout
   SAMPLE_EVERY: 750
   MAX_TRAINING_EPOCHS: 200
@@ -287,8 +287,8 @@ MODEL:
     NORM: GN
     NUM_CLASSES: 3
   WEIGHTS: https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/137849600/model_final_f10217.pkl
-NAME: final_mc_drop_al
-OUTPUT_DIR: ./output/final_mc_drop_al/model_training
+NAME: mc_drop_al_hyp
+OUTPUT_DIR: ./output/mc_drop_al_hyp/model_training
 SEED: -1
 SOLVER:
   AMP:
