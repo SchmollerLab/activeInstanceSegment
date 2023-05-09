@@ -5,15 +5,16 @@ from src.globals import *
 from utils.config_builder import get_config
 from src.active_learning.al_trainer import ActiveLearningTrainer
 
-def run_max_epochs():
 
+def run_max_epochs():
     running_on_server = os.getenv("IS_SERVER") == "true"
     print("running on server:", running_on_server)
 
     config_name = "mc_drop_al_hyp"
-    cfg = get_config(config_name)
 
     for max_epochs in [100, 200, 300, 400]:
+        cfg = get_config(config_name)
+        cfg.SEED = 1337
         cfg.AL.MAX_TRAINING_EPOCHS = max_epochs
         cur_date = (
             "max_epochs_"
@@ -32,7 +33,6 @@ def run_max_epochs():
 
 
 def run_weight_init():
-
     running_on_server = os.getenv("IS_SERVER") == "true"
     print("running on server:", running_on_server)
 
@@ -59,14 +59,14 @@ def run_weight_init():
 
 
 def run_query_size():
-
-
     running_on_server = os.getenv("IS_SERVER") == "true"
     print("running on server:", running_on_server)
 
     config_name = "mc_drop_al_hyp"
     cfg = get_config(config_name)
     for num_samples in [50, 100, 150]:
+        cfg.SEED = 1337
+        cfg.AL.MAX_TRAINING_EPOCHS = 100
         cfg.AL.INCREMENT_SIZE = num_samples
         cfg.AL.MAX_LOOPS = 300 / num_samples + 1
         cur_date = (
@@ -84,5 +84,6 @@ def run_query_size():
             al_trainer.run()
             al_trainer = None
 
+
 if __name__ == "__main__":
-    run_query_size()
+    run_max_epochs()
