@@ -64,11 +64,13 @@ def run_query_size():
 
     config_name = "mc_drop_al_hyp"
     cfg = get_config(config_name)
+    cfg.AL.MAX_TRAINING_EPOCHS = 200
+
     for num_samples in [50, 100, 150]:
         cfg.SEED = 1337
         cfg.AL.MAX_TRAINING_EPOCHS = 100
         cfg.AL.INCREMENT_SIZE = num_samples
-        cfg.AL.MAX_LOOPS = 300 / num_samples + 1
+        cfg.AL.MAX_LOOPS = int(300 / num_samples + 1)
         cur_date = (
             "increment_size_"
             + str(num_samples)
@@ -86,4 +88,4 @@ def run_query_size():
 
 
 if __name__ == "__main__":
-    run_max_epochs()
+    run_query_size()
