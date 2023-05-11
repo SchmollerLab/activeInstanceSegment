@@ -9,7 +9,7 @@ AL:
   OUTPUT_DIR: ./output/final_hybrid_al/al_output
   QUERY_STRATEGY: hybrid
   SAMPLE_EVERY: 750
-  MAX_TRAINING_EPOCHS: 200
+  MAX_TRAINING_EPOCHS: 300
   RETRAIN: true
 CUDNN_BENCHMARK: false
 DATALOADER:
