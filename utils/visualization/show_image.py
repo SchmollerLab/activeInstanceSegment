@@ -6,6 +6,8 @@ import cv2
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 
+from matplotlib import cm
+
 from PIL import Image
 
 from skimage import exposure, io
@@ -49,9 +51,14 @@ def show_image(ims, normalize=True, titles=None, colormap="bone"):
             plt.axis("off")
             if colormap == "plasma":
                 plt.magma()
+
             else:
                 plt.bone()
-            plt.imshow(im_cont)
+
+            cmap = cm.get_cmap("coolwarm").copy()
+
+            cmap.set_bad(color="black")
+            plt.imshow(im_cont, interpolation="none", cmap=cmap, vmin=0.0000001)
 
     plt.rcParams["figure.figsize"] = [
         20,

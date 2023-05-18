@@ -55,97 +55,67 @@ class AccuracyEvaluator(COCOEvaluator):
 
         self.object_pred_list = []
 
-    def accuracy_eval_recall(self, image, outputs, height, width):
-        im_id = image["image_id"]
-
-        instances = list(filter(lambda x: x["image_id"] == im_id, self.ds_json))[0]
-
-        instances = instances["annotations"]
-
-        for j in range(len(instances)):
-            instance = instances[j]
-
-            obj_found = False
-            for i in range(len(outputs["instances"])):
-                output = outputs["instances"][i]
-                mask = polygons_to_bitmask(
-                    instance["segmentation"], height=height, width=width
-                )
-                pred = output.pred_masks.to("cpu").detach().numpy()
-                iou = np.sum(mask & pred) / np.sum(mask | pred)
-
-                if iou > 0.2:
-                    self.object_pred_list.append(
-                        {
-                            "image_id": im_id,
-                            "object_id": j,
-                            "pred_mask": pred,
-                            "iou": iou,
-                            "pred_class": int(
-                                output.pred_classes.to("cpu").detach().numpy()
-                            ),
-                            "true_class": instance["category_id"],
-                            "detected": True,
-                        }
-                    )
-                    obj_found = True
-                    break
-            if not obj_found:
-                self.object_pred_list.append(
-                    {
-                        "image_id": im_id,
-                        "object_id": j,
-                        "detected": False,
-                        "true_class": instance["category_id"],
-                    }
-                )
-
     def accuracy_eval(self, image, outputs, height, width):
         im_id = image["image_id"]
-
         instances = list(filter(lambda x: x["image_id"] == im_id, self.ds_json))[0]
-
         instances = instances["annotations"]
 
-        for i in range(len(outputs["instances"])):
-            output = outputs["instances"][i]
+        outputs = [outputs["instances"][i] for i in range(len(outputs["instances"]))]
 
+        for j in range(len(instances)):
             obj_found = False
-
-            for j in range(len(instances)):
-                instance = instances[j]
-
-                mask = polygons_to_bitmask(
-                    instance["segmentation"], height=height, width=width
+            for i in range(len(outputs)):
+                gt_mask = polygons_to_bitmask(
+                    instances[j]["segmentation"], height=height, width=width
                 )
-                pred = output.pred_masks.to("cpu").detach().numpy()
-                iou = np.sum(mask & pred) / np.sum(mask | pred)
+
+                pred_mask = outputs[i].pred_masks.to("cpu").detach().numpy()
+
+                iou = np.sum(gt_mask & pred_mask) / np.sum(gt_mask | pred_mask)
 
                 if iou > 0.2:
                     self.object_pred_list.append(
                         {
                             "image_id": im_id,
                             "object_id": j,
-                            "pred_mask": pred,
+                            "pred_mask": pred_mask,
                             "iou": iou,
                             "pred_class": int(
-                                output.pred_classes.to("cpu").detach().numpy()
+                                outputs[i].pred_classes.to("cpu").detach().numpy()
                             ),
-                            "true_class": instance["category_id"],
+                            "true_class": instances[j]["category_id"],
                             "detected": True,
+                            "detection_type": "tp",
                         }
                     )
                     obj_found = True
+
+                    outputs.pop(i)
                     break
+
             if not obj_found:
                 self.object_pred_list.append(
                     {
                         "image_id": im_id,
                         "object_id": j,
                         "detected": False,
-                        "true_class": instance["category_id"],
+                        "true_class": instances[j]["category_id"],
+                        "detection_type": "fn",
                     }
                 )
+        for i in range(len(outputs)):
+            self.object_pred_list.append(
+                {
+                    "image_id": im_id,
+                    "object_id": i,
+                    "pred_mask": outputs[i].pred_masks.to("cpu").detach().numpy(),
+                    "pred_class": int(
+                        outputs[i].pred_classes.to("cpu").detach().numpy()
+                    ),
+                    "detected": False,
+                    "detection_type": "fp",
+                }
+            )
 
     def process(self, inputs, outputs):
         """
