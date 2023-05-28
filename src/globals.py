@@ -19,7 +19,7 @@ ACDC_LARGE = "acdc_large"
 ACDC_LARGE_CLS = "acdc_large_cls"
 CHLAMY_DATASET = "chlamy_dataset"
 
-# CELLPOSE = "cellpose"
+CELLPOSE = "cellpose"
 # ACDC_LAST_IMAGES = "acdc_last_images"
 
 # LIST_DATASETS = [ACDC_LARGE, ACDC_SMALL] # [ACDC_LARGE, ACDC_SMALL, CELLPOSE, ACDC_LAST_IMAGES]
@@ -28,6 +28,7 @@ DATASETS_DSPLITS = {
     # ACDC_LARGE: ["train", "test"],
     ACDC_LARGE_CLS: ["train", "test"],
     CHLAMY_DATASET: ["train", "test"],
+    CELLPOSE: ["train", "test"],
 }
 
 ### NAMES REGISTERED DATASETS
