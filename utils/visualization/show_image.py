@@ -20,7 +20,7 @@ from detectron2.modeling import build_model
 from detectron2.checkpoint import DetectionCheckpointer
 
 
-def show_image(ims, normalize=True, titles=None, colormap="bone"):
+def show_image(ims, normalize=True, titles=None, colormap="bone", save_file_name=None):
     if not isinstance(ims, list):
         fig = plt.figure(figsize=(20, 20))
         if normalize:
@@ -66,6 +66,10 @@ def show_image(ims, normalize=True, titles=None, colormap="bone"):
     ]
 
     fig.subplots_adjust(wspace=0.05, hspace=0.1)
+
+    if save_file_name:
+        plt.savefig(save_file_name)
+
     plt.show()
 
 
