@@ -25,7 +25,7 @@ CELLPOSE = "cellpose"
 # LIST_DATASETS = [ACDC_LARGE, ACDC_SMALL] # [ACDC_LARGE, ACDC_SMALL, CELLPOSE, ACDC_LAST_IMAGES]
 DATASETS_DSPLITS = {
     # ACDC_SMALL: ["train", "test"],
-    # ACDC_LARGE: ["train", "test"],
+    ACDC_LARGE: ["train", "test"],
     ACDC_LARGE_CLS: ["train", "test"],
     CHLAMY_DATASET: ["train", "test"],
     CELLPOSE: ["train", "test"],
