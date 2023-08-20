@@ -18,6 +18,8 @@ ACDC_SMALL = "acdc_small"
 ACDC_LARGE = "acdc_large"
 ACDC_LARGE_CLS = "acdc_large_cls"
 CHLAMY_DATASET = "chlamy_dataset"
+SHMOO_YEAST = "shmoo_yeast"
+SHMOO_YEAST_FULL = "shmoo_yeast_full"
 
 CELLPOSE = "cellpose"
 # ACDC_LAST_IMAGES = "acdc_last_images"
@@ -29,6 +31,8 @@ DATASETS_DSPLITS = {
     ACDC_LARGE_CLS: ["train", "test"],
     CHLAMY_DATASET: ["train", "test"],
     CELLPOSE: ["train", "test"],
+    SHMOO_YEAST: ["train", "test"],
+    SHMOO_YEAST_FULL: ["train", "test"],
 }
 
 ### NAMES REGISTERED DATASETS
