@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 from skimage import exposure, io
-import matplotlib.pyplot as plt
+
 import matplotlib.image as mpimg
 import random as rd
 from tqdm import tqdm
@@ -17,11 +17,20 @@ from utils.datapreprocessing.pycococreatortools import *
 
 import sys
 
+# shmoo_cells
+from tiffile import imread
+from cellpose import models
+
+# to delete 
+import matplotlib.pyplot as plt
+import skimage
+
+
+
 sys.path.insert(0, sys.path[0] + "/..")
 from src.globals import *
 
-IMAGE_DIR_NAME = "images"
-ANNOTATION_DIR_NAME = "annotations"
+
 
 INFO = {
     "description": "shmoo yeast data in COCO format",
@@ -35,102 +44,133 @@ INFO = {
 LICENSES = [{"id": 1, "name": "", "url": ""}]
 
 CATEGORIES = [
-    {
-        "id": 0,
-        "name": "cell",
-        "supercategory": "cell",
-    }
+    {'id': 1, 'name': 'Budding', 'supercategory': 'cell'},
+    {'id': 2, 'name': 'Arrested', 'supercategory': 'cell'},
+    {'id': 3, 'name': 'Switching', 'supercategory': 'cell'},
+    {'id': 4, 'name': 'Peanuts', 'supercategory': 'cell'},
+    {'id': 5, 'name': 'Peanuts (short)', 'supercategory': 'cell'},
+    {'id': 6, 'name': 'Peanuts (long)', 'supercategory': 'cell'},
+    {'id': 7, 'name': 'Shmoo (single regular)', 'supercategory': 'cell'},
+    {'id': 8, 'name': 'Shmoo (single long)', 'supercategory': 'cell'},
+    {'id': 9, 'name': 'Shmoo (double regular)', 'supercategory': 'cell'},
+    {'id': 10, 'name': 'Shmoo (multiple)', 'supercategory': 'cell'},
+    {'id': 11, 'name': 'Shmoo (double, wide)', 'supercategory': 'cell'},
+    {'id': 12, 'name': 'Shmoo (double, wide and short)', 'supercategory': 'cell'}
 ]
 
-TEST = "test"
-TRAIN = "train"
+IMAGE_DIR_NAME = "images"
+ANNOTATION_DIR_NAME = "annotations"
+
+DATA_SPLIT_FRACTIONS = [
+    {"type": "train", "fraction": 0.8,},
+    {"type": "test", "fraction": 0.2,},
+]
+
+SEED = 1337
+
 
 
 class Data2cocoConverter:
-    def __init__(self, root_dir, dataset_name, data_splits=[TEST, TRAIN]) -> None:
+    
+    def __init__(self, dataset_name, data_split_fractions=DATA_SPLIT_FRACTIONS, seed=SEED) -> None:
         self.dataset_name = dataset_name
-        self.data_splits = data_splits
-        self.raw_images_path = os.path.join(root_dir, "raw_data", dataset_name)
-        self.save_images_path = os.path.join(root_dir, dataset_name)
+        self.data_split_fractions = data_split_fractions
+        self.seed = seed
 
-        self.create_dir_to_path(root_dir, dataset_name)
-        for data_split in data_splits:
-            self.create_dir_to_path(self.save_images_path, data_split)
-            self.create_dir_to_path(self.save_images_path, data_split + "/annotations")
-            self.create_dir_to_path(self.save_images_path, data_split + "/images")
+        self.data_path = os.path.join(DATA_PATH, self.dataset_name)
+        
+        self.create_dir_to_path(
+                path=DATA_PATH, dir_name=self.dataset_name
+            )
+        
+        for split_type in [ds["type"] for ds in self.data_split_fractions]:
+            self.create_dir_to_path(
+                path=os.path.join(self.data_path), dir_name=split_type
+            )
+            self.create_dir_to_path(
+                    path=os.path.join(self.data_path,split_type), dir_name="images"
+                )
+
+
+    def get_data(self):
+        #######################################################################################
+        #
+        # Format of data:
+        # list of data points
+        # a datapoint is a dict of the following
+        # {
+        #   "image_id": id of image,
+        #   "image": image as numpy array,
+        #   "mask": mask as numpy array with zero background and cell ids,
+        #   "annotations": list of dicts [{'cell_id': 78, 'cell_class_id': 7}, ...]
+        # }
+        #
+        #######################################################################################
+
+        pass
 
     def create_dir_to_path(self, path, dir_name):
         if not os.path.exists(os.path.join(path, dir_name)):
             os.mkdir(os.path.join(path, dir_name))
 
-    def convert(self):
-        print("converting {} images ...".format(self.dataset_name))
+    def split_data(self):             
 
-        # prepare images
-        self.iterate_images()
-        image_id = 1
-        segmentation_id = 1
-
-        for split_type in self.data_splits:
-            print("converting to coco for split {}:".format(split_type))
-            self.convert_data_to_coco(
-                image_id,
-                segmentation_id,
-                os.path.join(self.save_images_path, split_type),
-            )
-
-    def iterate_images(self):
-        pass
+        remaining_data = self.data
+        len_data = len(self.data)
+        # random shuffle
+        rd.seed(self.seed)
+        rd.shuffle(remaining_data)
 
 
-    def store_image(self, id, image, mask, split_type):
-        # save image as png
-        plt.imsave(
-            os.path.join(self.save_images_path, split_type, "images", id + ".png"),
-            image.astype(float),
-            cmap="gray",
-        )
+        data_split = {}  
+        for split_type in self.data_split_fractions:
+            if len(remaining_data) == 0:
+                print(f"data_split_fractions not specified correctly")
+                break
+            to_id = min(math.ceil(split_type["fraction"] * len_data), len(remaining_data))
+            data_split[split_type["type"]] = remaining_data[: to_id]
+            remaining_data = remaining_data[to_id :]
+            print(split_type["type"], len(data_split[split_type["type"]]))
+
+        return data_split
+
+    def extract_annotations(self, mask, image, image_id, segmentation_id, annotation_dict):
+
+        annotations_json = []
 
         # save masks independently
-        labels = np.unique(mask)
-        for label in labels[1:]:
-            mask_single_cell: np.uint8 = (mask == label).astype(np.uint8)
-            plt.imsave(
-                os.path.join(
-                    self.save_images_path,
-                    split_type,
-                    "annotations",
-                    id + "_cell_" + str(label) + ".png",
-                ),
-                mask_single_cell,
-                cmap="gray",
+        cell_ids = np.unique(mask)
+        for cell_id in cell_ids:
+
+            if cell_id == 0:
+                continue
+
+            class_id = int(annotation_dict[cell_id])
+            
+            category_info = {
+                "id": class_id,
+                "is_crowd": False,
+            }
+
+            binary_mask: np.uint8 = (mask == cell_id).astype(np.uint8)
+            h, w = image.shape
+            annotation_info = create_annotation_info(
+                segmentation_id,
+                image_id,
+                category_info,
+                binary_mask,
+                (w, h),
+                tolerance=0,
             )
 
+            if annotation_info is not None:
+                annotations_json.append(annotation_info)
+                segmentation_id = segmentation_id + 1
 
-    def filter_for_png(self, root, files):
-        file_types = ["*.png"]
-        file_types = r"|".join([fnmatch.translate(x) for x in file_types])
-        files = [os.path.join(root, f) for f in files]
-        files = [f for f in files if re.match(file_types, f)]
-
-        return files
-
-    def filter_for_annotations(self, root, files, image_filename):
-        file_types = ["*.png"]
-        file_types = r"|".join([fnmatch.translate(x) for x in file_types])
-        basename_no_extension = os.path.splitext(os.path.basename(image_filename))[0]
-        file_name_prefix = basename_no_extension + "_"
-        files = [os.path.join(root, f) for f in files]
-        files = [f for f in files if re.match(file_types, f)]
-        files = [
-            f
-            for f in files
-            if re.match(file_name_prefix, os.path.splitext(os.path.basename(f))[0])
-        ]
-
-        return files
-
-    def convert_data_to_coco(self, image_id, segmentation_id, path_dir):
+        return annotations_json, segmentation_id
+    
+    def data_to_coco(self, data, split_type):
+ 
         coco_output = {
             "info": INFO,
             "licenses": LICENSES,
@@ -139,91 +179,153 @@ class Data2cocoConverter:
             "annotations": [],
         }
 
-        for root, _, files in os.walk(os.path.join(path_dir, IMAGE_DIR_NAME)):
-            image_files = self.filter_for_png(root, files)
-            # go through each image
-            for image_filename in tqdm(image_files):
-                image = Image.open(image_filename)
-                image_info = create_image_info(
-                    image_id, os.path.basename(image_filename), image.size
-                )
-                coco_output["images"].append(image_info)
+        segmentation_id = 0
 
-                # filter for associated png annotations
-                for root, _, files in os.walk(
-                    os.path.join(path_dir, ANNOTATION_DIR_NAME)
-                ):
-                    annotation_files = self.filter_for_annotations(
-                        root, files, image_filename
-                    )
+        for data_point in tqdm(data):
+            
+            image_id = data_point["image_id"]
+            image = data_point["image"]
+            mask = data_point["mask"]
+            annotations = data_point["annotations"]
 
-                    # go through each associated annotation
-                    for annotation_filename in annotation_files:
-                        class_id = [
-                            x["id"]
-                            for x in CATEGORIES
-                            if x["name"] in annotation_filename
-                        ][0]
+            # save image
+            plt.imsave(
+                os.path.join(self.data_path, split_type, "images", image_id + ".png"),
+                image.astype(float),
+                cmap="gray",
+            )
 
-                        category_info = {
-                            "id": class_id,
-                            "is_crowd": "crowd" in image_filename,
-                        }
-                        binary_mask = np.asarray(
-                            Image.open(annotation_filename).convert("1")
-                        ).astype(np.uint8)
+            h, w = image.shape
 
-                        annotation_info = create_annotation_info(
-                            segmentation_id,
-                            image_id,
-                            category_info,
-                            binary_mask,
-                            image.size,
-                            tolerance=0,
-                        )
+            image_info = create_image_info(
+                image_id, os.path.basename(image_id + ".png"), (w, h)
+            )
 
-                        if annotation_info is not None:
-                            coco_output["annotations"].append(annotation_info)
+            coco_output["images"].append(image_info)
 
-                        segmentation_id = segmentation_id + 1
+            new_annotations_json, segmentation_id = self.extract_annotations(
+                mask=mask,
+                image=image,
+                image_id=image_id,
+                segmentation_id=segmentation_id,
+                annotation_dict = annotations,
+            )
+            coco_output["annotations"] += new_annotations_json
 
-                image_id = image_id + 1
+        for key in coco_output["annotations"][0].keys():
+            print(key, type(coco_output["annotations"][0][key]))
+        
+        return coco_output
+        
 
-        with open(
-            "{}/cell_acdc_coco_ds.json".format(path_dir), "w"
-        ) as output_json_file:
-            json.dump(coco_output, output_json_file)
+    def main(self):
+        self.data = self.get_data()
+        data_split = self.split_data()
+
+        for split_type in data_split.keys():
+            print(f"processing {split_type} dataset...")
+
+            coco_output = self.data_to_coco(data_split[split_type], split_type)
+
+            with open(
+                "{}/cell_acdc_coco_ds.json".format(
+                    os.path.join(self.data_path, split_type)
+                ),
+                "w",
+            ) as output_json_file:
+                json.dump(coco_output, output_json_file)
+        
+
 
 
 class ShmooYeast2cocoConverter(Data2cocoConverter):
-    def __init__(self, root_dir) -> None:
+    def __init__(self) -> None:
         dataset_name = "shmoo_yeast"
-        super().__init__(root_dir, dataset_name)
-        self.raw_images_path = os.path.join(self.raw_images_path, "data")
-
-    def iterate_images(self):
+        super().__init__(dataset_name)
         
-        num_images = len(os.listdir(self.raw_images_path ))-1
-        num_train = math.ceil(num_images * 0.8)
+        self.raw_images_path = os.path.join(DATA_PATH, "raw_data", dataset_name, )
+        self.mask_dir = os.path.join(self.raw_images_path,"masks_by_ucid")
+        self.image_dir = os.path.join(self.raw_images_path,"source_images")
 
-        ids = list(range(num_images))
-        rd.shuffle(ids)
-        ids_dict = {}
-        ids_dict[TRAIN] = ids[:num_train]
-        ids_dict[TEST] = ids[num_train:]
+        self.annotaion_df = pd.read_csv(os.path.join(self.mask_dir, "centroid_label_ucid_mapping.csv"))
+        self.cellpose_model = models.Cellpose(gpu=True, model_type='cyto')
 
-        for split_type in [TRAIN, TEST]:
-            for id in tqdm(ids_dict[split_type]):
 
-                npz = np.load(os.path.join(self.raw_images_path, str(id) + ".npz"))
+        self.minimum_cell_size = 50
+
+
+    def get_data(self):
+
+        data = []
+        data_file_names = [file_name for file_name in os.listdir(self.image_dir) if (file_name.find(".tif") != -1 and file_name.find("BF_Position") != -1)]
+
+        print(f"loading data from {self.raw_images_path}")
+        for data_file_name in tqdm(data_file_names):
+
+            image_id = data_file_name.replace(".tif", "").replace("BF_Position", "")
+
+            image, mask = self.load_annotated_image(image_id)
+            image, mask, annotations = self.transform_data(image, mask)
+
+            data.append({
+                "image_id": image_id,
+                "image": image,
+                "mask": mask,
+                "annotations": annotations,
+            })
+
+        return data
+
+
+    def transform_data(self, image, mask):
+
+        cellpose_mask, _, _, _ = self.cellpose_model.eval([image], diameter=None, channels=[0,0], flow_threshold=0.4, do_3D=False)
+        cellpose_mask = cellpose_mask[0]
+
+        new_id = 1
+        new_mask = np.zeros(mask.shape)
+
+        annotations = {}
+
+        for cell_id in np.unique(mask):
+
+            if cell_id == 0: # 0 encodes background
+                continue
+        
+            cellpose_ids = np.where(mask == cell_id, cellpose_mask, 0)     
+            unique_vals, counts = np.unique(cellpose_ids, return_counts=True)
+            unique_vals_fil = np.unique(np.where(counts > self.minimum_cell_size, unique_vals, 0))[1:]
+            
+            if len(unique_vals_fil) == 1 and len(self.annotaion_df[self.annotaion_df["ucid"] == cell_id]) > 0:
+                new_mask = np.where(cellpose_mask == unique_vals_fil[0], new_id, new_mask)
+
+                annotations[new_id] = self.annotaion_df[self.annotaion_df["ucid"] == cell_id]["tag.type"].values[0]            
+                new_id += 1
+
+        background_avg_pixel_intensity = int(np.sum(np.where((mask == 0), image, 0)) / np.sum(mask == 0))
+        new_image = np.where((cellpose_mask > 0) ^ (new_mask > 0), background_avg_pixel_intensity, image)
+
+        return new_image, new_mask, annotations
+
+    def load_tif_file(self, image_dir, file_name):
+        return imread(os.path.join(image_dir, file_name))
     
-                image = npz["image"]
-                mask = npz["mask"]
+    def load_annotated_image(self, id):
+    
+        image_file_name = f"BF_Position{id}.tif"
+        mask_file_name = f"mask_BF_Position{id}.tif.out.tif"
 
-                self.store_image(str(id), image, mask, split_type)
+
+        image =  self.load_tif_file(self.image_dir, image_file_name)            
+        mask = self.load_tif_file(self.mask_dir, mask_file_name)
+
+        return image, mask
+    
 
 
 
 if __name__ == "__main__":
-    cpc = ShmooYeast2cocoConverter(BASE_DATA_PATH)
-    cpc.convert()
+    cpc = ShmooYeast2cocoConverter()
+    cpc.main()
+
+

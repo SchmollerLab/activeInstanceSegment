@@ -86,3 +86,4 @@ wandb
 Werkzeug
 yacs
 umap-learn
+jupyter
