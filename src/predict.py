@@ -4,7 +4,6 @@ from detectron2.engine import DefaultPredictor
 
 
 def predict_image_in_acdc(cfg, im):
-
     predictor = DefaultPredictor(cfg)
     outputs = predictor(im)
     masks = np.asarray(outputs["instances"].pred_masks.to("cpu"))
