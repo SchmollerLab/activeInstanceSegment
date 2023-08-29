@@ -14,7 +14,7 @@ python -m src.al_runner
 ```
 
 ## Installation
-installation on a ubuntu 22.04 machine can be done with the following script
+installation on a ubuntu 22.04 can be done with the following script
 ```console
 $ ./shell_scripts/install.sh
 ```
