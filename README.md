@@ -43,7 +43,7 @@ $ source ac_acdc_env/bin/activate
 ```
 
 ## Configuration
-hyperparameters used for model training, testing and during active learning are specified in configuration.yaml files in the pipeline_config directory. The configuration file containes [detectron2 configurations] (https://detectron2.readthedocs.io/en/latest/modules/config.html#yaml-config-references) and custom active learning configurations.
+hyperparameters used for model training, testing and during active learning are specified in configuration.yaml files in the pipeline_config directory. The configuration file containes [detectron2 configurations](https://detectron2.readthedocs.io/en/latest/modules/config.html#yaml-config-references) and custom active learning configurations.
 ### Active Learning
 The following active learning configs can be specified
 
