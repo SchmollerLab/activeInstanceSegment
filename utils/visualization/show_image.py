@@ -152,3 +152,54 @@ def plot_prediction(image_json, dataset_name, cfg, model_path=None):
             "Difference in segmentation masks",
         ],
     )
+    
+def plot_prediction_pure(image_json, dataset_name, cfg, model_path=None):
+    logger = setup_logger(output="./log/main.log")
+    logger.setLevel(0)
+
+    logger = setup_logger(output="./log/main.log", name="null_logger")
+    logger.addHandler(logging.NullHandler())
+    logging.getLogger("detectron2").setLevel(logging.WARNING)
+    logging.getLogger("detectron2").addHandler(logging.NullHandler())
+
+    # ground truth
+    raw_im = cv2.imread(image_json["file_name"])
+
+    visualizer = Visualizer(
+        raw_im[:, :, ::-1], metadata=MetadataCatalog.get(dataset_name), scale=2
+    )
+    out = visualizer.draw_dataset_dict(image_json)
+    ground_truth_im = out.get_image()[:, :, ::-1]
+
+    # prediction
+    if model_path:
+        cfg.MODEL.WEIGHTS = model_path
+    else:
+        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "last_model.pth")
+
+    predictor = DefaultPredictor(cfg)
+    outputs = predictor(raw_im)
+
+    v = Visualizer(
+        raw_im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TEST[0]), scale=1.2
+    )
+    out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+
+    predicted_im = out.get_image()[:, :, ::-1]
+
+    visualizer = Visualizer(
+        np.zeros(raw_im[:, :, ::-1].shape),
+        metadata=MetadataCatalog.get(dataset_name),
+        scale=2,
+    )
+
+    show_image(
+        [
+            ground_truth_im,
+            predicted_im
+        ],
+        titles=[
+            "Ground truth",
+            "Prediction",
+        ],
+    )
