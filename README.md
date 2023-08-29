@@ -14,23 +14,15 @@ python -m src.al_runner
 ```
 
 ## Installation
-intsallation can be done running
+installation on a ubuntu 22.04 machine can be done with the following script
 ```console
-$ ./shell_scripts/downloadData
+$ ./shell_scripts/install.sh
 ```
 
 ## Data 
-The data can be downloaded using the following command:
-```console
-$ ./shell_scripts/downloadData
-```
-
-First of all the data needs to be converted from Cell-ACDC format to [COCO format](https://cocodataset.org/#format-data). This can be done by running
-
-```console
-python -m utils.datapreprocessing.data2coco
-```
-
+all used datasets need to follow the [COCO format](https://cocodataset.org/#format-data)
+### How to Add a New Dataset
+new datasets can be added using the Data2cocoConverter class in utils.datapreprocessing.data2coco 
 
 ## Model Architecture
 The active learning is built ontop of the [detectron2](https://github.com/facebookresearch/detectron2) implementation of Mask R-CNN. Training a model without active learning can be done by running
@@ -38,3 +30,37 @@ The active learning is built ontop of the [detectron2](https://github.com/facebo
 python -m src.pipeline_runner -f default_acdc_large_full_ds.yaml
 ```
 
+
+## Virtual Enviroment
+this project uses a venv which is initailized by running
+```console
+$ python -m venv ac_acdc_env
+```
+the venv is activated using the following command
+
+```console
+$ source ac_acdc_env/bin/activate 
+```
+
+## Configuration
+hyperparameters used for model training, testing and during active learning are specified in configuration.yaml files in the pipeline_config directory. The configuration file containes [detectron2 configurations] (https://detectron2.readthedocs.io/en/latest/modules/config.html#yaml-config-references) and custom active learning configurations.
+### Active Learning
+The following active learning configs can be specified
+
+- DATASETS.TRAIN_UNLABELED: name of training dataset used for active learning
+- INCREMENT_SIZE: number of data points which are annotated each active learning iteration
+- INIT_SIZE: size of initial training dataset
+- MAX_LOOPS: maximal number of active learning loops
+- NUM_MC_SAMPLES: number of monte carlo samples used for uncertianty estivation
+- OBJECT_TO_IMG_AGG: aggregation of object uncertainties to an uncertainty value for the entire image (`mean`, `max`,`min`,`sum`)
+- OUTPUT_DIR: path to output directory
+- QUERY_STRATEGY: used active learning strategy (`random`, `mc_drop`, `tta`, `hybrid`)
+- TTA_MAX_NOISE: max intensity of gaussian noise applied during test-time augmentation (only applied in QUERY_STRATEGY:tta)
+- SAMPLE_EVERY: number of images which form the subset used for AL sampling
+- MAX_TRAINING_EPOCHS: number of training epochs during active learning
+- RETRAIN: flag if model should be retrained from scratch every active learning iteration (only `true` implemented)
+## Model Training
+
+## Run Active Learning
+
+## Evaluation of Models
