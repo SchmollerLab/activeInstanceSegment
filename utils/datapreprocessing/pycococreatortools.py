@@ -45,7 +45,6 @@ def create_image_info(
     coco_url="",
     flickr_url="",
 ):
-
     image_info = {
         "id": image_id,
         "file_name": file_name,
@@ -69,7 +68,6 @@ def create_annotation_info(
     tolerance=2,
     bounding_box=None,
 ):
-
     if image_size is not None:
         binary_mask = resize_binary_mask(binary_mask, image_size)
 
