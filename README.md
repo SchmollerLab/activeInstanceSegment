@@ -8,9 +8,9 @@ The following active learning strategies are implemented:
 - `tta:` sample data points based on uncertainty quantified using test time augmentation.
 - `hybrid:` sample data points based on uncertainty quantified using mc dropout and clustering over the datas latent space representation.
 
-The al strategy can be specified in the cfg.yaml in /pipeline_configs. Benchmarking can be done with
+The al strategy can be specified in the cfg.yaml in ./pipeline_configs. Benchmarking can be done with
 ```console
-python -m src.al_runner
+python -m src.al_runner -c <path_to_config>
 ```
 
 ## Installation
@@ -27,7 +27,7 @@ new datasets can be added using the Data2cocoConverter class in utils.dataprepro
 ## Model Architecture
 The active learning is built ontop of the [detectron2](https://github.com/facebookresearch/detectron2) implementation of Mask R-CNN. Training a model without active learning can be done by running
 ```console
-python -m src.pipeline_runner -f default_acdc_large_full_ds.yaml
+python -m src.pipeline_runner -c <path_to_config>
 ```
 
 
@@ -41,6 +41,11 @@ the venv is activated using the following command
 ```console
 $ source ac_acdc_env/bin/activate 
 ```
+requirements can be installed by running 
+```console
+$ pip install -r requirements.txt 
+```
+
 
 ## Configuration
 hyperparameters used for model training, testing and during active learning are specified in configuration.yaml files in the pipeline_config directory. The configuration file containes [detectron2 configurations](https://detectron2.readthedocs.io/en/latest/modules/config.html#yaml-config-references) and custom active learning configurations.
@@ -59,6 +64,7 @@ The following active learning configs can be specified
 - SAMPLE_EVERY: number of images which form the subset used for AL sampling
 - MAX_TRAINING_EPOCHS: number of training epochs during active learning
 - RETRAIN: flag if model should be retrained from scratch every active learning iteration (only `true` implemented)
+
 ## Model Training
 
 ## Run Active Learning
