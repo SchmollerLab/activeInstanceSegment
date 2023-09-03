@@ -27,7 +27,7 @@ if __name__ == "__main__":
     cfg = get_config(config_name, complete_path=config_filename)
 
     cur_date = "" + str(date.today().month) + str(date.today().day)
-    for _ in range(2):
+    for _ in range(1):
         cfg.SEED += 1
         al_trainer = ActiveLearningTrainer(
             cfg, cur_date=cur_date, is_test_mode=not running_on_server

@@ -7,7 +7,7 @@ AL:
   NUM_MC_SAMPLES: 20
   OBJECT_TO_IMG_AGG: mean
   OUTPUT_DIR: ./output/shmoo_yeast/al_output
-  QUERY_STRATEGY: hybrid
+  QUERY_STRATEGY: random
   TTA_MAX_NOISE: 0.001
   SAMPLE_EVERY: 750
   MAX_TRAINING_EPOCHS: 300
