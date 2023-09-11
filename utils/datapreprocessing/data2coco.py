@@ -70,9 +70,9 @@ class Data2cocoConverter:
                 path=DATA_PATH, dir_name=self.dataset_name
             )
        	
-	self.licenses = licences
-	self.info = info
-	self.categories = categories
+        self.licenses = licenses
+        self.info = info
+        self.categories = categories
  
         for split_type in [ds["type"] for ds in self.data_split_fractions]:
             self.create_dir_to_path(
