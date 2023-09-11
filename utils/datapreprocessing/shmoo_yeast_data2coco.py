@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 from skimage import exposure, io
+from sklearn.cluster import DBSCAN
 
 import matplotlib.image as mpimg
 import random as rd
@@ -95,8 +96,9 @@ class ShmooYeast2cocoConverter(Data2cocoConverter):
         self.cellpose_model = models.Cellpose(gpu=True, model_type="cyto")
 
         self.minimum_cell_size = 50
+        self.eps = 20
 
-    def get_data(self):
+    def get_data_full_image(self):
         data = []
         data_file_names = [
             file_name
@@ -119,6 +121,64 @@ class ShmooYeast2cocoConverter(Data2cocoConverter):
                     "annotations": annotations,
                 }
             )
+
+        return data
+    
+    def get_data(self):
+        data = []
+        data_file_names = [
+            file_name
+            for file_name in os.listdir(self.image_dir)
+            if (file_name.find(".tif") != -1 and file_name.find("BF_Position") != -1)
+        ]
+
+        print(f"loading data from {self.raw_images_path}")
+        for data_file_name in tqdm(data_file_names):
+            image_id = data_file_name.replace(".tif", "").replace("BF_Position", "")
+
+            image, mask = self.load_annotated_image(image_id)
+            image, mask, annotations = self.transform_data(image, mask)
+
+            h,w = image.shape
+            y_coordinates, x_coordinates = np.where(mask > 0)
+
+
+            clustering = DBSCAN(eps=10, min_samples=2).fit(np.array([y_coordinates, x_coordinates]).T)
+
+            labels = clustering.labels_
+            clusters = np.unique(labels)
+
+            for cluster in clusters:
+
+                x_min = max(np.min(x_coordinates[labels == cluster]) - self.eps, 0)
+                x_max = min(np.max(x_coordinates[labels == cluster]) + self.eps, w)
+                y_min = max(np.min(y_coordinates[labels == cluster]) - self.eps, 0)
+                y_max = min(np.max(y_coordinates[labels == cluster]) + self.eps, h)
+                
+                new_image = image[y_min:y_max, x_min:x_max]
+                
+                
+                new_mask = mask[y_min:y_max, x_min:x_max]           
+                min_mask_id = np.min(new_mask, where=new_mask>0, initial=np.max(new_mask))
+
+                new_annotations = {}
+                for id in np.unique(new_mask):
+                    if id == 0:
+                        continue
+
+                    new_annotations[id - min_mask_id + 1] = annotations[id]
+
+
+                new_mask = new_mask - (min_mask_id - 1) * (new_mask > 0)
+
+                data.append(
+                    {
+                        "image_id": image_id + "_" + str(cluster),
+                        "image": new_image,
+                        "mask": new_mask,
+                        "annotations": new_annotations,
+                    }
+                )
 
         return data
 
