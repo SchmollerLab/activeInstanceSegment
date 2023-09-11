@@ -72,7 +72,7 @@ class ActiveLearningTrainer:
         wandb.config.update(yaml.load(self.cfg.dump(), Loader=yaml.Loader))
 
     def __del__(self):
-        wandb.run.finish()
+        wandb.finish()
 
     def step(self, resume):
         epochs = self.cfg.AL.MAX_TRAINING_EPOCHS
@@ -127,5 +127,6 @@ class ActiveLearningTrainer:
                 if not self.step(resume=not self.cfg.AL.RETRAIN):
                     break
         except Exception as e:
-            wandb.run.finish()
+            wandb.finish()
             raise e
+
