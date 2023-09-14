@@ -152,7 +152,8 @@ def plot_prediction(image_json, dataset_name, cfg, model_path=None):
             "Difference in segmentation masks",
         ],
     )
-    
+
+
 def plot_prediction_pure(image_json, dataset_name, cfg, model_path=None):
     logger = setup_logger(output="./log/main.log")
     logger.setLevel(0)
@@ -194,10 +195,7 @@ def plot_prediction_pure(image_json, dataset_name, cfg, model_path=None):
     )
 
     show_image(
-        [
-            ground_truth_im,
-            predicted_im
-        ],
+        [ground_truth_im, predicted_im],
         titles=[
             "Ground truth",
             "Prediction",

@@ -123,7 +123,7 @@ class ShmooYeast2cocoConverter(Data2cocoConverter):
             )
 
         return data
-    
+
     def get_data(self):
         data = []
         data_file_names = [
@@ -139,11 +139,12 @@ class ShmooYeast2cocoConverter(Data2cocoConverter):
             image, mask = self.load_annotated_image(image_id)
             image, mask, annotations = self.transform_data(image, mask)
 
-            h,w = image.shape
+            h, w = image.shape
             y_coordinates, x_coordinates = np.where(mask > 0)
 
-
-            clustering = DBSCAN(eps=10, min_samples=2).fit(np.array([y_coordinates, x_coordinates]).T)
+            clustering = DBSCAN(eps=10, min_samples=2).fit(
+                np.array([y_coordinates, x_coordinates]).T
+            )
 
             labels = clustering.labels_
             clusters = np.unique(labels)
@@ -154,12 +155,13 @@ class ShmooYeast2cocoConverter(Data2cocoConverter):
                 x_max = min(np.max(x_coordinates[labels == cluster]) + self.eps, w)
                 y_min = max(np.min(y_coordinates[labels == cluster]) - self.eps, 0)
                 y_max = min(np.max(y_coordinates[labels == cluster]) + self.eps, h)
-                
+
                 new_image = image[y_min:y_max, x_min:x_max]
-                
-                
-                new_mask = mask[y_min:y_max, x_min:x_max]           
-                min_mask_id = np.min(new_mask, where=new_mask>0, initial=np.max(new_mask))
+
+                new_mask = mask[y_min:y_max, x_min:x_max]
+                min_mask_id = np.min(
+                    new_mask, where=new_mask > 0, initial=np.max(new_mask)
+                )
 
                 new_annotations = {}
                 for id in np.unique(new_mask):
@@ -167,7 +169,6 @@ class ShmooYeast2cocoConverter(Data2cocoConverter):
                         continue
 
                     new_annotations[id - min_mask_id + 1] = annotations[id]
-
 
                 new_mask = new_mask - (min_mask_id - 1) * (new_mask > 0)
 

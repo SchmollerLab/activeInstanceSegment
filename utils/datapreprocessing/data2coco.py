@@ -21,15 +21,13 @@ import sys
 from tiffile import imread
 from cellpose import models
 
-# to delete 
+# to delete
 import matplotlib.pyplot as plt
 import skimage
 
 
-
 sys.path.insert(0, sys.path[0] + "/..")
 from src.globals import *
-
 
 
 INFO = {
@@ -44,44 +42,55 @@ INFO = {
 LICENSES = [{"id": 1, "name": "", "url": ""}]
 
 CATEGORIES = [
-    {'id': 1, 'name': 'cell', 'supercategory': 'cell'},
+    {"id": 1, "name": "cell", "supercategory": "cell"},
 ]
 
 IMAGE_DIR_NAME = "images"
 ANNOTATION_DIR_NAME = "annotations"
 
 DATA_SPLIT_FRACTIONS = [
-    {"type": "train", "fraction": 0.8,},
-    {"type": "test", "fraction": 0.2,},
+    {
+        "type": "train",
+        "fraction": 0.8,
+    },
+    {
+        "type": "test",
+        "fraction": 0.2,
+    },
 ]
 
 SEED = 1337
 
+
 class Data2cocoConverter:
-    
-    def __init__(self, dataset_name, data_split_fractions=DATA_SPLIT_FRACTIONS, seed=SEED, licenses=LICENSES, info=INFO, categories=CATEGORIES) -> None:
+    def __init__(
+        self,
+        dataset_name,
+        data_split_fractions=DATA_SPLIT_FRACTIONS,
+        seed=SEED,
+        licenses=LICENSES,
+        info=INFO,
+        categories=CATEGORIES,
+    ) -> None:
         self.dataset_name = dataset_name
         self.data_split_fractions = data_split_fractions
         self.seed = seed
 
         self.data_path = os.path.join(DATA_PATH, self.dataset_name)
-        
-        self.create_dir_to_path(
-                path=DATA_PATH, dir_name=self.dataset_name
-            )
-       	
+
+        self.create_dir_to_path(path=DATA_PATH, dir_name=self.dataset_name)
+
         self.licenses = licenses
         self.info = info
         self.categories = categories
- 
+
         for split_type in [ds["type"] for ds in self.data_split_fractions]:
             self.create_dir_to_path(
                 path=os.path.join(self.data_path), dir_name=split_type
             )
             self.create_dir_to_path(
-                    path=os.path.join(self.data_path,split_type), dir_name="images"
-                )
-
+                path=os.path.join(self.data_path, split_type), dir_name="images"
+            )
 
     def get_data(self):
         #######################################################################################
@@ -104,7 +113,7 @@ class Data2cocoConverter:
         if not os.path.exists(os.path.join(path, dir_name)):
             os.mkdir(os.path.join(path, dir_name))
 
-    def split_data(self):             
+    def split_data(self):
 
         remaining_data = self.data
         len_data = len(self.data)
@@ -112,20 +121,23 @@ class Data2cocoConverter:
         rd.seed(self.seed)
         rd.shuffle(remaining_data)
 
-
-        data_split = {}  
+        data_split = {}
         for split_type in self.data_split_fractions:
             if len(remaining_data) == 0:
                 print(f"data_split_fractions not specified correctly")
                 break
-            to_id = min(math.ceil(split_type["fraction"] * len_data), len(remaining_data))
-            data_split[split_type["type"]] = remaining_data[: to_id]
-            remaining_data = remaining_data[to_id :]
+            to_id = min(
+                math.ceil(split_type["fraction"] * len_data), len(remaining_data)
+            )
+            data_split[split_type["type"]] = remaining_data[:to_id]
+            remaining_data = remaining_data[to_id:]
             print(split_type["type"], len(data_split[split_type["type"]]))
 
         return data_split
 
-    def extract_annotations(self, mask, image, image_id, segmentation_id, annotation_dict):
+    def extract_annotations(
+        self, mask, image, image_id, segmentation_id, annotation_dict
+    ):
 
         annotations_json = []
 
@@ -137,7 +149,7 @@ class Data2cocoConverter:
                 continue
 
             class_id = int(annotation_dict[cell_id])
-            
+
             category_info = {
                 "id": class_id,
                 "is_crowd": False,
@@ -159,9 +171,9 @@ class Data2cocoConverter:
                 segmentation_id = segmentation_id + 1
 
         return annotations_json, segmentation_id
-    
+
     def data_to_coco(self, data, split_type):
- 
+
         coco_output = {
             "info": self.info,
             "licenses": self.licenses,
@@ -173,7 +185,7 @@ class Data2cocoConverter:
         segmentation_id = 0
 
         for data_point in tqdm(data):
-            
+
             image_id = data_point["image_id"]
             image = data_point["image"]
             mask = data_point["mask"]
@@ -199,15 +211,14 @@ class Data2cocoConverter:
                 image=image,
                 image_id=image_id,
                 segmentation_id=segmentation_id,
-                annotation_dict = annotations,
+                annotation_dict=annotations,
             )
             coco_output["annotations"] += new_annotations_json
 
         for key in coco_output["annotations"][0].keys():
             print(key, type(coco_output["annotations"][0][key]))
-        
+
         return coco_output
-        
 
     def main(self):
         self.data = self.get_data()
@@ -225,4 +236,3 @@ class Data2cocoConverter:
                 "w",
             ) as output_json_file:
                 json.dump(coco_output, output_json_file)
-        
