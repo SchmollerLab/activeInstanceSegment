@@ -53,7 +53,11 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
     # define counter for early stopping
     early_counter = 0
     max_ap = 0
-    max_result = {}
+    max_result = {
+        "bbox": {"AP": None},
+        "segm": {"AP": None},
+    }
+
     max_early_counter = 0
 
     start_iter = (

@@ -43,6 +43,9 @@ class ActiveLearingDataset:
     def get_len_labeled(self):
         return len(self.labeled_ids)
 
+    def get_len_unlabeled(self):
+        return len(self.unlabeled_ids)
+
     def get_num_objects(self):
         labeled_ds_jsons = DatasetCatalog.get(self.labeled_data_name)
         num_objects = sum(

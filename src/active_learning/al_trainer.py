@@ -24,9 +24,9 @@ from src.active_learning.tta_sampler import TTASampler
 
 
 class ActiveLearningTrainer:
-    def __init__(self, cfg, cur_date="", is_test_mode=False):
+    def __init__(self, cfg, cur_date="", debug_mode=False):
         self.cfg = cfg
-        self.is_test_mode = is_test_mode
+        self.debug_mode = debug_mode
 
         self.logger = setup_logger(output="./log/main.log")
         self.logger.setLevel(10)
@@ -53,11 +53,12 @@ class ActiveLearningTrainer:
         self.al_dataset = ActiveLearingDataset(self.cfg)
 
         # initialize weights and biases
-        if self.is_test_mode:
+        print("initializing wandb")
+        if self.debug_mode:
             wandb.init(
                 project="activeCell-ACDC",
                 name="",
-                sync_tensorboard=True,
+                sync_tensorboard=False,
                 mode="disabled",
             )
         else:
@@ -66,13 +67,16 @@ class ActiveLearningTrainer:
                 name=str(query_strat + "_" + cur_date + "_" + os.uname()[1]).split("-")[
                     0
                 ],
-                sync_tensorboard=True,
+                sync_tensorboard=False,
             )
 
-        wandb.config.update(yaml.load(self.cfg.dump(), Loader=yaml.Loader))
+        wandb.config.update(
+            yaml.load(self.cfg.dump(), Loader=yaml.Loader), allow_val_change=True
+        )
 
     def __del__(self):
         wandb.finish()
+        pass
 
     def step(self, resume):
         epochs = self.cfg.AL.MAX_TRAINING_EPOCHS
@@ -86,12 +90,14 @@ class ActiveLearningTrainer:
         self.cfg.EARLY_STOPPING_ROUNDS = 3 + int(len_ds * 0.0025)
 
         model_name = f"{self.query_strategy.strategy}/last_model{self.al_dataset.get_len_labeled()}.pth"
+
         result = do_train(
             self.cfg,
             self.logger,
             resume=resume,
             custom_max_iter=steps_per_epoch * epochs,
         )
+
         model_path = os.path.join(self.cfg.OUTPUT_DIR, "last_model.pth")
         os.system(f"cp {model_path} {os.path.join(self.cfg.AL.OUTPUT_DIR, model_name)}")
         wandb.log(
@@ -114,11 +120,8 @@ class ActiveLearningTrainer:
         ) as file:
             file.write("\n".join(self.al_dataset.labeled_ids))
 
-        print("test active learning", (result["segm"]["AP"] + result["bbox"]["AP"]) / 2)
-
         sample_ids = self.query_strategy.sample(self.cfg, self.al_dataset.unlabeled_ids)
         self.al_dataset.update_labeled_data(sample_ids)
-
         return len(sample_ids) > 0
 
     def run(self):

@@ -21,7 +21,6 @@ import json
 import time
 import pandas as pd
 from sklearn.cluster import KMeans
-from umap import UMAP
 
 
 import torch
