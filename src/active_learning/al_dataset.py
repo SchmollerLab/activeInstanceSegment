@@ -38,16 +38,13 @@ class ActiveLearingDataset:
         self.register_labeled_dataset()
         self.register_unlabled_dataset()
 
-
     def get_len_labeled(self):
         """Returns length of labeled dataset"""
         return len(self.labeled_ids)
 
-
     def get_len_unlabeled(self):
         """Returns length of unlabeled dataset"""
         return len(self.unlabeled_ids)
-
 
     def get_num_objects(self):
         """Returns number of labeled objects"""
@@ -57,13 +54,11 @@ class ActiveLearingDataset:
         )
         return num_objects
 
-
     def remove_data_from_catalog(self, name):
         """Remove dataset from data catalog"""
         if name in DatasetCatalog:
             DatasetCatalog.remove(name)
             MetadataCatalog.remove(name)
-
 
     def register_labeled_dataset(self):
         """Register labeled dataset in Detectron2 datasets"""
@@ -76,7 +71,6 @@ class ActiveLearingDataset:
         )
         self.cfg.DATASETS.TRAIN = (self.labeled_data_name,)
 
-
     def register_unlabled_dataset(self):
         """Register unlabeled dataset in Detectron2 datasets"""
         self.remove_data_from_catalog(self.unlabeled_data_name)
@@ -86,7 +80,6 @@ class ActiveLearingDataset:
             self.cfg.OUTPUT_DIR,
             self.cfg.AL.DATASETS.TRAIN_UNLABELED,
         )
-
 
     def update_labeled_data(self, sample_ids):
         """Adds new ids to labeled dataset and removes them from unlabeled dataset
