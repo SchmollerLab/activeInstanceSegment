@@ -17,10 +17,10 @@ from utils.register_datasets import get_dataset_name
 from src.test import do_test
 from src.train import do_train
 from src.active_learning.al_dataset import ActiveLearingDataset
-from src.active_learning.query_strategies import *
-from src.active_learning.mc_dropout_sampler import MCDropoutSampler
-from src.active_learning.hybrid_sampler import HybridSampler
-from src.active_learning.tta_sampler import TTASampler
+from src.active_learning.query_strategies.query_strategy import *
+from src.active_learning.query_strategies.mc_dropout_sampler import MCDropoutSampler
+from src.active_learning.query_strategies.hybrid_sampler import HybridSampler
+from src.active_learning.query_strategies.tta_sampler import TTASampler
 
 
 class ActiveLearningTrainer:

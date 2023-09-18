@@ -4,7 +4,7 @@ from detectron2.data import DatasetCatalog
 
 from src.globals import *
 from utils.register_datasets import register_by_ids
-from src.active_learning.query_strategies import UncertaintySampler
+from src.active_learning.query_strategies.query_strategy import UncertaintySampler
 
 
 import numpy as np

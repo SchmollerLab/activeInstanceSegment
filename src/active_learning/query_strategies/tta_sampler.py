@@ -7,7 +7,7 @@ from detectron2.data import build_detection_test_loader
 
 from src.globals import *
 from utils.register_datasets import register_by_ids, get_dataset_name
-from src.active_learning.query_strategies import UncertaintySampler
+from src.active_learning.query_strategies.query_strategy import UncertaintySampler
 
 import numpy as np
 import torch

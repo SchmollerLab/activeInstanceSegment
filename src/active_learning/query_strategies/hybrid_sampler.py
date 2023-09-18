@@ -8,7 +8,7 @@ from detectron2.data import build_detection_test_loader
 
 from src.globals import *
 from utils.register_datasets import register_by_ids, get_dataset_name
-from src.active_learning.mc_dropout_sampler import MCDropoutSampler
+from src.active_learning.query_strategies.mc_dropout_sampler import MCDropoutSampler
 
 
 import numpy as np
