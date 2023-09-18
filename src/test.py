@@ -13,6 +13,21 @@ from detectron2.evaluation import print_csv_format
 
 
 def do_test(cfg, model=None, logger=None):
+    """Performs model evaluation on dataset specified in cfg.DATASETS.TEST.
+
+    Parameters
+    ----------
+    cfg
+        Detectron2 configutation which specifies hyperparameters.
+    model
+        Torch model. If not specified, model is built from config.
+    logger
+        logger object.
+
+    Returns
+    -------
+        AP values.
+    """
     if model is None:
         model = build_model(cfg)
         model.eval()
