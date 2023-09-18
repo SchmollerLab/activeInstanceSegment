@@ -22,10 +22,8 @@ class ActiveLearingDataset:
         self.unlabeled_ids = [
             image["image_id"] for image in self.unlabeled_jsons if image["file_name"]
         ]
-        # self.dict_aug_ids_by_id = self.precompute_augmentation_ids(self.unlabeled_ids)
-        self.labeled_ids = []
-        # self.labeled_ids_aug = []
 
+        self.labeled_ids = []
         self.unlabeled_data_name = "temp_unlabeled_data_al"
         self.labeled_data_name = "temp_labeled_data_al"
 
@@ -37,49 +35,46 @@ class ActiveLearingDataset:
 
         sample_ids = rd.sample(self.unlabeled_ids, self.init_size)
         self.update_labeled_data(sample_ids)
-        self.get_labeled_dataset()
-        self.get_unlabled_dataset()
+        self.register_labeled_dataset()
+        self.register_unlabled_dataset()
+
 
     def get_len_labeled(self):
+        """Returns length of labeled dataset"""
         return len(self.labeled_ids)
 
+
     def get_len_unlabeled(self):
+        """Something
+
+        Parameters
+        ----------
+        param1
+            desc1
+        param1
+            desc2
+        """
         return len(self.unlabeled_ids)
 
+
     def get_num_objects(self):
+        """Returns number of labeled objects"""
         labeled_ds_jsons = DatasetCatalog.get(self.labeled_data_name)
         num_objects = sum(
             [len(json_img["annotations"]) for json_img in labeled_ds_jsons]
         )
         return num_objects
 
-    def precompute_augmentation_ids(self, unlabeled_ids):
-        dict_jsons_by_filename = {
-            record["file_name"]: record for record in self.unlabeled_jsons
-        }
-        dict_jsons_by_id = {
-            record["image_id"]: record for record in self.unlabeled_jsons
-        }
-        dict_aug_ids_by_id = {}
-        for id in unlabeled_ids:
-            record = dict_jsons_by_id[id]
-            file_name_cut = record["file_name"].split("H")[0]
-            ids = []
-            for h in ["T", "F"]:
-                for v in ["T", "F"]:
-                    file_name = file_name_cut + "H" + h + "V" + v + ".png"
-                    aug_record = dict_jsons_by_filename[file_name]
-                    ids.append(aug_record["image_id"])
-            dict_aug_ids_by_id[record["image_id"]] = ids
-
-        return dict_aug_ids_by_id
 
     def remove_data_from_catalog(self, name):
+        """Remove dataset from data catalog"""
         if name in DatasetCatalog:
             DatasetCatalog.remove(name)
             MetadataCatalog.remove(name)
 
-    def get_labeled_dataset(self):
+
+    def register_labeled_dataset(self):
+        """Register labeled dataset in Detectron2 datasets"""
         self.remove_data_from_catalog(self.labeled_data_name)
         register_by_ids(
             self.labeled_data_name,
@@ -89,7 +84,9 @@ class ActiveLearingDataset:
         )
         self.cfg.DATASETS.TRAIN = (self.labeled_data_name,)
 
-    def get_unlabled_dataset(self):
+
+    def register_unlabled_dataset(self):
+        """Register unlabeled dataset in Detectron2 datasets"""
         self.remove_data_from_catalog(self.unlabeled_data_name)
         register_by_ids(
             self.unlabeled_data_name,
@@ -98,11 +95,15 @@ class ActiveLearingDataset:
             self.cfg.AL.DATASETS.TRAIN_UNLABELED,
         )
 
-    def update_labled_ids_aug(self):
-        for id in self.labeled_ids:
-            self.labeled_ids_aug += self.dict_aug_ids_by_id[id]
 
     def update_labeled_data(self, sample_ids):
+        """Adds new ids to labeled dataset and removes them from unlabeled dataset
+
+        Parameters
+        ----------
+        sample_ids
+            ids which should be added to labeled dataset
+        """
         print("update_labeled_data")
         # check if sample_ids are in unlabeled_ids
         if not (set(sample_ids) <= set(self.unlabeled_ids)):
@@ -116,9 +117,8 @@ class ActiveLearingDataset:
         self.labeled_ids += sample_ids
         self.unlabeled_ids = list(set(self.unlabeled_ids) - set(sample_ids))
 
-        # self.update_labled_ids_aug()
-        self.get_labeled_dataset()
-        self.get_unlabled_dataset()
+        self.register_labeled_dataset()
+        self.register_unlabled_dataset()
 
 
 if __name__ == "__main__":
