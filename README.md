@@ -10,7 +10,7 @@ The following active learning strategies are implemented:
 
 The al strategy can be specified in the cfg.yaml in ./pipeline_configs. Benchmarking can be done with
 ```console
-python -m src.al_runner -c <path_to_config>
+python -m src.al_main -c <path_to_config>
 ```
 
 ## Installation
