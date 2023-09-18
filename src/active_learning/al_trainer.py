@@ -69,10 +69,10 @@ class ActiveLearningTrainer:
         self.epochs = self.cfg.AL.MAX_TRAINING_EPOCHS
 
         len_ds = self.al_dataset.get_len_labeled()
-        steps_per_epoch = int(len_ds / self.cfg.SOLVER.IMS_PER_BATCH)
+        self.steps_per_epoch = int(len_ds / self.cfg.SOLVER.IMS_PER_BATCH)
 
         self.cfg.TEST.EVAL_PERIOD = max(
-            6 * self.cfg.SOLVER.IMS_PER_BATCH * steps_per_epoch, 20
+            6 * self.cfg.SOLVER.IMS_PER_BATCH * self.steps_per_epoch, 20
         )
 
         self.model_name = f"{self.query_strategy.strategy}/last_model{self.al_dataset.get_len_labeled()}.pth"
