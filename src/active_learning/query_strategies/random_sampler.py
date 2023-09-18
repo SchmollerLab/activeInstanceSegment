@@ -1,20 +1,8 @@
-import os, sys
-
+import os
 import random as rd
-import numpy as np
-import torch
-import cv2
-
-import shutil
-
-from detectron2.data import MetadataCatalog, DatasetCatalog
-from detectron2.evaluation import COCOEvaluator, inference_on_dataset
-from detectron2.data import build_detection_test_loader
-import detectron2.data.transforms as T
-
 from src.globals import *
 from src.active_learning.query_strategies.query_strategy import QueryStrategy
-from utils.register_datasets import register_by_ids
+
 
 class RandomSampler(QueryStrategy):
     def __init__(self, cfg):

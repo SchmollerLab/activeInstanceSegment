@@ -1,6 +1,3 @@
-import sys
-import os
-
 import random as rd
 
 from detectron2.data import MetadataCatalog, DatasetCatalog

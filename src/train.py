@@ -1,14 +1,12 @@
-import torch, detectron2
+import torch
 import wandb
 import os
 import shutil
-import sys
-import copy
 
 import detectron2.utils.comm as comm
 from detectron2.utils.events import EventStorage
 from detectron2.solver import build_lr_scheduler, build_optimizer
-from detectron2.checkpoint import DetectionCheckpointer, PeriodicCheckpointer
+from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.engine import default_writers
 from detectron2.data import build_detection_train_loader
 from detectron2.modeling import build_model

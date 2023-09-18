@@ -1,26 +1,18 @@
-import sys
 import os
 
 import wandb
-import math
 import yaml
-import copy
-
 
 from detectron2.utils.logger import setup_logger
-from detectron2.data import MetadataCatalog, DatasetCatalog
-from detectron2 import model_zoo
-from detectron2.modeling import build_model
 
 from src.globals import *
-from utils.register_datasets import get_dataset_name
-from src.test import do_test
 from src.train import do_train
 from src.active_learning.al_dataset import ActiveLearingDataset
 from src.active_learning.query_strategies.query_strategy import *
 from src.active_learning.query_strategies.mc_dropout_sampler import MCDropoutSampler
 from src.active_learning.query_strategies.hybrid_sampler import HybridSampler
 from src.active_learning.query_strategies.tta_sampler import TTASampler
+from src.active_learning.query_strategies.random_sampler import RandomSampler
 
 
 class ActiveLearningTrainer:
@@ -98,7 +90,7 @@ class ActiveLearningTrainer:
 
         model_path = os.path.join(self.cfg.OUTPUT_DIR, "last_model.pth")
         os.system(
-            f"cp {model_path} {os.path.join(self.cfg.AL.OUTPUT_DIR, self.odel_name)}"
+            f"cp {model_path} {os.path.join(self.cfg.AL.OUTPUT_DIR, self.model_name)}"
         )
         wandb.log(
             {

@@ -1,30 +1,22 @@
-import os, sys
-import random as rd
+import os
 import numpy as np
 
-from detectron2.data import MetadataCatalog, DatasetCatalog
-from detectron2.evaluation import COCOEvaluator, inference_on_dataset
-from detectron2.data import build_detection_test_loader
+from detectron2.data import DatasetCatalog
 
 from src.globals import *
-from utils.register_datasets import register_by_ids, get_dataset_name
+from utils.register_datasets import register_by_ids
 from src.active_learning.query_strategies.mc_dropout_sampler import MCDropoutSampler
 
 
 import numpy as np
 import torch
-import cv2
 from tqdm import tqdm
-import operator
 import wandb
-import json
-import time
 import pandas as pd
 from sklearn.cluster import KMeans
 
 
 import torch
-from itertools import chain
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.modeling import build_model
 

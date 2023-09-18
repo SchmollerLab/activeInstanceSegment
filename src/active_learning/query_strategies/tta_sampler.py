@@ -1,23 +1,19 @@
 import random as rd
 import numpy as np
 
-from detectron2.data import MetadataCatalog, DatasetCatalog
-from detectron2.evaluation import COCOEvaluator, inference_on_dataset
-from detectron2.data import build_detection_test_loader
+from detectron2.data import DatasetCatalog
+
 
 from src.globals import *
-from utils.register_datasets import register_by_ids, get_dataset_name
+from utils.register_datasets import register_by_ids
 from src.active_learning.query_strategies.query_strategy import UncertaintySampler
 
 import numpy as np
 import torch
 import torchvision.transforms.functional as TF
-import cv2
 from tqdm import tqdm
-import operator
 import wandb
 import json
-import time
 
 
 import torch
