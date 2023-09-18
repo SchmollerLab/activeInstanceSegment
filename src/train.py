@@ -31,6 +31,23 @@ def clean_output_dir(output_dir):
 
 
 def do_train(cfg, logger, resume=False, custom_max_iter=None):
+    """Performs model training.
+
+    Parameters
+    ----------
+    cfg
+        Detectron2 configutation which specifies hyperparameters used during model training.
+    logger
+        logger object.
+    resume
+        boolean if model weights should be reused.
+    custom_max_iter
+        number of training iteration. By default value specified in cfg.SOLVER.MAX_ITER is used.
+
+    Returns
+    -------
+        AP values on validation dataset of the best performing model.
+    """
     if not resume:
         clean_output_dir(cfg.OUTPUT_DIR)
 

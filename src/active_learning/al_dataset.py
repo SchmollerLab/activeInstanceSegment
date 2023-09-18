@@ -45,15 +45,7 @@ class ActiveLearingDataset:
 
 
     def get_len_unlabeled(self):
-        """Something
-
-        Parameters
-        ----------
-        param1
-            desc1
-        param1
-            desc2
-        """
+        """Returns length of unlabeled dataset"""
         return len(self.unlabeled_ids)
 
 

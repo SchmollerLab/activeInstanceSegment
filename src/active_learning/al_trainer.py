@@ -81,6 +81,13 @@ class ActiveLearningTrainer:
         wandb.finish()
 
     def step(self, resume):
+        """Performs one active learning step with model training, active learning sampling, and an update of the datasets.
+
+        Parameters
+        ----------
+        resume
+            boolean if weights of previous al step should be reused. Otherwise Detectron2 pretrained weights are used.
+        """
 
         result = do_train(
             self.cfg,
@@ -118,6 +125,7 @@ class ActiveLearningTrainer:
         return len(sample_ids) > 0
 
     def run(self):
+        """Performs multiple active lerning steps until either the max number of steps is reached, or the unlabeled dataset is empty."""
         try:
             for i in range(self.cfg.AL.MAX_LOOPS):
                 if not self.step(resume=not self.cfg.AL.RETRAIN):
