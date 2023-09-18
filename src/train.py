@@ -119,7 +119,6 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
                 cfg.TEST.EVAL_PERIOD > 0
                 and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
                 and iteration != max_iter - 1
-                # and iteration >= 5 * max_iter / 8
             ):
                 res = do_test(cfg, model=model, logger=logger)
 
@@ -131,18 +130,18 @@ def do_train(cfg, logger, resume=False, custom_max_iter=None):
                     max_early_counter = max(max_early_counter, early_counter)
 
                     print(
-                        "new ap:",
+                        "AP:",
                         res["segm"]["AP"],
-                        "max_ap",
+                        "max. AP",
                         max_ap,
                         "add counter: ",
                         early_counter,
                     )
                 else:
                     print(
-                        "new ap:",
+                        "AP:",
                         res["segm"]["AP"],
-                        "max_ap",
+                        "max. AP",
                         max_ap,
                         "adjust max",
                     )

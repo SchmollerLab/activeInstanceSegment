@@ -140,7 +140,7 @@ class MCDropoutSampler(UncertaintySampler):
             file.write("\n".join(samples))
 
     def get_samples(self, model, input_image, iterrations):
-        """Perform infences using Monte Carlo dropout
+        """Perform inferences using Monte Carlo dropout
 
         Parameters
         ----------
