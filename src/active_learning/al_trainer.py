@@ -54,32 +54,19 @@ class ActiveLearningTrainer:
 
         # initialize weights and biases
         print("initializing wandb")
-        if self.debug_mode:
-            wandb.init(
-                project="activeCell-ACDC",
-                name="",
-                sync_tensorboard=False,
-                mode="disabled",
-            )
-        else:
-            wandb.init(
-                project="activeCell-ACDC",
-                name=str(query_strat + "_" + cur_date + "_" + os.uname()[1]).split("-")[
-                    0
-                ],
-                sync_tensorboard=False,
-            )
+        wandb.init(
+            project="activeCell-ACDC",
+            name=str(query_strat + "_" + cur_date + "_" + os.uname()[1]).split("-")[0],
+            sync_tensorboard=False,
+            mode="disabled" if self.debug_mode else None,
+        )
 
         wandb.config.update(
             yaml.load(self.cfg.dump(), Loader=yaml.Loader), allow_val_change=True
         )
 
-    def __del__(self):
-        wandb.finish()
-        pass
-
-    def step(self, resume):
-        epochs = self.cfg.AL.MAX_TRAINING_EPOCHS
+        # hyperparameters for model training
+        self.epochs = self.cfg.AL.MAX_TRAINING_EPOCHS
 
         len_ds = self.al_dataset.get_len_labeled()
         steps_per_epoch = int(len_ds / self.cfg.SOLVER.IMS_PER_BATCH)
@@ -87,19 +74,25 @@ class ActiveLearningTrainer:
         self.cfg.TEST.EVAL_PERIOD = max(
             6 * self.cfg.SOLVER.IMS_PER_BATCH * steps_per_epoch, 20
         )
-        self.cfg.EARLY_STOPPING_ROUNDS = 3 + int(len_ds * 0.0025)
 
-        model_name = f"{self.query_strategy.strategy}/last_model{self.al_dataset.get_len_labeled()}.pth"
+        self.model_name = f"{self.query_strategy.strategy}/last_model{self.al_dataset.get_len_labeled()}.pth"
+
+    def __del__(self):
+        wandb.finish()
+
+    def step(self, resume):
 
         result = do_train(
             self.cfg,
             self.logger,
             resume=resume,
-            custom_max_iter=steps_per_epoch * epochs,
+            custom_max_iter=self.steps_per_epoch * self.epochs,
         )
 
         model_path = os.path.join(self.cfg.OUTPUT_DIR, "last_model.pth")
-        os.system(f"cp {model_path} {os.path.join(self.cfg.AL.OUTPUT_DIR, model_name)}")
+        os.system(
+            f"cp {model_path} {os.path.join(self.cfg.AL.OUTPUT_DIR, self.odel_name)}"
+        )
         wandb.log(
             {
                 "al": {

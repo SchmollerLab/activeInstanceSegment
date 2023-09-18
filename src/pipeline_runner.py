@@ -179,7 +179,6 @@ if __name__ == "__main__":
     iter_per_epoch = int(len_ds / cfg.SOLVER.IMS_PER_BATCH)
 
     cfg.TEST.EVAL_PERIOD = max(iter_per_epoch, 20)
-    cfg.EARLY_STOPPING_ROUNDS = 3 + int(len_ds * 0.0025)
     cfg.SOLVER.MAX_ITER = iter_per_epoch * epochs
 
     if do_grid_search:
