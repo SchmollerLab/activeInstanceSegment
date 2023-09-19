@@ -1,4 +1,4 @@
-# ActiveCell-ACDC
+# activeInstanceSegment 
 A repository to benchmark active learning strategies on microscopy data.
 
 ## Active Learning
