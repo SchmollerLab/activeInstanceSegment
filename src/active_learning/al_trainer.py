@@ -114,7 +114,7 @@ class ActiveLearningTrainer:
 
         sample_ids = self.query_strategy.sample(self.cfg, self.al_dataset.unlabeled_ids)
         self.al_dataset.update_labeled_data(sample_ids)
-        return len(sample_ids) > 0
+        return self.al_dataset.get_len_unlabeled() > 0
 
     def run(self):
         """Performs multiple active lerning steps until either the max number of steps is reached, or the unlabeled dataset is empty."""
