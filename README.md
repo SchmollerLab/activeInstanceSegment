@@ -22,6 +22,12 @@ $ ./shell_scripts/install.sh
 ## Data 
 all used datasets need to follow the [COCO format](https://cocodataset.org/#format-data)
 ### How to Add a New Dataset
+to add a new dataset, the following steps need to be performed
+1. create a directory in `data/` named after the new dataset
+2. the new directory contains folders for every data split e.g. train, test
+3. each data split folder contains the data stored in COCO format in the `cell_acdc_coco_ds.json` and the images in the `images` folder
+4. the dataset name together with the split types must be added in `src/globals.py` to the `DATASETS_DSPLITS` dictionary
+5. the dataset can be specified in the configuration yamls as `datasetname_splittype`
 new datasets can be added using the Data2cocoConverter class in utils.datapreprocessing.data2coco 
 
 ## Model Architecture
@@ -65,8 +71,3 @@ The following active learning configs can be specified
 - MAX_TRAINING_EPOCHS: number of training epochs during active learning
 - RETRAIN: flag if model should be retrained from scratch every active learning iteration (only `true` implemented)
 
-## Model Training
-
-## Run Active Learning
-
-## Evaluation of Models
