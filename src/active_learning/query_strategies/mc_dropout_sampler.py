@@ -85,7 +85,10 @@ class MCDropoutSampler(UncertaintySampler):
         worst_ims = np.argsort(list(uncertainty_dict.values()))[-num_samples:]
         samples = [list(uncertainty_dict.keys())[id] for id in worst_ims]
 
-        self.log_results(uncertainty_dict, samples)
+        try:
+            self.log_results(uncertainty_dict, samples)
+        except:
+            print("error while logging al results")
 
         self.counter += 1
         return samples

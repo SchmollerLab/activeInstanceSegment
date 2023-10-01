@@ -29,8 +29,11 @@ if __name__ == "__main__":
     cur_date = "" + str(date.today().month) + str(date.today().day)
     for _ in range(3):
         cfg.SEED += 1
-        al_trainer = ActiveLearningTrainer(
-            cfg, cur_date=cur_date, debug_mode=not running_on_server
-        )
-        al_trainer.run()
-        al_trainer = None
+        for query_strat in ["random", "mc_dropout"]:
+            cfg.SEED += 1
+            cfg.AL.QUERY_STRATEGY = query_strat
+            al_trainer = ActiveLearningTrainer(
+                cfg, cur_date=cur_date, debug_mode=not running_on_server
+            )
+            al_trainer.run()
+            al_trainer = None
